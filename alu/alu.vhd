@@ -1,115 +1,87 @@
--- '0'&FUNC
---comandos func
---			"ADD"=>"0010 " ,
---			'SUB'=>"0110 " ,
---			'OR' =>' 0001 ' ,
---			'AND'=>"0000 " ,
---			'XOR'=>' 1111 ' ,
---			'NOR'=>' 1100 ' ,
---			'SLT '=>' 0111 '
--- '1'&FUNC
---comandos func
---          "SHL"=>"0010 " ,
---			'SHR'=>"0001 " ,
---			'SAR'=>"0000 " ,
---			'ROL'=>' 1000 ' ,
---			'ROR'=>' 0100 '
+-- '0'&FUNC - Arith / logic operations
+--FUNC Operations
+--"ADD"=>"0010 " ,
+--'SUB'=>"0110 " ,
+--'OR' =>' 0001 ' ,
+--'AND'=>"0000 " ,
+--'XOR'=>' 1111 ' ,
+--'NOR'=>' 1100 ' ,
+--'SLT '=>' 0111 '
+-- '1'&FUNC - Shift operations
+--'SHL'=>"0010 " ,
+--'SHR'=>"0001 " ,
+--'SAR'=>"0000 " ,
+--'ROL'=>' 1000 ' ,
+--'ROR'=>' 0100 '
 
 Library ieee;
 Use ieee.std_logic_1164.all;
 
-Entity Ula is 
+Entity ALU is 
   Generic( n : natural := 16 );
-  Port( ULA_A,ULA_B    : in     std_logic_vector(n downto 1);
-        SHAMT          : in     std_logic_vector(4 downto 1);        -- nº de deslocamentos
-        ULA_OP   	     :  in     std_logic_vector(3 downto 1);
-        FUNC           : in     std_logic_vector(4 downto 1);
-        Z              : out    std_logic;
-        ULA_OUT        : buffer std_logic_vector(n downto 1));
+  Port( ALU_A,ALU_B    : in     std_logic_vector(n downto 1);  --Operands
+        SHAMT          : in     std_logic_vector(4 downto 1);  --SHift AMounT
+        ALU_OP         : in     std_logic_vector(3 downto 1);  --ALU function
+        FUNC           : in     std_logic_vector(4 downto 1);  --Operation
+        Z              : out    std_logic;                     --Zero flag output
+        ALU_OUT        : buffer std_logic_vector(n downto 1)); --Data output
 End Ula;
 
-Architecture behavior of Ula is 
+Architecture behavior of ALU is 
 
 Signal comp_B    : std_logic_vector(n downto 1);
 Signal aux_B     : std_logic_vector(n downto 1);
 Signal aux_A     : std_logic_vector(n downto 1);
-Signal ULA_CONT  : std_logic_vector(5 downto 1);        -- OPCODE
+Signal ALU_CONT  : std_logic_vector(5 downto 1);        -- OPCODE
 Signal aux_S     : std_logic_vector(n downto 1);
 Signal aux_move  : std_logic_vector(n downto 1);
 Signal zero      : std_logic_vector(n downto 1) := (others => '0');
 Signal zero2     : std_logic_vector(n-4 downto 1) := (others => '0');
-Signal compara   : std_logic_vector(n downto 1);
-
-
-Component complemento is 
-
-    Generic ( n : natural := 8);
-    Port ( B    : in  std_logic_vector(n downto 1);
-           S    : out std_logic_vector(n downto 1));
- 
-End Component;
-
-Component soma is 
-
-    Generic ( n : natural := 8);
-    Port ( A, B        : in  std_logic_vector(n downto 1);
-           S           : out std_logic_vector(n downto 1);
-           cin         : in  std_logic;
-           cout    : out std_logic);
-           
-End Component;
-
-Component move is 
-  Generic( n : natural := 8 );
-  Port( A         : in     std_logic_vector(n downto 1);
-        SHAMT     : in     std_logic_vector(4 downto 1);
-        MOVE_OP   : in     std_logic_vector(5 downto 1);
-        S         : out    std_logic_vector(n downto 1));
-End component;
+Signal compare   : std_logic_vector(n downto 1);
 
 Begin
---	ULA_OP <= "001"; -- ULA recebe operação tipo R (aritmetico)
---	ULA_OP <= "010"; -- ULA recebe operação tipo S (shift)
---  ULA_OP <= "000"; -- ULA não realiza nenhuma operação
---  ULA_OP <= "011"; -- ULA realiza BEQ
---  ULA_OP <= "100"; -- ULA soma OFFSET+(conteúdo de registrador)
+--  ALU_OP <= "001"; -- ALU makes type R operation (arithmetic)
+--  ALU_OP <= "010"; -- ALU makes type S operation (shift)
+--  ALU_OP <= "000"; -- ALU does not operate
+--  ALU_OP <= "011"; -- ALU calculates BEQ
+--  ALU_OP <= "100"; -- ALU sums OFFSET+(register contents)
 
-with ULA_OP select
-      ULA_CONT <= '0'&func when "001",
+with ALU_OP select
+      ALU_CONT <= '0'&func when "001",
                   '1'&func when "010",
                   "00110"  when "011",
                   "11111"  when others;
                        
-  aux_B <= comp_B when ULA_CONT = "00110" else
-           ULA_B;
-  aux_A <= zero2&func when ULA_OP = "100" else
-           ULA_A;
+  aux_B <= comp_B when ALU_CONT = "00110" else
+           ALU_B;
+  aux_A <= zero2&func when ALU_OP = "100" else
+           ALU_A;
 
-  Z <= '1' when ULA_OUT = zero else
+  Z <= '1' when ALU_OUT = zero else
        '0' ;
 
--- definição de SLT:
--- se A < B:       saída = 000....01
--- caso contrário: saída = 000....00   
-  compara <= zero(n-1 downto 1)&'1' when (ULA_A < ULA_B) else
+-- SLT:
+-- if A < B:       out   = 000....01
+-- else:           out   = 000....00   
+  compare <= zero(n-1 downto 1)&'1' when (ALU_A < ALU_B) else
 		     zero;
 
-  rotulo1: complemento Generic Map ( n ) Port Map (ULA_B,comp_B);
+  rotulo1: entity work.complement(sub) Generic Map ( n ) Port Map (ALU_B,comp_B);
   
-  rotulo2: soma Generic Map ( n ) Port Map (aux_A, aux_B, aux_S, '0', OPEN);
+  rotulo2: entity work.sum(adder) Generic Map ( n ) Port Map (aux_A, aux_B, aux_S, '0', OPEN);
 
-  rotulo3: move Generic Map ( n ) Port Map (ULA_A, SHAMT, ULA_CONT, aux_move);
+  rotulo3: entity work.move(behavior) Generic Map ( n ) Port Map (ALU_A, SHAMT, ALU_CONT, aux_move);
 
 
-  with ULA_CONT select 
+  with ALU_CONT select 
   
-  ULA_OUT <=  aux_S       when "00010" | "00110" | "11111",
+  ALU_OUT <=  aux_S       when "00010" | "00110" | "11111",
 			  aux_move          when "10010" | "10001" | "10000" | "11000" |"10100",
-			  (ULA_A OR ULA_B)  when "00001",
-			  (ULA_A AND ULA_B) when "00000", 
-			  (ULA_A XOR ULA_B) when "01111",
-			  (ULA_A NOR ULA_B) when "01100",
-			  compara           when "00111",
-			  zero               when others; -- mtos latchs
+			  (ALU_A OR ALU_B)  when "00001",
+			  (ALU_A AND ALU_B) when "00000", 
+			  (ALU_A XOR ALU_B) when "01111",
+			  (ALU_A NOR ALU_B) when "01100",
+			  compare           when "00111",
+			  zero               when others;
   
 End behavior;

@@ -13,57 +13,23 @@ ENTITY ANEM IS
             ALUFUNC_SIZE : INTEGER := 4);
 
     PORT(CK,RST: IN STD_LOGIC;            
-        TEST: IN STD_LOGIC;                              -- RECEBE BIT DE TESTE
-        INST: IN STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0); -- RECEBE INSTRUCAO A SER REALIZADA
-        S_IN: IN STD_LOGIC;                              -- RECEBE INSTRUCAO SERIAL DE TESTE
-        --DATA_IN: IN STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0);       -- DADO LIDO DA MD
-        S_OUT: OUT STD_LOGIC;                            -- ENVIA INSTRUCAO SERIAL DE TESTE
-        MEM_W: OUT STD_LOGIC;                            -- INFORMACAO CONTROLE/MD
-        MEM_EN: OUT STD_LOGIC;                           -- INFORMACAO CONTROLE/MD
-        MEM_END: OUT STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0);
-        --TO_MEM: OUT STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0);
-        
-        DADOS : INOUT STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0); --BARRAMENTO DE DADOS
-        
-        INST_END: OUT STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0));    -- ENVIA PROXIMA INSTRUCAO
+        TEST: IN STD_LOGIC;                              -- TEST MODE ENABLE
+        INST: IN STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0); -- INSTRUCTION INPUT
+        S_IN: IN STD_LOGIC;                              -- TEST MODE DATA IN
+        S_OUT: OUT STD_LOGIC;                            -- TEST MODE DATA OUT
+        MEM_W: OUT STD_LOGIC;                            -- DATA MEM WRITE FLAG
+        MEM_EN: OUT STD_LOGIC;                           -- DATA MEM ENABLE FLAG
+        MEM_END: OUT STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0); --DATA MEM ADDRESS
+        DADOS : INOUT STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0); --DATA BUS
+        INST_END: OUT STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0)); --INSTRUCTION
+                                                               --FETCH ADDRESS
 END ANEM;
 
-ARCHITECTURE TESTE OF ANEM  IS
----------------------------------SAIDAS INTERNAS----------------------------- 
---SIGNAL REG_CONT: STD_LOGIC_VECTOR(2 DOWNTO 0);       -- INFORMACAO CONTROLE/REGISTRADOR
---SIGNAL PC_CONT: STD_LOGIC_VECTOR(2 DOWNTO 0);        -- INFORMACAO CONTROLE/PC
---SIGNAL ULA_CONT: STD_LOGIC_VECTOR(2 DOWNTO 0);       -- INFORMACAO CONTROLE/ULA
---SIGNAL A_OUT, B_OUT: STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0);  -- SAIDAS DO REGISTRADOR
---SIGNAL ULA_OUT: STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0);       -- SAIDA DA ULA
---SIGNAL Z: STD_LOGIC;                                 -- SAIDA DA ULA
-SIGNAL S_OUT_REG: STD_LOGIC;                         -- SAIDA SERIAL DE TESTE DO REGISTRADOR P PC
+ARCHITECTURE TEST OF ANEM  IS
+SIGNAL S_OUT_REG: STD_LOGIC;
 
---SIGNAL RI_EN : STD_LOGIC := '0'; --SINAL DE ENABLE PARA O REGISTRADOR DE INSTRUCAO
---SIGNAL ANEM_INST : STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0) := (OTHERS=>'0'); --INSTRUCAO
-
---SIGNAL RU_EN : STD_LOGIC := '0'; --SINAL DE ENABLE PARA O REGISTRADOR DA ULA
---SIGNAL RU_OUT : STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0) := (OTHERS=>'0'); --SAIDA DO REGISTRADOR DA ULA
-
---OPCODE DA INSTRUCAO
---ALIAS ANEM_OPCODE : STD_LOGIC_VECTOR(OPCODE_SIZE-1 DOWNTO 0) IS ANEM_INST(DATA_SIZE-1 DOWNTO DATA_SIZE-OPCODE_SIZE);
---ALIAS ANEM_REG_A : STD_LOGIC_VECTOR(RINDEX_SIZE-1 DOWNTO 0) IS ANEM_INST(11 DOWNTO 8);
---ALIAS ANEM_SHAMT : STD_LOGIC_VECTOR(ALUSHAMT_SIZE-1 DOWNTO 0) IS ANEM_INST(7 DOWNTO 4);
---ALIAS ANEM_FUNC : STD_LOGIC_VECTOR(ALUFUNC_SIZE-1 DOWNTO 0) IS ANEM_INST(3 DOWNTO 0);
-
---ALIAS ANEM_REG_B : STD_LOGIC_VECTOR(RINDEX_SIZE-1 DOWNTO 0) IS ANEM_INST(7 DOWNTO 4);
---ALIAS ANEM_OFFSET : STD_LOGIC_VECTOR(3 DOWNTO 0) IS ANEM_INST(3 DOWNTO 0);
-
---ALIAS ANEM_BYTE : STD_LOGIC_VECTOR(7 DOWNTO 0) IS ANEM_INST(7 DOWNTO 0);
-
---ALIAS ANEM_ENDE : STD_LOGIC_VECTOR(11 DOWNTO 0) IS ANEM_INST(11 DOWNTO 0);
-
---COMPATIBILIZACAO COM SINAIS ANTIGOS
 SIGNAL TO_MEM: STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0) := (OTHERS=>'0');
 SIGNAL DATA_IN: STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0) := (OTHERS=>'0');
-
---ROTEAMENTO INTERNO DE SINAIS DE CONTROLE DA MEMORIA
---SIGNAL ANEM_MEM_EN : STD_LOGIC := '0';
---SIGNAL ANEM_MEM_W : STD_LOGIC := '0';
 
 signal next_inst_addr : std_logic_vector(15 downto 0);
 
@@ -162,7 +128,7 @@ signal p_flush : std_logic;
 
 BEGIN
 
-    --BARRAMENTO DE DADOS BIDIRECIONAL
+    --BIDIRECTIONAL DATA BUS
 
     --cannot have simultaneous read/write of register! selector is only one
     --have to detect if writeback is going on and stall instruction decode /
@@ -207,16 +173,11 @@ BEGIN
                );
     
     
-    --UNIDADE DE CONTROLE
-    --CONT: ENTITY WORK.unidade_de_controle(teste) PORT MAP(OPCODE=>ANEM_OPCODE, CONTROL_REG=>REG_CONT, CONTROL_ULA=>ULA_CONT, 
-    --                                                        CONTROL_PC=>PC_CONT, W_DADOS=>ANEM_MEM_W, EN_DADOS=>ANEM_MEM_EN,
-    --                                                        CK=>CK, RST=>RST, RI_EN=>RI_EN, RU_EN=>RU_EN, will_wb=>i_wb);
-    
-    --BANCO DE REGISTRADORES
-    BANCOREG: ENTITY WORK.BancoReg(ANEM)
+    --Register bank
+    BANCOREG: ENTITY WORK.regbnk(ANEM)
       PORT MAP(S_IN=>S_IN,
                TEST=>TEST,
-               ULA_IN=>p_alu_wb_aluout_3,
+               ALU_IN=>p_alu_wb_aluout_3,
                BYTE_IN=>p_id_wb_limm_3,
                SEL_A=>p_id_wb_regsela_0, 
                SEL_B=>p_id_alu_regselb_0,
@@ -239,18 +200,18 @@ BEGIN
                         p_id_alu_alub_1;
   
     --ALU
-    ULA: ENTITY WORK.Ula(behavior)
+    ULA: ENTITY WORK.ALU(behavior)
       GENERIC MAP(N=>DATA_SIZE)
-      PORT MAP(ULA_A=>p_f_alu_alua_mux,
-               ULA_B=>p_f_alu_alub_mux,
+      PORT MAP(ALU_A=>p_f_alu_alua_mux,
+               ALU_B=>p_f_alu_alub_mux,
                SHAMT=>p_id_alu_alushamt_1,
-               ULA_OP=>p_id_alu_aluctl_1, 
+               ALU_OP=>p_id_alu_aluctl_1, 
                FUNC=>p_id_alu_alufunc_1,
                Z=>p_alu_x_z,
-               ULA_OUT=>p_alu_wb_aluout_1);
+               ALU_OUT=>p_alu_wb_aluout_1);
     
     --PIPELINE ID/ALU
-    PALU_A: entity WORK.RegistradorANEM(Load)
+    PALU_A: entity WORK.RegANEM(Load)
       generic MAP(DATA_SIZE)
       port MAP(CK=>CK,
                RST=>RST,
@@ -258,7 +219,7 @@ BEGIN
                PARALLEL_IN=>p_id_mem_alua_0,
                DATA_OUT=>p_id_mem_alua_1);
     
-    PALU_B: entity WORK.RegistradorANEM(Load)
+    PALU_B: entity WORK.RegANEM(Load)
       generic MAP(DATA_SIZE)
       port MAP(CK=>CK,
                RST=>RST,
@@ -270,7 +231,7 @@ BEGIN
     --stall multiplexer
     p_s_alu_aluctl_mux <= p_id_alu_aluctl_0 when p_stall_if_n = '1' else
                           "000";
-    PALU_OP: entity WORK.RegistradorANEM(Load)
+    PALU_OP: entity WORK.RegANEM(Load)
       generic MAP(ALUOP_SIZE)
       port MAP(CK=>CK,
                RST=>RST,
@@ -278,7 +239,7 @@ BEGIN
                PARALLEL_IN=>p_s_alu_aluctl_mux,
                DATA_OUT=>p_id_alu_aluctl_1);
 
-    PALU_SHAMT : entity WORK.RegistradorANEM(Load)
+    PALU_SHAMT : entity WORK.RegANEM(Load)
       generic MAP(alushamt_size)
       port map(ck=>ck,
                rst=>rst,
@@ -286,7 +247,7 @@ BEGIN
                parallel_in=>p_id_alu_alushamt_0,
                data_out=>p_id_alu_alushamt_1);
     
-    PALU_func : entity WORK.RegistradorANEM(Load)
+    PALU_func : entity WORK.RegANEM(Load)
       generic MAP(alufunc_size)
       port map(ck=>ck,
                rst=>rst,
@@ -296,7 +257,7 @@ BEGIN
 
     p_s_wb_regctl_mux <= p_id_wb_regctl_0 when p_stall_if_n = '1' else
                          "000";
-    PREG_cnt_0  : entity WORK.RegistradorANEM(Load)
+    PREG_cnt_0  : entity WORK.RegANEM(Load)
       generic MAP(3)
       port map(ck=>ck,
                rst=>rst,
@@ -304,7 +265,7 @@ BEGIN
                parallel_in=>p_s_wb_regctl_mux,
                data_out=>p_id_wb_regctl_1);
     
-    PREG_sel_a_0  : entity WORK.RegistradorANEM(Load)
+    PREG_sel_a_0  : entity WORK.RegANEM(Load)
       generic MAP(RINDEX_SIZE)
       port map(ck=>ck,
                rst=>rst,
@@ -312,7 +273,7 @@ BEGIN
                parallel_in=>p_id_wb_regsela_0,
                data_out=>p_id_wb_regsela_1);
     
-    PREG_sel_b_0  : entity WORK.RegistradorANEM(Load)
+    PREG_sel_b_0  : entity WORK.RegANEM(Load)
       generic MAP(RINDEX_SIZE)
       port map(ck=>ck,
                rst=>rst,
@@ -320,7 +281,7 @@ BEGIN
                parallel_in=>p_id_alu_regselb_0,
                data_out=>p_id_alu_regselb_1);
     
-    preg_imm_0 : entity work.RegistradorANEM(Load)
+    preg_imm_0 : entity work.RegANEM(Load)
       generic map(8)
       port map(ck=>ck,
                rst=>rst,
@@ -331,7 +292,7 @@ BEGIN
     p_id_alu_beqflag_1 <= p_alu_x_beqout(4);
     p_id_alu_beqoff_1  <= p_alu_x_beqout(3 downto 0);
     p_id_alu_beq_0 <= p_id_alu_beqflag_0 & p_id_alu_beqoff_0;
-    preg_beq_0 : entity work.RegistradorANEM(Load)
+    preg_beq_0 : entity work.RegANEM(Load)
       generic map(5)
       port map(ck=>ck,
                rst=>rst,
@@ -343,7 +304,7 @@ BEGIN
                           "00";
     p_id_mem_memw_1 <= p_alu_x_memop(0);
     p_id_mem_memen_1 <= p_alu_x_memop(1);
-    preg_memop_0 : entity work.RegistradorANEM(Load)
+    preg_memop_0 : entity work.RegANEM(Load)
       generic map(2)
       port map(ck=>ck,
                rst=>rst,
@@ -352,7 +313,7 @@ BEGIN
                data_out=>p_alu_x_memop);
 
     --PIPELINE ALU/MEM
-    PREG_ctl_1  : entity WORK.RegistradorANEM(Load)
+    PREG_ctl_1  : entity WORK.RegANEM(Load)
       generic MAP(3)
       port map(ck=>ck,
                rst=>rst,
@@ -360,7 +321,7 @@ BEGIN
                parallel_in=>p_id_wb_regctl_1,
                data_out=>p_id_wb_regctl_2);
     
-    PREG_sela_1  : entity WORK.RegistradorANEM(Load)
+    PREG_sela_1  : entity WORK.RegANEM(Load)
       generic MAP(RINDEX_SIZE)
       port map(ck=>ck,
                rst=>rst,
@@ -368,7 +329,7 @@ BEGIN
                parallel_in=>p_id_wb_regsela_1,
                data_out=>p_id_wb_regsela_2);
 
-    preg_imm_1: entity work.RegistradorANEM(Load)
+    preg_imm_1: entity work.RegANEM(Load)
       generic map(8)
       port map(ck=>ck,
                rst=>rst,
@@ -376,7 +337,7 @@ BEGIN
                parallel_in=>p_id_wb_limm_1,
                data_out=>p_id_wb_limm_2);
 
-    preg_alua_1: entity work.RegistradorANEM(Load)
+    preg_alua_1: entity work.RegANEM(Load)
       generic map(data_size)
       port map(ck=>ck,
                rst=>rst,
@@ -384,7 +345,7 @@ BEGIN
                parallel_in=>p_id_mem_alua_1,
                data_out=>p_id_mem_alua_2);
                                                                                  
-    preg_aluout_0: ENTITY WORK.RegistradorANEM(Load)
+    preg_aluout_0: ENTITY WORK.RegANEM(Load)
       GENERIC MAP(DATA_SIZE)
       PORT MAP(CK=>CK,
                RST=>RST,
@@ -394,7 +355,7 @@ BEGIN
 
     p_id_mem_memw_2 <= p_mem_x_memop(0);
     p_id_mem_memen_2 <= p_mem_x_memop(1);
-    preg_memop_1 : entity work.RegistradorANEM(Load)
+    preg_memop_1 : entity work.RegANEM(Load)
       generic map(2)
       port map(ck=>ck,
                rst=>rst,
@@ -412,7 +373,7 @@ BEGIN
              (OTHERS=>'Z');
     
     --PIPELINE MEM/WB
-    preg_memout: entity work.RegistradorANEM(Load)
+    preg_memout: entity work.RegANEM(Load)
       generic map(data_size)
       port map(ck=>ck,
                rst=>rst,
@@ -420,7 +381,7 @@ BEGIN
                parallel_in=>p_mem_wb_memout_2,
                data_out=>p_mem_wb_memout_3);
 
-    preg_aluout_1: entity work.RegistradorANEM(Load)
+    preg_aluout_1: entity work.RegANEM(Load)
       generic map(data_size)
       port map(ck=>ck,
                rst=>rst,
@@ -428,7 +389,7 @@ BEGIN
                parallel_in=>p_alu_wb_aluout_2,
                data_out=>p_alu_wb_aluout_3);
 
-    PREG_ctl_2  : entity WORK.RegistradorANEM(Load)
+    PREG_ctl_2  : entity WORK.RegANEM(Load)
       generic MAP(3)
       port map(ck=>ck,
                rst=>rst,
@@ -436,7 +397,7 @@ BEGIN
                parallel_in=>p_id_wb_regctl_2,
                data_out=>p_id_wb_regctl_3);
     
-    PREG_sela_2  : entity WORK.RegistradorANEM(Load)
+    PREG_sela_2  : entity WORK.RegANEM(Load)
       generic MAP(RINDEX_SIZE)
       port map(ck=>ck,
                rst=>rst,
@@ -444,35 +405,19 @@ BEGIN
                parallel_in=>p_id_wb_regsela_2,
                data_out=>p_id_wb_regsela_3);
 
-    preg_imm_2: entity work.RegistradorANEM(Load)
+    preg_imm_2: entity work.RegANEM(Load)
       generic map(8)
       port map(ck=>ck,
                rst=>rst,
                en=>p_stall_alu_n,
                parallel_in=>p_id_wb_limm_2,
                data_out=>p_id_wb_limm_3);
-    
-    --PC
-    --PC: ENTITY WORK.PC(behavior)
-    --PORT MAP(TEST=>TEST,
-    --         S_IN_PC=>S_OUT_REG,
-    --         A_OUT=>A_OUT,
-    --         OFFSET=>ANEM_OFFSET,
-    --         ENDERECO=>ANEM_ENDE, 
-    --         Z=>Z,
-    --         PC_CONT=>PC_CONT,
-    --         CLK=>CK,
-    --         RST=>RST,
-    --         S_OUT_PC=>S_OUT,
-    --         PC_OUT=>INST_END);
-    
-    --REGISTRADOR DE INSTRUCAO
 
     --flush mux
     p_if_x_aneminst_mux <= inst when p_flush = '0' else
                            (others='0');
     
-    RINST: ENTITY WORK.RegistradorANEM(Load)
+    RINST: ENTITY WORK.RegANEM(Load)
       GENERIC MAP(DATA_SIZE)
       PORT MAP(CK=>CK,
                RST=>RST,
@@ -482,7 +427,7 @@ BEGIN
 
 
     --forwarding test
-    p_regsela_plus: entity work.RegistradorANEM(Load)
+    p_regsela_plus: entity work.RegANEM(Load)
       generic map(4)
       port map(ck=>ck,
                rst=>rst,

@@ -10,18 +10,12 @@ Entity move is
         S         : out    std_logic_vector(n downto 1));
 End move;
 
---	      func | Op. Deslocamento
---        10000 |      SHL - deslocamento lógico pra esquerda
---        10001 |      SHR - deslocamento lógico pra direita
---        10010 |      SAR - deslocamento aritmético pra direita
---        10011 |      ROL - rotação pra esquerda
---        10100 |      ROR - rotação pra direita
---comandos=f"SHL"=>"0010 " ,
---			'SHR'=>"0001 " ,
---			'SAR'=>"0000 " ,
---			'ROL'=>' 1000 ' ,
---			'ROR'=>' 0100 ' g
-
+--	   func | Shift operation
+--        10000 |      SHL - logic left shift
+--        10001 |      SHR - logic right shift
+--        10010 |      SAR - arithmetic right shift
+--        10011 |      ROL - rotate left
+--        10100 |      ROR - rotate right
 Architecture behavior of move is
 Signal zero      : std_logic_vector(n downto 1) := (others => '0');
  Begin
