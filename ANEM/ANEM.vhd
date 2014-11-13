@@ -1,3 +1,7 @@
+------------------------------------------
+--! @file
+--! @brief ANEM main
+------------------------------------------
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.NUMERIC_STD.ALL;
@@ -19,9 +23,9 @@ ENTITY ANEM IS
         S_OUT: OUT STD_LOGIC;                            -- TEST MODE DATA OUT
         MEM_W: OUT STD_LOGIC;                            -- DATA MEM WRITE FLAG
         MEM_EN: OUT STD_LOGIC;                           -- DATA MEM ENABLE FLAG
-        MEM_END: OUT STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0); --DATA MEM ADDRESS
-        DADOS : INOUT STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0); --DATA BUS
-        INST_END: OUT STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0)); --INSTRUCTION
+        MEM_ADDR: OUT STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0); --DATA MEM ADDRESS
+        DATA : INOUT STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0); --DATA BUS
+        INST_ADDR: OUT STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0)); --INSTRUCTION
                                                                --FETCH ADDRESS
 END ANEM;
 
@@ -174,7 +178,7 @@ BEGIN
     
     
     --Register bank
-    BANCOREG: ENTITY WORK.regbnk(ANEM)
+    regbnk: ENTITY WORK.regbnk(ANEM)
       PORT MAP(S_IN=>S_IN,
                TEST=>TEST,
                ALU_IN=>p_alu_wb_aluout_3,
@@ -200,7 +204,7 @@ BEGIN
                         p_id_alu_alub_1;
   
     --ALU
-    ULA: ENTITY WORK.ALU(behavior)
+    alu: ENTITY WORK.ALU(behavior)
       GENERIC MAP(N=>DATA_SIZE)
       PORT MAP(ALU_A=>p_f_alu_alua_mux,
                ALU_B=>p_f_alu_alub_mux,
@@ -363,13 +367,13 @@ BEGIN
                parallel_in=>p_alu_x_memop,
                data_out=>p_mem_x_memop);
 
-    MEM_END <= p_alu_wb_aluout_2;
+    MEM_ADDR <= p_alu_wb_aluout_2;
     TO_MEM  <= p_id_mem_alua_2;
     MEM_EN  <= p_id_mem_memen_2;
     MEM_W   <= p_id_mem_memw_2;
-    p_mem_wb_memout_2 <= DADOS;
+    p_mem_wb_memout_2 <= DATA;
 
-    DADOS <= TO_MEM WHEN (p_id_mem_memen_2='1' AND p_id_mem_memw_2='1') ELSE
+    DATA <= TO_MEM WHEN (p_id_mem_memen_2='1' AND p_id_mem_memw_2='1') ELSE
              (OTHERS=>'Z');
     
     --PIPELINE MEM/WB

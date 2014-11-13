@@ -1,9 +1,7 @@
 ---------------------------------------------------------
---                      ANEM
---           Instruction / ALU register
---
---                  Bruno Morais
---              brunosmmm@gmail.com
+--! @file
+--! @brief General purpose register
+--! @author  Bruno Morais <brunosmmm@gmail.com>
 ---------------------------------------------------------
 ---------------------------------------------------------
 

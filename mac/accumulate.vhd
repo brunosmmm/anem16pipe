@@ -1,20 +1,8 @@
 ---------------------------------------------------------
---                      PLDP
---                     A N E M
---
---                       MAC
---                     Acumulador
---
---                  Bruno Morais
---              brunosmmm@gmail.com
+--! @file
+--! @brief accumulator for MAC unit
+--! @author  Bruno Morais <brunosmmm@gmail.com>
 ---------------------------------------------------------
----------------------------------------------------------
-
---Data ult. mod.	:	30/05/2011
---Changelog:
----------------------------------------------------------
---@30/05/2011	:	Primeira revisao
-
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.NUMERIC_STD.ALL;
@@ -22,22 +10,22 @@ USE IEEE.NUMERIC_STD.ALL;
 ENTITY AcumuladorMAC IS
 
 
-    GENERIC (N : INTEGER := 32); --LARGURA DO ACUMULADOR
+    GENERIC (N : INTEGER := 32); --! accumulator width
     
     PORT(
-            DATA_IN : IN STD_LOGIC_VECTOR(N-1 DOWNTO 0); --ENTRADA DE DADOS
-            DATA_OUT: BUFFER STD_LOGIC_VECTOR(N-1 DOWNTO 0); --SADA DE DADOS
+            DATA_IN : IN STD_LOGIC_VECTOR(N-1 DOWNTO 0); --! data in
+            DATA_OUT: BUFFER STD_LOGIC_VECTOR(N-1 DOWNTO 0); --! data out
             
-            OP_ACC: IN STD_LOGIC_VECTOR(1 DOWNTO 0); --CONTROLE
+            OP_ACC: IN STD_LOGIC_VECTOR(1 DOWNTO 0); --! control in
             
-            ACC_RDY : OUT STD_LOGIC := '0'; --ACUMULACAO CONCLUIDA
+            ACC_RDY : OUT STD_LOGIC := '0'; --! done flag
             
-            CK : IN STD_LOGIC; --CLOCK
+            CK : IN STD_LOGIC;
             
-            C : OUT STD_LOGIC; --CARRY OUT
-            OVR : OUT STD_LOGIC; --OVERFLOW
+            C : OUT STD_LOGIC; --! CARRY OUT
+            OVR : OUT STD_LOGIC; --! OVERFLOW flag
             
-            Z : OUT STD_LOGIC; --ZERO
+            Z : OUT STD_LOGIC; --! ZERO flag
             
             RST: IN STD_LOGIC
             );
@@ -47,8 +35,8 @@ END ENTITY;
 ARCHITECTURE ACC OF AcumuladorMAC IS
 
 SIGNAL ACC_DATA_OUT : STD_LOGIC_VECTOR(N DOWNTO 0) := (OTHERS=>'0');
-SIGNAL LAST_DATA_SIG : STD_LOGIC := '0'; --SINAL DO ULTIMO VETOR DE DADOS
-SIGNAL ZERO : STD_LOGIC_VECTOR(N-1 DOWNTO 0) := (OTHERS=>'0'); --SINAL ZERO PARA COMPARACAO
+SIGNAL LAST_DATA_SIG : STD_LOGIC := '0';
+SIGNAL ZERO : STD_LOGIC_VECTOR(N-1 DOWNTO 0) := (OTHERS=>'0'); --! all zeros
 
 BEGIN
 
@@ -67,9 +55,9 @@ BEGIN
     
     CASE OP_ACC IS
     
-        WHEN "01" =>  --ACUMULA (SEM SINAL)
+        WHEN "01" =>  --unsigned accumulate
         
-            --OVERFLOW NAO E UTILIZADO
+            --there is no overflow
             OVR <= '0';
         
             ACC_DATA_OUT <= STD_LOGIC_VECTOR(UNSIGNED('0'&DATA_IN) + UNSIGNED('0'&DATA_OUT));
@@ -78,7 +66,7 @@ BEGIN
             
             C <= ACC_DATA_OUT(N);
             
-            --SOMA
+            --sum
             
             DATA_OUT <= ACC_DATA_OUT(N-1 DOWNTO 0);
             
@@ -88,14 +76,14 @@ BEGIN
                 Z <= '0';
 				END IF;
             
-            ACC_RDY <= '1'; --TERMINOU
+            ACC_RDY <= '1'; --done
 
-        WHEN "11" =>  --ACUMULA (COM SINAL)
+        WHEN "11" =>  --signed accumulate
         
-            --CARRY OUT NAO E UTILIZADO
+            --no carry out
             C <= '0';
         
-            LAST_DATA_SIG <= DATA_OUT(N-1); --GUARDA SINAL DO VETOR DE DADOS ANTES DA SOMA
+            LAST_DATA_SIG <= DATA_OUT(N-1); --saves current vector
         
             DATA_OUT <= STD_LOGIC_VECTOR(SIGNED(DATA_IN) + SIGNED(DATA_OUT));
             
@@ -111,16 +99,15 @@ BEGIN
                 --OVERFLOW
                 OVR <= '1';
                 
-                --ZERA DATA_OUT?
                 DATA_OUT <= (OTHERS=>'0');
             
             END IF;
             
-            ACC_RDY <= '1'; --TERMINOU
+            ACC_RDY <= '1'; --done
            
         WHEN OTHERS => 
             
-            ACC_RDY <= '0'; --NAO HOUVE OPERACAO
+            ACC_RDY <= '0'; --NOP
        
     END CASE;
     

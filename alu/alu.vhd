@@ -25,7 +25,7 @@ Entity ALU is
         FUNC           : in     std_logic_vector(4 downto 1);  --Operation
         Z              : out    std_logic;                     --Zero flag output
         ALU_OUT        : buffer std_logic_vector(n downto 1)); --Data output
-End Ula;
+End ALU;
 
 Architecture behavior of ALU is 
 

@@ -1,18 +1,8 @@
 ---------------------------------------------------------
---                      PLDP
---                     A N E M
---
---                       MAC
---                  Multiplicador
---                  Bruno Morais
---              brunosmmm@gmail.com
+--! @file
+--! @brief multiplier for MAC unit
+--! @author  Bruno Morais <brunosmmm@gmail.com>
 ---------------------------------------------------------
----------------------------------------------------------
-
---Data ult. mod.	:	30/05/2011
---Changelog:
----------------------------------------------------------
---@30/05/2011	:	Primeira revisao
 
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
@@ -20,15 +10,15 @@ USE IEEE.NUMERIC_STD.ALL;
 
 ENTITY MultiplicadorMAC IS
 
-    GENERIC (N: INTEGER := 16);
+    GENERIC (N: INTEGER := 16); --! operand size
     
     PORT (
-           A_IN : IN STD_LOGIC_VECTOR(N-1 DOWNTO 0);
-           B_IN : IN STD_LOGIC_VECTOR(N-1 DOWNTO 0);
+           A_IN : IN STD_LOGIC_VECTOR(N-1 DOWNTO 0); --! operand
+           B_IN : IN STD_LOGIC_VECTOR(N-1 DOWNTO 0); --! operand
            
-           OP_MULT : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+           OP_MULT : IN STD_LOGIC_VECTOR(1 DOWNTO 0); --! control in
            
-           DATA_OUT : OUT STD_LOGIC_VECTOR(N*2 - 1 DOWNTO 0) := (OTHERS => '0');
+           DATA_OUT : OUT STD_LOGIC_VECTOR(N*2 - 1 DOWNTO 0) := (OTHERS => '0'); --! output
            
            CK : IN STD_LOGIC;
            
@@ -48,21 +38,21 @@ BEGIN
     
             CASE OP_MULT IS
             
-                WHEN "01" => --MULTIPLICA SEM SINAL?
+                WHEN "01" => --unsigned multiply
                 
                     DATA_OUT <= STD_LOGIC_VECTOR(UNSIGNED(A_IN)*UNSIGNED(B_IN));
                     
-                    MULT_RDY <= '1'; --MULTIPLICACAO TERMINOU
+                    MULT_RDY <= '1'; --done
                     
-                WHEN "11" => --MULTIPLICA COM SINAL?
+                WHEN "11" => --signed multiply
                 
                     DATA_OUT <= STD_LOGIC_VECTOR(SIGNED(A_IN)*SIGNED(B_IN));
                     
-                    MULT_RDY <= '1'; --MULTIPLICACAO TERMINOU
+                    MULT_RDY <= '1'; --ended
                     
                 WHEN OTHERS => 
                 
-                    MULT_RDY <= '0'; --NAO HOUVE MULTIPLICACAO
+                    MULT_RDY <= '0'; --NOP
                 
             END CASE;
             
