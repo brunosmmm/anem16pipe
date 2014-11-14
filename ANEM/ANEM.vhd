@@ -138,7 +138,7 @@ BEGIN
     --have to detect if writeback is going on and stall instruction decode /
     --register read
 
-    inst_end <= next_inst_addr;
+    inst_addr <= next_inst_addr;
     p_beqtrue <= p_id_alu_beqflag_1 and p_alu_x_z;
     --instruction fetch
     pfetch : entity work.anem16_ifetch(pipe)
