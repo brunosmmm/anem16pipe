@@ -8,8 +8,8 @@ Use ieee.std_logic_arith.all;
 
 Entity sum is 
 Generic ( n : natural := 8);
-Port ( A, B        : in  std_logic_vector(n downto 1) --! operands;
-       S           : buffer std_logic_vector(n downto 1) --! data output;
+Port ( A, B        : in  std_logic_vector(n downto 1); --! operands
+       S           : buffer std_logic_vector(n downto 1); --! data output
        cin         : in  std_logic; --! carry in
        cout        : out std_logic --! carry out
       );

@@ -8,10 +8,11 @@ Use ieee.numeric_std.all;
 
 Entity move is 
   Generic( n : natural := 4 );
-  Port( A         : in     std_logic_vector(n downto 1) --! data input;
-        SHAMT     : in     std_logic_vector(4 downto 1) --! SHift AMounT;
-        MOVE_OP   : in     std_logic_vector(5 downto 1) --! shift type;
-        S         : out    std_logic_vector(n downto 1)) --! data output;
+  Port( A         : in     std_logic_vector(n downto 1); --! data input
+        SHAMT     : in     std_logic_vector(4 downto 1); --! SHift AMounT
+        MOVE_OP   : in     std_logic_vector(5 downto 1); --! shift type
+        S         : out    std_logic_vector(n downto 1)  --! data output
+        );
 End move;
 
 --	   func | Shift operation
