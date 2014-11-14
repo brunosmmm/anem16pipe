@@ -1,3 +1,9 @@
+-------------------------------
+--! @file fwunit.vhd
+--! @brief pipeline instruction fetcher unit
+--! @author Bruno Morais <brunosmmm@gmail.com>
+--! @date 2014
+-------------------------------
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -12,9 +18,9 @@ entity anem16_ifetch is
        beqflag    : in std_logic;
        beqoff     : in std_logic_vector(3 downto 0);
 
-       stall_n    : in std_logic;
+       stall_n    : in std_logic; --! stall fetch
        
-       nexti     : out std_logic_vector(15 downto 0) --next address
+       nexti     : out std_logic_vector(15 downto 0) --! next address
        );
   
 end entity;

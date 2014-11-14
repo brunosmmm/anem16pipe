@@ -1,3 +1,10 @@
+-------------------------------
+--! @file fwunit.vhd
+--! @brief pipeline forwarding unit
+--! @author Bruno Morais <brunosmmm@gmail.com>
+--! @date 2014
+--! @todo verify forwarding cycles
+-------------------------------
 library ieee;
 use ieee.std_logic_1164.all;
 
@@ -8,14 +15,14 @@ entity anem16_fwunit is
        reg_sela_mem   : in std_logic_vector(3 downto 0);
 
        --forwarding enable
-       f_alu_alu_a    : out std_logic;
-       f_alu_alu_b    : out std_logic;
-       f_mem_alu_a    : out std_logic;
-       f_mem_alu_b    : out std_logic;
+       f_alu_alu_a    : out std_logic; --! enable ALU->ALU forwarding, A
+       f_alu_alu_b    : out std_logic; --! enable ALU->ALU forwarding, B
+       f_mem_alu_a    : out std_logic; --! enable MEM->ALU forwarding, A
+       f_mem_alu_b    : out std_logic; --! enable MEM->ALU forwarding, B
 
        regbnk_write   : in std_logic;
        mem_enable     : in std_logic;
-       aluctl         : in std_logic_vector(2 downto 0)
+       aluctl         : in std_logic_vector(2 downto 0) --! ALU operation
        );
 end entity;
 

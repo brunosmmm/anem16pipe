@@ -1,5 +1,5 @@
 ------------------------------------------
---! @file
+--! @file ANEM.vhd
 --! @brief ANEM main
 ------------------------------------------
 LIBRARY IEEE;
@@ -8,25 +8,25 @@ USE IEEE.NUMERIC_STD.ALL;
 
 ENTITY ANEM IS
     
-    GENERIC(DATA_SIZE : INTEGER := 16;
-            OPCODE_SIZE : INTEGER := 4;
-            REGBNK_SIZE : INTEGER := 16;
-            ALUOP_SIZE  : INTEGER := 3;
-            RINDEX_SIZE : INTEGER := 4;
-            ALUSHAMT_SIZE : INTEGER := 4;
-            ALUFUNC_SIZE : INTEGER := 4);
+    GENERIC(DATA_SIZE : INTEGER := 16; --! data width
+            OPCODE_SIZE : INTEGER := 4; --! opcode size in bits
+            REGBNK_SIZE : INTEGER := 16; --! number of registers in bank
+            ALUOP_SIZE  : INTEGER := 3; --! alu control signal width
+            RINDEX_SIZE : INTEGER := 4; --! register bank indexing signal width
+            ALUSHAMT_SIZE : INTEGER := 4; --! SHAMT field width
+            ALUFUNC_SIZE : INTEGER := 4); --! FUNC field width
 
     PORT(CK,RST: IN STD_LOGIC;            
-        TEST: IN STD_LOGIC;                              -- TEST MODE ENABLE
-        INST: IN STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0); -- INSTRUCTION INPUT
-        S_IN: IN STD_LOGIC;                              -- TEST MODE DATA IN
-        S_OUT: OUT STD_LOGIC;                            -- TEST MODE DATA OUT
-        MEM_W: OUT STD_LOGIC;                            -- DATA MEM WRITE FLAG
-        MEM_EN: OUT STD_LOGIC;                           -- DATA MEM ENABLE FLAG
-        MEM_ADDR: OUT STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0); --DATA MEM ADDRESS
-        DATA : INOUT STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0); --DATA BUS
-        INST_ADDR: OUT STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0)); --INSTRUCTION
-                                                               --FETCH ADDRESS
+        TEST: IN STD_LOGIC;                              --! TEST MODE ENABLE
+        INST: IN STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0); --! INSTRUCTION INPUT
+        S_IN: IN STD_LOGIC;                              --! TEST MODE DATA IN
+        S_OUT: OUT STD_LOGIC;                            --! TEST MODE DATA OUT
+        MEM_W: OUT STD_LOGIC;                            --! DATA MEM WRITE FLAG
+        MEM_EN: OUT STD_LOGIC;                           --! DATA MEM ENABLE FLAG
+        MEM_ADDR: OUT STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0); --! DATA MEM ADDRESS
+        DATA : INOUT STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0); --! DATA BUS
+        INST_ADDR: OUT STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0)); --! INSTRUCTION FETCH ADDRESS
+                                                              
 END ANEM;
 
 ARCHITECTURE TEST OF ANEM  IS
@@ -140,7 +140,7 @@ BEGIN
 
     inst_addr <= next_inst_addr;
     p_beqtrue <= p_id_alu_beqflag_1 and p_alu_x_z;
-    --instruction fetch
+    --! instruction fetcher
     pfetch : entity work.anem16_ifetch(pipe)
       port map(mclk=>ck,
                mrst=>rst,
@@ -154,7 +154,7 @@ BEGIN
                );
                
     
-    --Instruction decode
+    --! Instruction decoder
     pdecode: entity work.anem16_idecode(pipe)
       port map(mclk=>ck,
                mrst=>rst,
@@ -177,7 +177,7 @@ BEGIN
                );
     
     
-    --Register bank
+    --! Register bank
     regbnk: ENTITY WORK.regbnk(ANEM)
       PORT MAP(S_IN=>S_IN,
                TEST=>TEST,
@@ -203,7 +203,7 @@ BEGIN
                         p_alu_wb_aluout_2 when p_f_alu_alu_b = '1' else
                         p_id_alu_alub_1;
   
-    --ALU
+    --! ALU
     alu: ENTITY WORK.ALU(behavior)
       GENERIC MAP(N=>DATA_SIZE)
       PORT MAP(ALU_A=>p_f_alu_alua_mux,
@@ -232,7 +232,7 @@ BEGIN
                DATA_OUT=>p_id_alu_alub_1);
 
 
-    --stall multiplexer
+    --! stall multiplexer
     p_s_alu_aluctl_mux <= p_id_alu_aluctl_0 when p_stall_if_n = '1' else
                           "000";
     PALU_OP: entity WORK.RegANEM(Load)
@@ -417,7 +417,7 @@ BEGIN
                parallel_in=>p_id_wb_limm_2,
                data_out=>p_id_wb_limm_3);
 
-    --flush mux
+    --! flush mux
     p_if_x_aneminst_mux <= inst when p_flush = '0' else
                            (others='0');
     
@@ -430,7 +430,6 @@ BEGIN
                DATA_OUT=>p_if_id_aneminst_0);
 
 
-    --forwarding test
     p_regsela_plus: entity work.RegANEM(Load)
       generic map(4)
       port map(ck=>ck,
@@ -444,7 +443,7 @@ BEGIN
     p_f_regbnk_w <= '0' when p_id_wb_regctl_1 = "000" else
                     '1';
     
-    --forwarding unit
+    --! forwarding unit
     pfw: entity work.anem16_fwunit(pipe)
       port map(reg_sela_wb=>p_id_wb_regsela_3,
                reg_sela_mem=>p_id_wb_regsela_2,
@@ -462,7 +461,8 @@ BEGIN
                );
 
     p_flush <= p_beq
-    --hazard unit
+
+    --! hazard unit
     phaz: entity work.anem16_hazunit(pipe)
       port map(mrst=>rst,
                mclk=>ck,
@@ -490,4 +490,4 @@ BEGIN
                
 
 
-END TESTE;
+END TEST;

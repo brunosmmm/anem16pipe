@@ -1,62 +1,64 @@
+---------------------------------
+--! @file progmem.vhd
+--! @brief instruction memory emulation
+--! @date 2011
+--! @todo properly document and restructure
+---------------------------------
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use std.textio.all;
 use ieee.std_logic_unsigned.all;
 
-entity memoria_de_programa is
-  generic (n_tamanho        : integer := 8;
-           n_instrucao      : integer := 16);
-  port(clk,en         : in std_logic;
-       endereco       : in std_logic_vector(n_tamanho-1 downto 0); -- endereco da linha na memória
-       instrucao      : out std_logic_vector(15 downto 0));
-end memoria_de_programa;
+entity progmem is
+  generic (addr_w        : integer := 8; --! address width
+           instr_w      : integer := 16); --! data width
+  port(ck,en         : in std_logic;
+       address       : in std_logic_vector(addr_w-1 downto 0); --! address
+       instr      : out std_logic_vector(15 downto 0) --! instruction
+       );
+end progmem;
 
-architecture teste of memoria_de_programa is
-type memoria_rom is array (((2**n_tamanho)-1) downto 0) of std_logic_vector(n_instrucao-1 downto 0);
-signal rom: memoria_rom;
+architecture rom  of progmem is
+  type rom_array is array (((2**addr_w)-1) downto 0) of std_logic_vector(instr_w-1 downto 0);
+  signal rom: rom_array;
 
 begin
-    
-  abc: process
-    
-  file arquivo : text is in "arquivo.txt";
-  variable linha : line;
-  -- variable addr, valor, to_do, inst : std_logic_vector (n_instrucao-1 downto 0);
-  variable addr, inst : bit_vector (n_instrucao-1 downto 0); 
-  -- é pra deixar o clk mesmo?
   
-    begin
+  process
+    
+    file contents : text is in "contents.txt";
+    variable iline : line;
+
+    variable addr, inst : bit_vector (instr_w-1 downto 0); 
+    
+  begin
+    
+    while not endfile(contents) loop
       
-        while not endfile(arquivo) loop
-        
-        readline(arquivo, linha);
-        read(linha, addr);
-         --read(linha, valor);
-         --addr <= valor;
-        
-         read(linha, inst);
-         --read(linha, to_do);
-         --inst <= to_do;
-        
-        rom(conv_integer(to_stdlogicvector(addr))) <= to_stdlogicvector(inst);  
-           
-        end loop;      
-  
+      readline(contents, iline);
+      read(iline, addr);
+      
+      read(iline, inst);
+      
+      rom(conv_integer(to_stdlogicvector(addr))) <= to_stdlogicvector(inst);  
+      
+    end loop;      
+    
     wait;
+    
+  end process;
   
-  end process abc;
-   
-   def: process(endereco) 
-   begin
-     
-   if (en = '1') then
-     instrucao <= rom(conv_integer(endereco));
-   else instrucao <= (others => 'Z');
-   
-   end if; 
-   
-    end process def;
+  process(address) 
+  begin
     
+    if (en = '1') then
+      instr <= rom(conv_integer(address));
+    else instr <= (others => 'Z');
+         
+    end if; 
     
-end teste; 
+  end process;
+  
+  
+end architecture; 

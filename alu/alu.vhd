@@ -1,3 +1,7 @@
+-----------------------------------
+--! @file alu.vhd
+--! @brief arithmetic and logic unit
+------------------------------------
 -- '0'&FUNC - Arith / logic operations
 --FUNC Operations
 --"ADD"=>"0010 " ,
@@ -19,12 +23,12 @@ Use ieee.std_logic_1164.all;
 
 Entity ALU is 
   Generic( n : natural := 16 );
-  Port( ALU_A,ALU_B    : in     std_logic_vector(n downto 1);  --Operands
-        SHAMT          : in     std_logic_vector(4 downto 1);  --SHift AMounT
-        ALU_OP         : in     std_logic_vector(3 downto 1);  --ALU function
-        FUNC           : in     std_logic_vector(4 downto 1);  --Operation
-        Z              : out    std_logic;                     --Zero flag output
-        ALU_OUT        : buffer std_logic_vector(n downto 1)); --Data output
+  Port( ALU_A,ALU_B    : in     std_logic_vector(n downto 1);  --! Operands
+        SHAMT          : in     std_logic_vector(4 downto 1);  --! SHift AMounT
+        ALU_OP         : in     std_logic_vector(3 downto 1);  --! ALU function
+        FUNC           : in     std_logic_vector(4 downto 1);  --! Operation
+        Z              : out    std_logic;                     --! Zero flag output
+        ALU_OUT        : buffer std_logic_vector(n downto 1)); --! Data output
 End ALU;
 
 Architecture behavior of ALU is 
@@ -66,11 +70,11 @@ with ALU_OP select
   compare <= zero(n-1 downto 1)&'1' when (ALU_A < ALU_B) else
 		     zero;
 
-  rotulo1: entity work.complement(sub) Generic Map ( n ) Port Map (ALU_B,comp_B);
+  comp: entity work.complement(sub) Generic Map ( n ) Port Map (ALU_B,comp_B);
   
-  rotulo2: entity work.sum(adder) Generic Map ( n ) Port Map (aux_A, aux_B, aux_S, '0', OPEN);
+  add: entity work.sum(adder) Generic Map ( n ) Port Map (aux_A, aux_B, aux_S, '0', OPEN);
 
-  rotulo3: entity work.move(behavior) Generic Map ( n ) Port Map (ALU_A, SHAMT, ALU_CONT, aux_move);
+  shift: entity work.move(behavior) Generic Map ( n ) Port Map (ALU_A, SHAMT, ALU_CONT, aux_move);
 
 
   with ALU_CONT select 

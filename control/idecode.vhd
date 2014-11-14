@@ -1,4 +1,9 @@
-
+-------------------------------
+--! @file idecode.vhd
+--! @brief pipeline instruction decoding unit
+--! @author Bruno Morais <brunosmmm@gmail.com>
+--! @date 2014
+-------------------------------
 library ieee;
 
 use ieee.std_logic_1164.all;

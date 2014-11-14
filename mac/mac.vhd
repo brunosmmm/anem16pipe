@@ -1,5 +1,5 @@
 ---------------------------------------------------------
---! @file
+--! @file mac.vhd
 --! @brief  Multiply-accumulate peripheral
 --! @author Bruno Morais <brunosmmm@gmail.com>
 ---------------------------------------------------------

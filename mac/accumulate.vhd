@@ -1,5 +1,5 @@
 ---------------------------------------------------------
---! @file
+--! @file accumulate.vhd
 --! @brief accumulator for MAC unit
 --! @author  Bruno Morais <brunosmmm@gmail.com>
 ---------------------------------------------------------

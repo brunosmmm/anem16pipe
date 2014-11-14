@@ -1,66 +1,81 @@
+-----------------------------
+--! @file test_bench.vhd
+--! @brief ANEM test bench
+--! @date 2011,2014
+-----------------------------
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.NUMERIC_STD.ALL;
 
 ENTITY TEST_BENCH IS 
-	GENERIC( N: NATURAL := 256);
+  GENERIC( N: NATURAL := 256);
 END TEST_BENCH;
 
 ARCHITECTURE TESTE OF TEST_BENCH IS
 
-SIGNAL CK, RST: STD_LOGIC := '0';
-SIGNAL INST: STD_LOGIC_VECTOR(15 DOWNTO 0);      						             -- INSTRUCAO A SER ENVIADA   
-SIGNAL INST_END: STD_LOGIC_VECTOR(15 DOWNTO 0):= (OTHERS => '0');         				        -- PROXIMA INSTRUCAO RECEBIDA
-SIGNAL TEST: STD_LOGIC := '0';											                           -- BIT DE TESTE - CARREGA/DESLOCA
-SIGNAL MEM_W: STD_LOGIC;						                          -- INFORMACAO CONTROLE/MD
-SIGNAL MEM_EN: STD_LOGIC;						                         -- INFORMACAO CONTROLE/MD
+  SIGNAL CK, RST: STD_LOGIC := '0';
+  SIGNAL INST: STD_LOGIC_VECTOR(15 DOWNTO 0);  --! next instruction 
+  SIGNAL INST_ADDR: STD_LOGIC_VECTOR(15 DOWNTO 0):= (OTHERS => '0'); --! next instruction address
+  SIGNAL TEST: STD_LOGIC := '0';  --! test mode enable
+  SIGNAL MEM_W: STD_LOGIC;     --! memory write enable
+  SIGNAL MEM_EN: STD_LOGIC;    --! memory enable
 
---BARRAMENTO DE DADOS BIDIRECIONAL
-SIGNAL DADOS : STD_LOGIC_VECTOR(15 DOWNTO 0) := (OTHERS=>'Z');
+  SIGNAL DATA : STD_LOGIC_VECTOR(15 DOWNTO 0) := (OTHERS=>'Z'); --! bidirectional data bus
 
-SIGNAL MEM_END: STD_LOGIC_VECTOR(15 DOWNTO 0);
-SIGNAL BIT_INST_OUT: STD_LOGIC;
-
-component memoria_dados
-  generic(n_endereco     : integer :=  16;
-          n_dados        : integer := 16);
-  port(clk, en, w : in std_logic;
-       endereco   : in std_logic_vector (n_endereco-1 downto 0);
-       
-       DADOS : INOUT STD_LOGIC_VECTOR(N_DADOS-1 DOWNTO 0));
-       
-end component;
-
-component memoria_de_programa
-  generic (n_tamanho        : integer := 8;
-           n_instrucao      : integer := 16);
-  port(clk,en         : in std_logic;
-       endereco       : in std_logic_vector(n_tamanho-1 downto 0);
-       instrucao      : out std_logic_vector(15 downto 0));
-end component;
-
+  SIGNAL MEM_ADDR: STD_LOGIC_VECTOR(15 DOWNTO 0);
+  SIGNAL BIT_INST_OUT: STD_LOGIC;
 
 BEGIN
   
-cpu:  entity work.ANEM(test)	PORT MAP(CK,RST,TEST,INST,'0',BIT_INST_OUT,MEM_W,MEM_EN,MEM_END,DADOS,INST_END);
+  cpu:  entity work.ANEM(test)
+    PORT MAP(CK=>CK,
+             RST=>RST,
+             TEST=>TEST,
+             INST=>INST,
+             S_IN=>'0',
+             S_OUT=>BIT_INST_OUT,
+             MEM_W=>MEM_W,
+             MEM_EN=>MEM_EN,
+             MEM_ADDR=>MEM_ADDR,
+             DATA=>DATA,
+             INST_ADDR=>INST_ADDR
+             );
 
-memProg: memoria_de_programa PORT MAP(CK,'1',INST_END(7 downto 0),INST);
-memData: memoria_dados PORT MAP(CK,MEM_EN,MEM_W,MEM_END,DADOS);
-
---MAC
-MAC: ENTITY WORK.MAC(MultAcc) PORT MAP(DADOS=>DADOS, CK=>CK, RST=>RST, ENDE=>MEM_END, W=>MEM_W, EN=>MEM_EN, INT=>OPEN);
-
-PROCESS
-
-begin
+  imem: entity work.progmem(rom)
+    PORT MAP(ck=>CK,
+             en=>'1',
+             address=>INST_ADDR(7 downto 0),
+             instr=>INST
+             );
   
-  RST <=  '1';
-  WAIT FOR 30NS;
-  RST <=  '0';
-  
- FOR I IN 0 TO 2048 LOOP		-- clk
-  CK <= NOT CK;
-  WAIT FOR 10 NS;
- END LOOP;
-END PROCESS;
+  dmem: entity work.datamem(ram)
+    PORT MAP(ck=>CK,
+             en=>MEM_EN,
+             w=>MEM_W,
+             address=>MEM_ADDR,
+             data=>DATA);
+
+--MAC peripheral
+  MAC: ENTITY WORK.MAC(MultAcc)
+    PORT MAP(DATA=>DATA,
+             CK=>CK,
+             RST=>RST,
+             ADDR=>MEM_ADDR,
+             W=>MEM_W,
+             EN=>MEM_EN,
+             INT=>OPEN);
+
+  PROCESS
+
+  begin
+    
+    RST <=  '1';
+    WAIT FOR 30NS;
+    RST <=  '0';
+    
+    FOR I IN 0 TO 2048 LOOP                -- clk
+      CK <= NOT CK;
+      WAIT FOR 10 NS;
+    END LOOP;
+  END PROCESS;
 END TESTE;

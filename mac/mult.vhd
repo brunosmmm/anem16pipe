@@ -1,5 +1,5 @@
 ---------------------------------------------------------
---! @file
+--! @file mult.vhd
 --! @brief multiplier for MAC unit
 --! @author  Bruno Morais <brunosmmm@gmail.com>
 ---------------------------------------------------------

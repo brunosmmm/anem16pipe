@@ -1,9 +1,16 @@
+-------------------------------
+--! @file regbnk.vhd
+--! @brief register bank
+--! @author Bruno Morais <brunosmmm@gmail.com>
+--! @date 2011
+--! @todo make test mode actually work
+-------------------------------
 ---------------------------------------------------------
 --Register bank control
 ---------------------------------------------------------
 --REG_CNT selects operation
 ---------------------------------------------------------
---REG_CNT              Operação
+--REG_CNT              Operation
 --001                  Loads ALU output (ALU_IN) in selected register (A)
 --010                  Loads BYTE_IN in upper half of selected register (A)
 --011                  Loads BYTE_IN in lower half of selected register (A)
@@ -17,25 +24,27 @@ USE IEEE.NUMERIC_STD.ALL;
 
 ENTITY regbnk IS
   
-  GENERIC (W            : INTEGER := 8;  
-           DATA_W       : INTEGER := 16;   
-           REGBNK_ADDR  : INTEGER := 4;    
-           REGBNK_SIZE  : INTEGER := 16);
+  GENERIC (W            : INTEGER := 8; --! width of a byte
+           DATA_W       : INTEGER := 16; --! data width
+           REGBNK_ADDR  : INTEGER := 4; --! addressing width = lg(data_w)   
+           REGBNK_SIZE  : INTEGER := 16 --! register count
+	   );
   
-  PORT(S_IN             : IN STD_LOGIC;                       
-       TEST             : IN STD_LOGIC;                             
-       ALU_IN           : IN STD_LOGIC_VECTOR(DATA_W-1 DOWNTO 0);   
-       BYTE_IN          : IN STD_LOGIC_VECTOR(W-1 DOWNTO 0);      
-       SEL_A            : IN STD_LOGIC_VECTOR(REGBNK_ADDR-1 DOWNTO 0);  
-       SEL_B            : IN STD_LOGIC_VECTOR(REGBNK_ADDR-1 DOWNTO 0); 
-       DATA_IN  : IN STD_LOGIC_VECTOR(DATA_W-1 DOWNTO 0);           
+  PORT(S_IN             : IN STD_LOGIC; --! test mode data input                      
+       TEST             : IN STD_LOGIC; --! test mode enable                            
+       ALU_IN           : IN STD_LOGIC_VECTOR(DATA_W-1 DOWNTO 0); --! data from ALU
+       BYTE_IN          : IN STD_LOGIC_VECTOR(W-1 DOWNTO 0); --! data from immediate value
+       SEL_A            : IN STD_LOGIC_VECTOR(REGBNK_ADDR-1 DOWNTO 0); --! A selector
+       SEL_B            : IN STD_LOGIC_VECTOR(REGBNK_ADDR-1 DOWNTO 0); --! B selector
+       DATA_IN  : IN STD_LOGIC_VECTOR(DATA_W-1 DOWNTO 0); --! data from memory
        CK               : IN STD_LOGIC;                          
        RST              : IN STD_LOGIC;                           
-       REG_CNT          : IN STD_LOGIC_VECTOR(2 DOWNTO 0);         
-       SEL_W            : in std_logic_vector(regbnk_addr-1 downto 0);
-       A_OUT            : OUT STD_LOGIC_VECTOR(DATA_W-1 DOWNTO 0);    
-       B_OUT            : OUT STD_LOGIC_VECTOR(DATA_W-1 DOWNTO 0);    
-       S_OUT            : OUT STD_LOGIC);                           
+       REG_CNT          : IN STD_LOGIC_VECTOR(2 DOWNTO 0); --! register bank control        
+       SEL_W            : in std_logic_vector(regbnk_addr-1 downto 0); --! write select
+       A_OUT            : OUT STD_LOGIC_VECTOR(DATA_W-1 DOWNTO 0); --! A output
+       B_OUT            : OUT STD_LOGIC_VECTOR(DATA_W-1 DOWNTO 0); --! B output   
+       S_OUT            : OUT STD_LOGIC --! test mode data output
+       );                           
   
 END ENTITY;
 
@@ -52,7 +61,7 @@ ARCHITECTURE ANEM OF regbnk IS
   SIGNAL REG_DATA    : REGDATA;
   SIGNAL REG_IN_DATA : REGDATA;
 
---delayed clock
+--! delayed clock
   SIGNAL SUBCK : STD_LOGIC := '0';
   
 BEGIN
@@ -148,7 +157,7 @@ BEGIN
 
     END IF;
     
-    --delayed clock for registers              
+    --! delayed clock for registers              
     SUBCK <= CK;
     
   END PROCESS;

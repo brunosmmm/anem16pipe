@@ -1,5 +1,5 @@
 ---------------------------------------------------------
---! @file
+--! @file register.vhd
 --! @brief General purpose register
 --! @author  Bruno Morais <brunosmmm@gmail.com>
 ---------------------------------------------------------
@@ -11,13 +11,13 @@ USE IEEE.NUMERIC_STD.ALL;
 
 ENTITY RegANEM IS
   
-  GENERIC(n : INTEGER := 8); 		--WIDTH IN BITS
+  GENERIC(n : INTEGER := 8); 		--! register width
   
-  PORT( EN          :	IN STD_LOGIC;	--ENABLE
-        PARALLEL_IN : IN STD_LOGIC_VECTOR(n-1 DOWNTO 0);	--PARALLEL IN
-        DATA_OUT    : BUFFER STD_LOGIC_VECTOR(n-1 DOWNTO 0);	--PARALLEL OUT
-        CK : IN STD_LOGIC; --CLOCK
-        RST : IN STD_LOGIC --RESET
+  PORT( EN          :	IN STD_LOGIC;	--! write enable
+        PARALLEL_IN : IN STD_LOGIC_VECTOR(n-1 DOWNTO 0);	--! parallel data input
+        DATA_OUT    : BUFFER STD_LOGIC_VECTOR(n-1 DOWNTO 0);	--! parallel data output
+        CK : IN STD_LOGIC;
+        RST : IN STD_LOGIC
         );
 
   
