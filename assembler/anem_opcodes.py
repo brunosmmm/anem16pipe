@@ -23,18 +23,18 @@ ANEMFuncS        = { "SHL"  : "0010",
                      "ROR"  : "0100"
                     }
 
-ANEMOpcodeL      = { "LIU"  : '1100',
-                     'LIL'  : '1101'
+ANEMOpcodeL      = { "LIU"  : '0100',
+                     'LIL'  : '0101'
                    }
 
-ANEMOpcodeJ      = { 'J'    : '1000',
-                     'JAL'  : '1001'
+ANEMOpcodeJ      = { 'J'    : '1111',
+                     'JAL'  : '1101',
+                     'BZ'   : '10'
                    }
 
-ANEMOpcodeW      = { 'SW'   : '0100',
-                     'LW'   : '0101',
-                     'BZ '  : '0110',
-                     'JR'   : '0111'
+ANEMOpcodeW      = { 'SW'   : '0010',
+                     'LW'   : '0011',
+                     'JR'   : '1100'
                      }
 
 ##@todo bring floating point support although we do not have a FPU now

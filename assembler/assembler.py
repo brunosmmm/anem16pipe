@@ -244,7 +244,22 @@ class Assembler:
         if d != None:
             out = makeBinStr(int(addr),12)
         elif l != None:
-            out = makeBinStr(int(self.labels[l.group(1)]),12)
+
+            if jtype == 'BZ':
+                off_dec = int(self.labels[l.group(1)])-1-int(index)
+                if l.group(2) == 't':
+                    predicate = '01'
+                elif l.group(2) == 'n':
+                    predicate = '10'
+                else:
+                    predicate = '00'
+                out = predicate+makeBinStr(off_dec,12)
+                self.Message("BZ jumps, %d -> %d bin" % (off_dec,out), AsmMsgType.AsmMsgDebug)
+                if off_dec > 2047 or off_dec < -2048:
+                #impossible BZ
+                    self.Message("INST %s: BZ cannot jump to intended place. OFFSET = %d" % (index, off_dec), AsmMsgType.AsmMsgWarning)
+            else:
+                out = makeBinStr(int(self.labels[l.group(1)]),12)
         else:
             raise ValueError("malformed instruction")
 
@@ -256,15 +271,8 @@ class Assembler:
         d = re.match(r"\d+",offset)
         if d != None:
             out = makeBinStr(int(offset),4)
-        elif o != None:
-            off_dec = int(self.labels[o.group(1)])-1-int(index)
-            out = makeBinStr(off_dec,4)
-
-            self.Message("BZ jumps, %d -> %d bin" % (off_dec,out), AsmMsgType.AsmMsgDebug)
-            if off_dec > 2047 or off_dec < -2048:
-                #impossible BZ
-                self.Message("INST %s: BZ cannot jump to intended place. OFFSET = %d" % (index, off_dec), AsmMsgType.AsmMsgWarning)
-
+        #elif o != None:
+        #    out = makeBinStr(off_dec,4)
         else:
             raise ValueError("BZ offset error")
 
