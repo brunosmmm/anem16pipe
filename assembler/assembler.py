@@ -260,13 +260,13 @@ class Assembler:
             off_dec = int(self.labels[o.group(1)])-1-int(index)
             out = makeBinStr(off_dec,4)
 
-            self.Message("BEQ jumps, %d -> %d bin" % (off_dec,out), AsmMsgType.AsmMsgDebug)
-            if off_dec > 7 or off_dec < -8:
-                #impossible BEQ
-                self.Message("INST %s: BEQ cannot jump to intended place. OFFSET = %d" % (index,off_dec), AsmMsgType.AsmMsgWarning)
+            self.Message("BZ jumps, %d -> %d bin" % (off_dec,out), AsmMsgType.AsmMsgDebug)
+            if off_dec > 2047 or off_dec < -2048:
+                #impossible BZ
+                self.Message("INST %s: BZ cannot jump to intended place. OFFSET = %d" % (index, off_dec), AsmMsgType.AsmMsgWarning)
 
         else:
-            raise ValueError("BEQ offset error")
+            raise ValueError("BZ offset error")
 
         return ANEMOpcodeW[instr]+makeBinStr(int(ra),4)+makeBinStr(int(rb),4)+out
 
@@ -301,7 +301,7 @@ class Assembler:
                 self.binCode.append([makeBinStr(int(index),16),self.makeWInstr(m.group(1),m.group(2),m.group(4),m.group(3),index)])
                 continue
 
-            m = typeBEQ.match(line)
+            m = typeBZ.match(line)
             if m != None:
                 self.binCode.append([makeBinStr(int(index),16),self.makeWInstr(m.group(1),m.group(2),m.group(3),m.group(4),index)])
                 continue
