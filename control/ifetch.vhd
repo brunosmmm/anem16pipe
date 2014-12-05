@@ -15,8 +15,8 @@ entity anem16_ifetch is
        jflag     : in std_logic;
        jrflag    : in std_logic;
        jdest     : in std_logic_vector(15 downto 0);
-       beqflag    : in std_logic;
-       beqoff     : in std_logic_vector(3 downto 0);
+       bzflag    : in std_logic;
+       bzoff     : in std_logic_vector(11 downto 0);
 
        stall_n    : in std_logic; --! stall fetch
        
@@ -51,9 +51,9 @@ begin
       --unconditional jump!
       i_addr <= jdest;
 
-    elsif beqflag = '1' then
+    elsif bzflag = '1' then
 
-      i_addr <= std_logic_vector(unsigned(resize(signed(beqoff),16)) + unsigned(i_addr));
+      i_addr <= std_logic_vector(unsigned(resize(signed(bzoff),16)) + unsigned(i_addr));
       
     else
 

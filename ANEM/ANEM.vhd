@@ -53,8 +53,8 @@ signal p_id_x_jflag               : std_logic;
 signal p_id_x_jrflag              : std_logic;
 signal p_id_x_jdest               : std_logic_vector(15 downto 0);
 signal p_id_wb_limm_0            : std_logic_vector(7 downto 0);
-signal p_id_alu_beqflag_0        : std_logic;
-signal p_id_alu_beqoff_0         : std_logic_vector(3 downto 0);
+signal p_id_alu_bzflag_0        : std_logic;
+signal p_id_alu_bzoff_0         : std_logic_vector(11 downto 0);
 signal p_id_mem_memen_0           : std_logic;
 signal p_id_mem_memw_0            : std_logic;
 
@@ -66,8 +66,8 @@ signal p_id_alu_aluctl_1   : std_logic_vector(aluop_size-1 downto 0);
 signal p_id_alu_alushamt_1 : std_logic_vector(alushamt_size-1 downto 0);
 signal p_id_alu_alufunc_1  : std_logic_vector(alufunc_size-1 downto 0);
 signal p_id_wb_limm_1      : std_logic_vector(7 downto 0);
-signal p_id_alu_beqflag_1  : std_logic;
-signal p_id_alu_beqoff_1   : std_logic_vector(3 downto 0);
+signal p_id_alu_bzflag_1  : std_logic;
+signal p_id_alu_bzoff_1   : std_logic_vector(11 downto 0);
 signal p_id_mem_memen_1     : std_logic;
 signal p_id_mem_memw_1      : std_logic;
 signal p_id_mem_alua_1       : std_logic_vector(15 downto 0);
@@ -119,9 +119,9 @@ signal p_f_mem_mem   : std_logic;
 signal p_f_regbnk_w  : std_logic;
 
 --misc pipeline signals
-signal p_beqtrue     : std_logic;
-signal p_alu_x_beqout : std_logic_vector(4 downto 0);
-signal p_id_alu_beq_0 : std_logic_vector(4 downto 0);
+signal p_bztrue     : std_logic;
+signal p_alu_x_bzout : std_logic_vector(4 downto 0);
+signal p_id_alu_bz_0 : std_logic_vector(4 downto 0);
 signal p_alu_x_memop   : std_logic_vector(1 downto 0);
 signal p_mem_x_memop   : std_logic_vector(1 downto 0);
 signal p_id_wb1_regsela_4 : std_logic_vector(3 downto 0);
@@ -139,7 +139,7 @@ BEGIN
     --register read
 
     inst_addr <= next_inst_addr;
-    p_beqtrue <= p_id_alu_beqflag_1 and p_alu_x_z;
+    p_bztrue <= p_id_alu_bzflag_1 and p_alu_x_z;
     --! instruction fetcher
     pfetch : entity work.anem16_ifetch(pipe)
       port map(mclk=>ck,
@@ -149,8 +149,8 @@ BEGIN
                jrflag=>p_id_x_jrflag,
                nexti=>next_inst_addr,
                stall_n=>p_stall_if_n,
-               beqflag=>p_beqtrue,
-               beqoff=>p_id_alu_beqoff_1
+               bzflag=>p_bztrue,
+               bzoff=>p_id_alu_bzoff_1
                );
                
     
@@ -169,8 +169,8 @@ BEGIN
                j_flag=>p_id_x_jflag,
                j_dest=>p_id_x_jdest,
                jr_flag=>p_id_x_jrflag,
-               beq_flag=>p_id_alu_beqflag_0,
-               beq_off=>p_id_alu_beqoff_0,
+               bz_flag=>p_id_alu_bzflag_0,
+               bz_off=>p_id_alu_bzoff_0,
                mem_en=>p_id_mem_memen_0,
                mem_w=>p_id_mem_memw_0,
                limmval=>p_id_wb_limm_0
@@ -293,16 +293,16 @@ BEGIN
                parallel_in=>p_id_wb_limm_0,
                data_out=>p_id_wb_limm_1);
 
-    p_id_alu_beqflag_1 <= p_alu_x_beqout(4);
-    p_id_alu_beqoff_1  <= p_alu_x_beqout(3 downto 0);
-    p_id_alu_beq_0 <= p_id_alu_beqflag_0 & p_id_alu_beqoff_0;
-    preg_beq_0 : entity work.RegANEM(Load)
+    p_id_alu_bzflag_1 <= p_alu_x_bzout(4);
+    p_id_alu_bzoff_1  <= p_alu_x_bzout(3 downto 0);
+    p_id_alu_bz_0 <= p_id_alu_bzflag_0 & p_id_alu_bzoff_0;
+    preg_bz_0 : entity work.RegANEM(Load)
       generic map(5)
       port map(ck=>ck,
                rst=>rst,
                en=>p_stall_id_n,
-               parallel_in=>p_id_alu_beq_0,
-               data_out=>p_alu_x_beqout);
+               parallel_in=>p_id_alu_bz_0,
+               data_out=>p_alu_x_bzout);
 
     p_s_alu_memenw_mux <= p_id_mem_memen_0 & p_id_mem_memw_0 when p_stall_if_n = '1' else
                           "00";
@@ -460,13 +460,14 @@ BEGIN
                
                );
 
-    p_flush <= p_beq
+    --what???
+    --p_flush <= p_bz
 
     --! hazard unit
     phaz: entity work.anem16_hazunit(pipe)
       port map(mrst=>rst,
                mclk=>ck,
-               beqtrue=>p_beqtrue,
+               bztrue=>p_bztrue,
                
                p_stall_if_n=>p_stall_if_n,
                p_stall_id_n=>p_stall_id_n,

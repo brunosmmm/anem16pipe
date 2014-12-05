@@ -12,7 +12,7 @@ entity anem16_hazunit is
 
   port(mrst      : in std_logic;
        mclk      : in std_logic;
-       beqtrue   : in std_logic;
+       bztrue   : in std_logic;
        
        p_stall_if_n   : out std_logic;
        p_stall_id_n   : out std_logic;
@@ -75,7 +75,7 @@ begin
   p_stall_if_n <= lw_stall_if_n and sw_stall_if_n;
   
 --branch hazards
---beqtrue = 1 , must flush pipeline
+--bztrue = 1 , must flush pipeline
   
 process(mclk,mrst)
 begin

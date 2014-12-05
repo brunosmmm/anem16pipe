@@ -12,7 +12,7 @@ package instrset is
   constant ANEM_OPCODE_S   : std_logic_vector(3 downto 0) := "0001";
   constant ANEM_OPCODE_J   : std_logic_vector(3 downto 0) := "1000";
   constant ANEM_OPCODE_JAL : std_logic_vector(3 downto 0) := "1001";
-  constant ANEM_OPCODE_BEQ : std_logic_vector(3 downto 0) := "0110";
+  constant ANEM_OPCODE_BZ  : std_logic_vector(3 downto 0) := "0110";
   constant ANEM_OPCODE_JR  : std_logic_vector(3 downto 0) := "0111";
   constant ANEM_OPCODE_SW  : std_logic_vector(3 downto 0) := "0100";
   constant ANEM_OPCODE_LW  : std_logic_vector(3 downto 0) := "0101";

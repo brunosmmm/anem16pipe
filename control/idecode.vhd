@@ -32,8 +32,8 @@ entity anem16_idecode is
 
        jr_flag    : out std_logic;
 
-       beq_flag   : out std_logic;
-       beq_off    : out std_logic_vector(3 downto 0);
+       bz_flag   : out std_logic;
+       bz_off    : out std_logic_vector(11 downto 0);
 
        mem_en     : out std_logic;
        mem_w      : out std_logic;
@@ -57,7 +57,7 @@ begin
              "000";
   alu_ctl_0 <= "001" when opcode = ANEM_OPCODE_S else
                "010" when opcode = ANEM_OPCODE_R else
-               "011" when opcode = ANEM_OPCODE_BEQ else
+               "011" when opcode = ANEM_OPCODE_BZ else
                "100" when opcode = ANEM_OPCODE_SW else
                "100" when opcode = ANEM_OPCODE_LW else
                "000";
@@ -93,9 +93,10 @@ begin
   jr_flag <= '1' when opcode = ANEM_OPCODE_JR and reset_detected = '0' else
              '0';
 
-  beq_flag <= '1' when opcode = ANEM_OPCODE_BEQ and reset_detected = '0' else
+  bz_flag <= '1' when opcode = ANEM_OPCODE_BZ and reset_detected = '0' else
               '0';
-  beq_off  <= instruction(3 downto 0) when opcode = ANEM_OPCODE_BEQ else
+  
+  bz_off  <= instruction(11 downto 0) when opcode = ANEM_OPCODE_BZ else
               "0000";
 
   mem_en <= '1' when opcode = ANEM_OPCODE_SW else

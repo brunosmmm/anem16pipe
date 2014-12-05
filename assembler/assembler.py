@@ -12,7 +12,7 @@ from anem_regex import *
 
 ##Verbose level
 class AsmMsgType:
-    
+
     AsmMsgError   = 0
     AsmMsgWarning = 1
     AsmMsgInfo    = 2
@@ -43,7 +43,7 @@ def colorize(text, color):
 
 ##Make binary strings
 def makeBinStr(i,size):
-    
+
     m = re.match(r"0b([01]+)",bin(i))
     b = m.group(1)
 
@@ -95,7 +95,7 @@ class Assembler:
         print colorize(msg,MsgTypeOut[msgType])
         return fatal
 
-    ##Output messages when done    
+    ##Output messages when done
     def Done(self):
 
         print str(self.AsmErrorCount)+ \
@@ -129,7 +129,7 @@ class Assembler:
             m = LIWb.match(upLine)
             if m != None:
                 #binary value
-                self.CleanOut.append([nline,"LIU $%s, %d" % (m.group(1),int(m.group(2),2)/256)]) 
+                self.CleanOut.append([nline,"LIU $%s, %d" % (m.group(1),int(m.group(2),2)/256)])
                 self.CleanOut.append([nline,"LIL $%s, %d" % (m.group(1),int(m.group(2),2)%256)])
                 self.CleanOut.append([nline,"ADD $0,$0"]) #this is a NOP after LIL
                 ##@todo verify this, was a hack for non-pipelined version
@@ -139,7 +139,7 @@ class Assembler:
             m = LIWh.match(upLine)
             if m != None:
                 #hexadecimal
-                self.CleanOut.append([nline,"LIU $%s, %d" % (m.group(1),int(m.group(2),16)/256)]) 
+                self.CleanOut.append([nline,"LIU $%s, %d" % (m.group(1),int(m.group(2),16)/256)])
                 self.CleanOut.append([nline,"LIL $%s, %d" % (m.group(1),int(m.group(2),16)%256)])
                 self.CleanOut.append([nline,"ADD $0,$0"])
 
@@ -148,7 +148,7 @@ class Assembler:
             m = LIWd.match(upLine)
             if m != None:
                 #decimal
-                self.CleanOut.append([nline,"LIU $%s, %d" % (m.group(1),int(m.group(2))/256)]) 
+                self.CleanOut.append([nline,"LIU $%s, %d" % (m.group(1),int(m.group(2))/256)])
                 self.CleanOut.append([nline,"LIL $%s, %d" % (m.group(1),int(m.group(2))%256)])
                 self.CleanOut.append([nline,"ADD $0,$0"])
 
@@ -179,7 +179,7 @@ class Assembler:
 
                 m = CONSTVb.match(line)
                 if m != None:
-                    self.labels[m.group(1)] = int(m.group(2),2) 
+                    self.labels[m.group(1)] = int(m.group(2),2)
                     continue
 
                 m = CONSTVh.match(line)
@@ -217,7 +217,7 @@ class Assembler:
 
     ##@todo make this right
     def makeLInstr(self,instr,ra,byte):
-        
+
         u = re.match(r"%(\w+)%U",byte)
         l = re.match(r"%(\w+)%L",byte)
         x = re.match(r"%(\w+)%",byte)
@@ -251,7 +251,7 @@ class Assembler:
         return ANEMOpcodeJ[jtype]+out
 
     def makeWInstr(self,instr,ra,rb,offset,index):
-        
+
         o = re.match(r"%(\w+)%",offset)
         d = re.match(r"\d+",offset)
         if d != None:
@@ -264,23 +264,23 @@ class Assembler:
             if off_dec > 7 or off_dec < -8:
                 #impossible BEQ
                 self.Message("INST %s: BEQ cannot jump to intended place. OFFSET = %d" % (index,off_dec), AsmMsgType.AsmMsgWarning)
-        
+
         else:
             raise ValueError("BEQ offset error")
-        
+
         return ANEMOpcodeW[instr]+makeBinStr(int(ra),4)+makeBinStr(int(rb),4)+out
-    
+
 
     def Assemble(self):
-        
+
         self.binCode = []
         for index,nline,line in self.code:
-            
+
             m = typeR.match(line)
             if m != None:
                 self.binCode.append([makeBinStr(int(index),16),self.makeRInstr(m.group(1),m.group(3),m.group(4))])
                 continue
-            
+
             m = typeS.match(line)
             if m != None:
                 self.binCode.append([makeBinStr(int(index),16),self.makeSInstr(m.group(1),m.group(3),m.group(4))])
@@ -305,19 +305,19 @@ class Assembler:
             if m != None:
                 self.binCode.append([makeBinStr(int(index),16),self.makeWInstr(m.group(1),m.group(2),m.group(3),m.group(4),index)])
                 continue
-            
+
             m = typeJR.match(line)
             if m != None:
                 self.binCode.append([makeBinStr(int(index),16),self.makeWInstr(m.group(1),m.group(2),'0','0',index)])
                 continue
-                
+
             m = typeHAB.match(line)
             if m != None:
                 self.binCode.append([makeBinStr(int(index),16),"1111000000000000"])
                 continue
             ##@todo make floating point supported
             #m = typeF.match(line)
-            
+
             self.Message("Line %d: unsupported or malformed instruction" % nline, AsmMsgType.AsmMsgError)
 
 ##program body
@@ -326,20 +326,20 @@ if __name__ == "__main__":
     asm = Assembler()
 
     asm.Init()
-    
+
     try:
         fileName = sys.argv[1]
     except:
         AsmFatalError = True
         asm.Message("Error: no filename specified",AsmMsgType.AsmMsgError)
         exit(1)
-            
+
     #load program
 
     f = open(fileName+".asm",'r')
     lines = f.readlines()
     f.close()
-    
+
     #clean
 
     asm.Clean()
@@ -360,7 +360,7 @@ if __name__ == "__main__":
     outFile.write(".LABELS\n")
     for label in asm.labels.keys():
         outFile.write(label+'\t'+str(asm.labels[label])+'\n')
-    
+
 
     outFile.write(".CODE\n")
     for index,nline,iline in asm.code:

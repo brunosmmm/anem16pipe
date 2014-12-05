@@ -33,13 +33,13 @@ ANEMOpcodeJ      = { 'J'    : '1000',
 
 ANEMOpcodeW      = { 'SW'   : '0100',
                      'LW'   : '0101',
-                     'BEQ'  : '0110',
+                     'BZ '  : '0110',
                      'JR'   : '0111'
                      }
 
 ##@todo bring floating point support although we do not have a FPU now
 """
-ANEMOpcodeF      = { "FADD"   : "0010",
+ANEMOpcodeF      = { "FADD"   :  "0010",
                      'FADDP'  :  "0010",
                      'FSUB'   :  "0010",
                      'FSUBP'  :  '0010',
