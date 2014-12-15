@@ -236,30 +236,38 @@ class Assembler:
 
         return ANEMOpcodeL[instr]+makeBinStr(int(ra),4)+out
 
-    def makeJInstr(self,jtype,addr):
+    def makeJInstr(self, jtype, addr, cur_index):
 
-        d = re.match(r"[0-9]+",addr)
-        l = re.match(r"%(\w+)%",addr)
+        d = re.match(r"[0-9]+", addr)
+        l = re.match(r"%(\w+)%", addr)
 
         if d != None:
-            out = makeBinStr(int(addr),12)
+            out = makeBinStr(int(addr), 12)
         elif l != None:
 
+            #this will not work!! re-write for predicate
             if jtype == 'BZ':
-                off_dec = int(self.labels[l.group(1)])-1-int(index)
+                off_dec = int(self.labels[l.group(1)])-1-int(cur_index)
                 if l.group(2) == 't':
                     predicate = '01'
                 elif l.group(2) == 'n':
                     predicate = '10'
                 else:
                     predicate = '00'
-                out = predicate+makeBinStr(off_dec,12)
-                self.Message("BZ jumps, %d -> %d bin" % (off_dec,out), AsmMsgType.AsmMsgDebug)
+                out = predicate+makeBinStr(off_dec, 12)
+                self.Message("BZ jumps, %d -> %d bin" % (off_dec, out), AsmMsgType.AsmMsgDebug)
                 if off_dec > 2047 or off_dec < -2048:
                 #impossible BZ
                     self.Message("INST %s: BZ cannot jump to intended place. OFFSET = %d" % (index, off_dec), AsmMsgType.AsmMsgWarning)
             else:
-                out = makeBinStr(int(self.labels[l.group(1)]),12)
+                offset = int(cur_index) - int(self.labels[l.group(1)])
+
+                if offset > 2047 or offset < -2048:
+                    #impossible jump
+                    ##@todo look into generating intermediate jumps
+                    self.Message("INST %s: J cannot jump to label" % (index), AsmMsgType.AsmMsgWarning)
+                else:
+                    out = makeBinStr(offset, 12) #relative jump
         else:
             raise ValueError("malformed instruction")
 
@@ -301,7 +309,7 @@ class Assembler:
 
             m = typeJ.match(line)
             if m != None:
-                self.binCode.append([makeBinStr(int(index),16),self.makeJInstr(m.group(1),m.group(3))])
+                self.binCode.append([makeBinStr(int(index),16),self.makeJInstr(m.group(1),m.group(3),index)])
                 continue
 
             m = typeW.match(line)
@@ -309,9 +317,10 @@ class Assembler:
                 self.binCode.append([makeBinStr(int(index),16),self.makeWInstr(m.group(1),m.group(2),m.group(4),m.group(3),index)])
                 continue
 
+            ##@todo this REGEX is probably wrong, verify
             m = typeBZ.match(line)
             if m != None:
-                self.binCode.append([makeBinStr(int(index),16),self.makeWInstr(m.group(1),m.group(2),m.group(3),m.group(4),index)])
+                self.binCode.append([makeBinStr(int(index),16),self.makeJInstr(m.group(1),m.group(3),index)])
                 continue
 
             m = typeJR.match(line)
