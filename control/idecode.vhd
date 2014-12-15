@@ -86,6 +86,7 @@ begin
   j_flag <= '1' when opcode = ANEM_OPCODE_J and reset_detected = '0' else
             '0';
   
+  --! @todo this is going to be a relative jump when using J type
   j_dest <= "0000" & instruction(11 downto 0) when opcode = ANEM_OPCODE_J else
             regbnk_aout                       when opcode = ANEM_OPCODE_JR else
             (others=>'0');

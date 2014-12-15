@@ -46,14 +46,19 @@ begin
       initializing <= '0';
     else
     
-    if jflag = '1' or jrflag = '1' then
+    if jflag = '1' then
+
+      --relative jump
+      i_addr <= std_logic_vector(unsigned(unsigned(i_addr) + resize(signed(j_dest(11 downto 0)),16))));
+
+    elsif jrflag = '1' then
       
-      --unconditional jump!
+      --unconditional jump from register!
       i_addr <= jdest;
 
     elsif bzflag = '1' then
 
-      i_addr <= std_logic_vector(unsigned(resize(signed(bzoff),16)) + unsigned(i_addr));
+      i_addr <= std_logic_vector(unsigned(signed(resize(signed(bzoff),16)) + unsigned(i_addr)));
       
     else
 

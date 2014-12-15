@@ -75,7 +75,8 @@ signal p_id_alu_alub_1       : std_logic_vector(15 downto 0);
 
 --pipeline signals originating from ALU
 signal p_alu_wb_aluout_1 : std_logic_vector(data_size-1 downto 0);
-signal p_alu_x_z          : std_logic;
+signal p_alu_mem_z_1     : std_logic;
+signal p_alu_mem_z_2     : std_logic;
 
 --pipeline path after ALU (ALU->MEM)
 signal p_alu_wb_aluout_2 : std_logic_vector(data_size-1 downto 0);
@@ -139,7 +140,9 @@ BEGIN
     --register read
 
     inst_addr <= next_inst_addr;
-    p_bztrue <= p_id_alu_bzflag_1 and p_alu_x_z;
+
+    --generate BZ flag from decoded instruction and old Z flag
+    p_bztrue <= p_id_alu_bzflag_1 and p_alu_mem_z_2;
     --! instruction fetcher
     pfetch : entity work.anem16_ifetch(pipe)
       port map(mclk=>ck,
@@ -211,7 +214,7 @@ BEGIN
                SHAMT=>p_id_alu_alushamt_1,
                ALU_OP=>p_id_alu_aluctl_1, 
                FUNC=>p_id_alu_alufunc_1,
-               Z=>p_alu_x_z,
+               Z=>p_alu_mem_z_1,
                ALU_OUT=>p_alu_wb_aluout_1);
     
     --PIPELINE ID/ALU
@@ -356,6 +359,15 @@ BEGIN
                EN=>p_stall_alu_n,
                PARALLEL_IN=>p_alu_wb_aluout_1,
                DATA_OUT=>p_alu_wb_aluout_2);
+
+    --ALU Flag register
+    PALU_Z: entity WORK.RegANEM(Load)
+      generic map(1)
+      port map(CK=>CK,
+               RST=>RST,
+               EN=>p_stall_alu_n,
+               PARALLEL_IN=>p_alu_mem_z_1,
+               DATA_OUT=>p_alu_mem_z_2);
 
     p_id_mem_memw_2 <= p_mem_x_memop(0);
     p_id_mem_memen_2 <= p_mem_x_memop(1);
