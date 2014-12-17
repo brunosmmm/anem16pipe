@@ -44,14 +44,11 @@ def colorize(text, color):
 ##Make binary strings
 def makeBinStr(i,size):
 
-    m = re.match(r"0b([01]+)",bin(i))
-    b = m.group(1)
+    #twos complement if needed
 
-    if len(b) < size:
-        #pad
-        for i in range(len(b), size):
-            b = '0' + b
-    elif len(b) > size:
+    b = format(i if i >= 0 else (1 << size) + i,'0%db' % size)
+    
+    if len(b) > size:
         raise ValueError("number already bigger than desired size")
 
     return b
@@ -260,7 +257,7 @@ class Assembler:
                 #impossible BZ
                     self.Message("INST %s: BZ cannot jump to intended place. OFFSET = %d" % (index, off_dec), AsmMsgType.AsmMsgWarning)
             else:
-                offset = int(cur_index) - int(self.labels[l.group(1)])
+                offset = int(self.labels[l.group(1)]) - int(cur_index)
 
                 if offset > 2047 or offset < -2048:
                     #impossible jump
