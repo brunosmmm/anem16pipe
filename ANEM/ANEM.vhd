@@ -74,7 +74,7 @@ signal p_id_mem_memen_1     : std_logic;
 signal p_id_mem_memw_1      : std_logic;
 signal p_id_mem_alua_1       : std_logic_vector(15 downto 0);
 signal p_id_alu_alub_1       : std_logic_vector(15 downto 0);
-signal p_id_alu_wb_iaddr_1   : std_logic_vector(15 downto 0);
+signal p_id_wb_iaddr_1   : std_logic_vector(15 downto 0);
 
 --pipeline signals originating from ALU
 signal p_alu_wb_aluout_1 : std_logic_vector(data_size-1 downto 0);
@@ -126,8 +126,8 @@ signal p_f_regbnk_w  : std_logic;
 
 --misc pipeline signals
 signal p_bztrue     : std_logic;
-signal p_alu_x_bzout : std_logic_vector(4 downto 0);
-signal p_id_alu_bz_0 : std_logic_vector(4 downto 0);
+signal p_alu_x_bzout : std_logic_vector(12 downto 0);
+signal p_id_alu_bz_0 : std_logic_vector(12 downto 0);
 signal p_alu_x_memop   : std_logic_vector(1 downto 0);
 signal p_mem_x_memop   : std_logic_vector(1 downto 0);
 signal p_id_wb1_regsela_4 : std_logic_vector(3 downto 0);
@@ -135,6 +135,10 @@ signal p_id_wb1_regsela_4 : std_logic_vector(3 downto 0);
 --flush
 signal p_if_x_aneminst_mux : std_logic_vector(15 downto 0);
 signal p_flush : std_logic;
+
+--dummy signals
+signal p_alu_mem_z_1_v : std_logic_vector(0 downto 0);
+signal p_alu_mem_z_2_v : std_logic_vector(0 downto 0);
 
 BEGIN
 
@@ -303,11 +307,11 @@ BEGIN
                parallel_in=>p_id_wb_limm_0,
                data_out=>p_id_wb_limm_1);
 
-    p_id_alu_bzflag_1 <= p_alu_x_bzout(4);
-    p_id_alu_bzoff_1  <= p_alu_x_bzout(3 downto 0);
+    p_id_alu_bzflag_1 <= p_alu_x_bzout(12);
+    p_id_alu_bzoff_1  <= p_alu_x_bzout(11 downto 0);
     p_id_alu_bz_0 <= p_id_alu_bzflag_0 & p_id_alu_bzoff_0;
     preg_bz_0 : entity work.RegANEM(Load)
-      generic map(5)
+      generic map(13)
       port map(ck=>ck,
                rst=>rst,
                en=>p_stall_id_n,
@@ -384,13 +388,16 @@ BEGIN
                data_out=>p_id_wb_iaddr_2);
 
     --ALU Flag register
+    --dummy vectors
+    p_alu_mem_z_1_v(0) <= p_alu_mem_z_1;
+    p_alu_mem_z_2 <= p_alu_mem_z_2_v(0);
     PALU_Z: entity WORK.RegANEM(Load)
       generic map(1)
       port map(CK=>CK,
                RST=>RST,
                EN=>p_stall_alu_n,
-               PARALLEL_IN=>p_alu_mem_z_1,
-               DATA_OUT=>p_alu_mem_z_2);
+               PARALLEL_IN=>p_alu_mem_z_1_v,
+               DATA_OUT=>p_alu_mem_z_2_v);
 
     p_id_mem_memw_2 <= p_mem_x_memop(0);
     p_id_mem_memen_2 <= p_mem_x_memop(1);
@@ -462,7 +469,7 @@ BEGIN
     
     --! flush mux
     p_if_x_aneminst_mux <= inst when p_flush = '0' else
-                           (others='0');
+                           (others=>'0');
     
     RINST: ENTITY WORK.RegANEM(Load)
       GENERIC MAP(DATA_SIZE)
@@ -529,7 +536,8 @@ BEGIN
                mem_en_id=>p_id_mem_memen_0,
                mem_w_id=>p_id_mem_memw_0,
                
-               next_instruction=>p_if_id_aneminst_0
+               next_instruction=>p_if_id_aneminst_0,
+               bz_flag=>'0'
                );
                
 

@@ -49,7 +49,7 @@ begin
     if jflag = '1' then
 
       --relative jump
-      i_addr <= std_logic_vector(unsigned(unsigned(i_addr) + resize(signed(j_dest(11 downto 0)),16))));
+      i_addr <= std_logic_vector(unsigned(resize(signed(jdest(11 downto 0)),16)) + unsigned(i_addr));
 
     elsif jrflag = '1' then
       
@@ -58,7 +58,7 @@ begin
 
     elsif bzflag = '1' then
 
-      i_addr <= std_logic_vector(unsigned(signed(resize(signed(bzoff),16)) + unsigned(i_addr)));
+      i_addr <= std_logic_vector(unsigned(resize(signed(bzoff),16)) + unsigned(i_addr));
       
     else
 

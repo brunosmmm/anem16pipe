@@ -20,7 +20,7 @@ entity datamem is
   port(ck, en, w : in std_logic;
        address   : in std_logic_vector (addr_w-1 downto 0);
        
-       data : INOUT STD_LOGIC_VECTOR(N_DADOS-1 DOWNTO 0));
+       data : INOUT STD_LOGIC_VECTOR(data_w-1 DOWNTO 0));
        
 end datamem;
 
@@ -30,8 +30,8 @@ type memory_array is array (MEM_BOUND downto 0) of std_logic_vector(data_w-1 dow
 
 signal ram: memory_array; --! memory array
 
-SIGNAL D_OUT : STD_LOGIC_VECTOR(N_DADOS-1 DOWNTO 0) := (OTHERS=>'0');
-SIGNAL D_IN : STD_LOGIC_VECTOR(N_DADOS-1 DOWNTO 0) := (OTHERS=>'0');
+SIGNAL D_OUT : STD_LOGIC_VECTOR(data_w-1 DOWNTO 0) := (OTHERS=>'0');
+SIGNAL D_IN : STD_LOGIC_VECTOR(data_w-1 DOWNTO 0) := (OTHERS=>'0');
 
 begin
 
