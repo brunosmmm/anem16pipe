@@ -15,7 +15,8 @@
 --010                  Loads BYTE_IN in upper half of selected register (A)
 --011                  Loads BYTE_IN in lower half of selected register (A)
 --100                  Loads data from memory in selected register (A)
---000, 1XX             No operation
+--101                  Load  PC into register 15 (JAL)
+--000, 110, 111        No operation
 ---------------------------------------------------------
 
 LIBRARY IEEE;
@@ -43,7 +44,8 @@ ENTITY regbnk IS
        SEL_W            : in std_logic_vector(regbnk_addr-1 downto 0); --! write select
        A_OUT            : OUT STD_LOGIC_VECTOR(DATA_W-1 DOWNTO 0); --! A output
        B_OUT            : OUT STD_LOGIC_VECTOR(DATA_W-1 DOWNTO 0); --! B output   
-       S_OUT            : OUT STD_LOGIC --! test mode data output
+       S_OUT            : OUT STD_LOGIC; --! test mode data output
+       PC_IN            : in STD_LOGIC_VECTOR(15 downto 0) --! PC Input for JAL jumps
        );                           
   
 END ENTITY;
@@ -148,6 +150,10 @@ BEGIN
           WHEN "001" => --ALU -> A
             
             REG_IN_DATA(TO_INTEGER(UNSIGNED(SEL_W))) <= ALU_IN;
+
+          when "101" => --PC (JAL INSTRUCTION)
+
+            REG_IN_DATA(15) <= PC_IN;
             
           WHEN OTHERS => NULL;
                          

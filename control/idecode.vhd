@@ -17,6 +17,7 @@ entity anem16_idecode is
        mrst       : in std_logic;
 
        instruction: in std_logic_vector(instr_size-1 downto 0);
+       instr_addr : in std_logic_vector(15 downto 0);
 
        regbnk_ctl : out std_logic_vector(2 downto 0);
        regbnk_sela : out std_logic_vector(3 downto 0);
@@ -77,13 +78,14 @@ begin
                   "001" when opcode = ANEM_OPCODE_R else --R TYPE INSTRUCTION
                   "001" when opcode = ANEM_OPCODE_S else --S TYPE INSTRUCTION
                   "100" when opcode = ANEM_OPCODE_LW else --LW INSTRUCTION
+                  "101" when opcode = ANEM_OPCODE_JAL else --JAL INSTRUCTION
                   "000";
 
   regbnk_sela <= instruction(11 downto 8);
   regbnk_selb <= instruction(7 downto 4);
 
   --unconditional jumps
-  j_flag <= '1' when opcode = ANEM_OPCODE_J and reset_detected = '0' else
+  j_flag <= '1' when (opcode = ANEM_OPCODE_J or opcode = ANEM_OPCODE_JAL) and reset_detected = '0' else
             '0';
   
   --! @todo this is going to be a relative jump when using J type

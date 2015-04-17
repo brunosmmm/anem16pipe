@@ -58,6 +58,8 @@ signal p_id_alu_bzoff_0         : std_logic_vector(11 downto 0);
 signal p_id_mem_memen_0           : std_logic;
 signal p_id_mem_memw_0            : std_logic;
 
+signal p_id_wb_iaddr_0     : std_logic_vector(15 downto 0);
+
 --pipeline path after ID (ID->ALU)
 signal p_id_wb_regsela_1 : std_logic_vector(rindex_size-1 downto 0);
 signal p_id_alu_regselb_1 : std_logic_vector(rindex_size-1 downto 0);
@@ -72,6 +74,7 @@ signal p_id_mem_memen_1     : std_logic;
 signal p_id_mem_memw_1      : std_logic;
 signal p_id_mem_alua_1       : std_logic_vector(15 downto 0);
 signal p_id_alu_alub_1       : std_logic_vector(15 downto 0);
+signal p_id_alu_wb_iaddr_1   : std_logic_vector(15 downto 0);
 
 --pipeline signals originating from ALU
 signal p_alu_wb_aluout_1 : std_logic_vector(data_size-1 downto 0);
@@ -86,6 +89,7 @@ signal p_id_mem_memw_2    : std_logic;
 signal p_id_mem_alua_2    : std_logic_vector(15 downto 0);
 signal p_id_wb_regsela_2  : std_logic_vector(rindex_size-1 downto 0);
 signal p_id_wb_regctl_2   : std_logic_vector(2 downto 0);
+signal p_id_wb_iaddr_2    : std_logic_vector(15 downto 0);
 
 --pipeline signals originating from MEM
 signal p_mem_wb_memout_2 : std_logic_vector(data_size-1 downto 0);
@@ -96,6 +100,7 @@ signal p_id_wb_limm_3    : std_logic_vector(7 downto 0);
 signal p_mem_wb_memout_3 : std_logic_vector(data_size-1 downto 0);
 signal p_id_wb_regsela_3 : std_logic_vector(rindex_size-1 downto 0);
 signal p_id_wb_regctl_3  : std_logic_vector(2 downto 0);
+signal p_id_wb_iaddr_3   : std_logic_vector(15 downto 0);
 
 --pipeline stalling
 signal p_stall_if_n  : std_logic;
@@ -161,6 +166,7 @@ BEGIN
     pdecode: entity work.anem16_idecode(pipe)
       port map(mclk=>ck,
                mrst=>rst,
+               instr_addr=>next_inst_addr,
                instruction=>p_if_id_aneminst_0,
                regbnk_ctl=>p_id_wb_regctl_0,
                regbnk_sela=>p_id_wb_regsela_0,
@@ -186,6 +192,7 @@ BEGIN
                TEST=>TEST,
                ALU_IN=>p_alu_wb_aluout_3,
                BYTE_IN=>p_id_wb_limm_3,
+               PC_IN=>p_id_wb_iaddr_3,
                SEL_A=>p_id_wb_regsela_0, 
                SEL_B=>p_id_alu_regselb_0,
                DATA_IN=>p_mem_wb_memout_3,
@@ -319,6 +326,14 @@ BEGIN
                parallel_in=>p_s_alu_memenw_mux,
                data_out=>p_alu_x_memop);
 
+    preg_iaddr_0: entity work.RegANEM(Load)
+      generic map(16)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_wb_iaddr_0,
+               data_out=>p_id_wb_iaddr_1);
+    
     --PIPELINE ALU/MEM
     PREG_ctl_1  : entity WORK.RegANEM(Load)
       generic MAP(3)
@@ -359,6 +374,14 @@ BEGIN
                EN=>p_stall_alu_n,
                PARALLEL_IN=>p_alu_wb_aluout_1,
                DATA_OUT=>p_alu_wb_aluout_2);
+
+    preg_iaddr_1: entity work.RegANEM(Load)
+      generic map(16)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_alu_n,
+               parallel_in=>p_id_wb_iaddr_1,
+               data_out=>p_id_wb_iaddr_2);
 
     --ALU Flag register
     PALU_Z: entity WORK.RegANEM(Load)
@@ -429,6 +452,14 @@ BEGIN
                parallel_in=>p_id_wb_limm_2,
                data_out=>p_id_wb_limm_3);
 
+    preg_iaddr_2: entity work.RegANEM(Load)
+      generic map(16)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_alu_n,
+               parallel_in=>p_id_wb_iaddr_2,
+               data_out=>p_id_wb_iaddr_3);
+    
     --! flush mux
     p_if_x_aneminst_mux <= inst when p_flush = '0' else
                            (others='0');
