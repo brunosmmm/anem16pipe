@@ -20,7 +20,7 @@ entity anem16_hazunit is
        p_stall_mem_n  : out std_logic;
 
        --branch hazards
-       beq_flag      : in std_logic;
+       bz_flag      : in std_logic;
 
        --data hazards detectors
        mem_en_alu       : in std_logic;
@@ -47,6 +47,9 @@ signal lw_hazard_detect : std_logic;
 signal sw_hazard_detect : std_logic;
 signal sw_stall_if_n    : std_logic;
 signal lw_stall_if_n    : std_logic;
+
+signal bz_stall_if_n    : std_logic;
+signal bz_stall_counter : std_logic_vector(1 downto 0);
 begin
 
   --p_stall_if_n <= '1';
@@ -72,10 +75,13 @@ begin
 
   sw_stall_if_n <= not  (sw_hazard_detect and mem_en_id and mem_w_id);
 
-  p_stall_if_n <= lw_stall_if_n and sw_stall_if_n;
+  --! can't handle branch hazards yet so stall until branch is decided
+  p_stall_if_n <= lw_stall_if_n and sw_stall_if_n and bz_stall_if_n;
   
 --branch hazards
 --bztrue = 1 , must flush pipeline
+--! @todo can't handle branch hazards yet!!
+
   
 process(mclk,mrst)
 begin
@@ -85,8 +91,30 @@ begin
     lw_stall_if_n <= '1';
     lw_stall_counter <= "00";
 
+    bz_stall_if_n <= '1';
+    bz_stall_counter <= "00";
+
   elsif rising_edge(mclk) then
 
+    --bz stalls
+    if bz_stall_counter /= "00"then
+
+      bz_stall_counter <= std_logic_vector(unsigned(bz_stall_counter) - 1);
+
+    elsif bztrue = '1' then
+
+      --hold until resolution
+      bz_stall_if_n <= '0';
+      bz_stall_counter <= "01";
+
+    else
+
+      --release
+      bz_stall_if_n <= '1';
+
+    end if;
+    
+    --lw stalls
     if lw_stall_counter /= "00" then
 
       lw_stall_counter <= std_logic_vector(unsigned(lw_stall_counter) - 1);
