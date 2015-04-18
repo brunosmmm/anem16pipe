@@ -38,9 +38,9 @@ ANEMOpcodeW      = { 'SW'   : '0010',
                      'JR'   : '1100'
                      }
 
-ANEMOpcodeMFHI = "1010"
-ANEMOpcodeMFLO = "1011"
-ANEMOpcodeM1 = "1101"
+ANEMOpcodeMFHI = "0110"
+ANEMOpcodeMFLO = "0111"
+ANEMOpcodeM1 = "1110"
 ANEMFuncM1   =  { "LHL" : "0000",
                   "LHH" : "0001",
                   "LLL" : "0010",

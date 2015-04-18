@@ -238,7 +238,7 @@ class Assembler:
 
         return ANEMOpcodeL[instr]+makeBinStr(int(ra),4)+out
 
-    def makeJInstr(self, jtype, addr, cur_index):
+    def makeJInstr(self, jtype, addr, cur_index,jpred=None):
 
         d = re.match(r"[0-9]+", addr)
         l = re.match(r"%(\w+)%", addr)
@@ -249,15 +249,15 @@ class Assembler:
 
             #this will not work!! re-write for predicate
             if jtype == 'BZ':
-                off_dec = int(self.labels[l.group(1)])-1-int(cur_index)
-                if l.group(2) == 't':
+                off_dec = int(self.labels[l.group(1)])-int(cur_index)
+                if jpred == 'T':
                     predicate = '01'
-                elif l.group(2) == 'n':
+                elif jpred == 'N':
                     predicate = '10'
                 else:
                     predicate = '00'
                 out = predicate+makeBinStr(off_dec, 12)
-                self.Message("BZ jumps, %d -> %d bin" % (off_dec, out), AsmMsgType.AsmMsgDebug)
+                self.Message("BZ jump offset is %d (0b%s)" % (int(off_dec), out), AsmMsgType.AsmMsgDebug)
                 if off_dec > 2047 or off_dec < -2048:
                 #impossible BZ
                     self.AsmFatalError = True
@@ -336,7 +336,7 @@ class Assembler:
             ##@todo this REGEX is probably wrong, verify
             m = typeBZ.match(line)
             if m != None:
-                self.binCode.append([makeBinStr(int(index),16),self.makeJInstr(m.group(1),m.group(3),index)])
+                self.binCode.append([makeBinStr(int(index),16),self.makeJInstr(m.group(1),m.group(2),index,m.group(3))])
                 continue
 
             m = typeJR.match(line)
@@ -419,9 +419,13 @@ if __name__ == "__main__":
     asm.Assemble()
 
     outFile = open(fileName+".bin","w")
+    print_index = False
 
     for index,instruction in asm.binCode:
-        outFile.write(index+'\t'+instruction+'\n')
+        if print_index:
+            outFile.write(index+'\t'+instruction+'\n')
+        else:
+            outFile.write(instruction+'\n')
 
     outFile.close()
 
