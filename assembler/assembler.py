@@ -77,7 +77,6 @@ class Assembler:
             if self.AsmFatalError == True and self.AsmErrorCount >= 1:
                 print colorize("(FATAL) ",MsgColors.red),
                 fatal = True
-                ##@todo get out, fatal error
             elif msgType == AsmMsgType.AsmMsgWarning:
                 self.AsmWarnCount += 1
                 if Verbosity < 1:
@@ -90,6 +89,11 @@ class Assembler:
                             return False
 
         print colorize(msg,MsgTypeOut[msgType])
+
+        #just for now
+        if (fatal):
+            sys.exit(1)
+
         return fatal
 
     ##Output messages when done
@@ -120,7 +124,8 @@ class Assembler:
                 #Cannot substitute LIW when there is a label
                 asm.Message("Line %d: label followed by LIW" % nline,AsmMsgType.AsmMsgDebug)
                 label,upLine = upLine.split(':')
-                self.CleanOut.append(label+':')
+                upLine = upLine.strip()
+                self.CleanOut.append([nline,label+':'])
 
             #LIW replace
             m = LIWb.match(upLine)
@@ -227,7 +232,7 @@ class Assembler:
         elif d != None:
             out = makeBinStr(int(byte),8)
         elif x != None:
-            out = makeBinStr(int(self.labels[byte],8))
+            out = makeBinStr(int(self.labels[byte]),8)
         else:
             raise ValueError("malformed instruction")
 
@@ -255,14 +260,16 @@ class Assembler:
                 self.Message("BZ jumps, %d -> %d bin" % (off_dec, out), AsmMsgType.AsmMsgDebug)
                 if off_dec > 2047 or off_dec < -2048:
                 #impossible BZ
-                    self.Message("INST %s: BZ cannot jump to intended place. OFFSET = %d" % (index, off_dec), AsmMsgType.AsmMsgWarning)
+                    self.AsmFatalError = True
+                    self.Message("INST %s: BZ cannot jump to intended place. OFFSET = %d" % (cur_index, off_dec), AsmMsgType.AsmMsgError)
             else:
                 offset = int(self.labels[l.group(1)]) - int(cur_index)
 
                 if offset > 2047 or offset < -2048:
                     #impossible jump
                     ##@todo look into generating intermediate jumps
-                    self.Message("INST %s: J cannot jump to label" % (index), AsmMsgType.AsmMsgWarning)
+                    self.AsmFatalError = True
+                    self.Message("INST %d: J cannot jump to label" % (cur_index), AsmMsgType.AsmMsgError)
                 else:
                     out = makeBinStr(offset, 12) #relative jump
         else:
@@ -288,6 +295,7 @@ class Assembler:
 
         self.binCode = []
         for index,nline,line in self.code:
+            
 
             m = typeR.match(line)
             if m != None:
@@ -332,7 +340,7 @@ class Assembler:
             ##@todo make floating point supported
             #m = typeF.match(line)
 
-            self.Message("Line %d: unsupported or malformed instruction" % nline, AsmMsgType.AsmMsgError)
+            self.Message("Line %d: unsupported or malformed instruction: %s" % (nline, line), AsmMsgType.AsmMsgError)
 
 ##program body
 if __name__ == "__main__":
