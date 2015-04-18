@@ -290,6 +290,17 @@ class Assembler:
 
         return ANEMOpcodeW[instr]+makeBinStr(int(ra),4)+makeBinStr(int(rb),4)+out
 
+    def makeMFHIInstr(self,reg):
+        
+        return ANEMOpcodeMFHI+makeBinStr(int(reg),4)+makeBinStr(0,8)
+
+    def makeMFLOInstr(self,reg):
+        
+        return ANEMOpcodeMFLO+makeBinStr(int(reg),4)+makeBinStr(0,8)
+
+    def makeM1Instr(self,mop,data):
+        
+        return ANEMOpcodeM1+ANEMFuncM1[mop] + makeBinStr(int(data),8)
 
     def Assemble(self):
 
@@ -337,6 +348,18 @@ class Assembler:
             if m != None:
                 self.binCode.append([makeBinStr(int(index),16),"1111000000000000"])
                 continue
+
+            m = typeMFHI.match(line)
+            if m != None:
+                self.binCode.append([makeBinStr(int(index),16),self.makeMFHIInstr(m.group(1))])
+
+            m = typeMFLO.match(line)
+            if m != None:
+                self.binCode.append([makeBinStr(int(index),16),self.makeMFLOInstr(m.group(1))])
+
+            m = typeM1.match(line)
+            if m != None:
+                self.binCode.append([makeBinStr(int(index),16),self.makeM1Instr(m.group(1),m.group(2))])
             ##@todo make floating point supported
             #m = typeF.match(line)
 

@@ -39,6 +39,7 @@ signal next_inst_addr : std_logic_vector(15 downto 0);
 
 --pipeline IF/ID
 signal p_if_id_aneminst_0 : std_logic_vector(15 downto 0);
+signal p_if_id_instaddr_0 : std_logic_vector(15 downto 0);
 
 --pipeline signals originating from instruction decode
 signal p_id_mem_alua_0      : std_logic_vector(data_size-1 downto 0);
@@ -170,7 +171,7 @@ BEGIN
     pdecode: entity work.anem16_idecode(pipe)
       port map(mclk=>ck,
                mrst=>rst,
-               instr_addr=>next_inst_addr,
+               instr_addr=>p_if_id_instaddr_0,
                instruction=>p_if_id_aneminst_0,
                regbnk_ctl=>p_id_wb_regctl_0,
                regbnk_sela=>p_id_wb_regsela_0,
@@ -479,6 +480,14 @@ BEGIN
                PARALLEL_IN=>p_if_x_aneminst_mux,
                DATA_OUT=>p_if_id_aneminst_0);
 
+    raddr: entity work.RegANEM(Load)
+      generic map(16)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_if_n,
+               parallel_in=>next_inst_addr,
+               data_out=>p_if_id_instaddr_0);
+
 
     p_regsela_plus: entity work.RegANEM(Load)
       generic map(4)
@@ -511,7 +520,7 @@ BEGIN
                );
 
     --what???
-    --p_flush <= p_bz
+    p_flush <= '0'; --for now
 
     --! hazard unit
     phaz: entity work.anem16_hazunit(pipe)

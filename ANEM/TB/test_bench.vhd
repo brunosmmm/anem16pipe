@@ -25,6 +25,11 @@ ARCHITECTURE TESTE OF TEST_BENCH IS
   SIGNAL MEM_ADDR: STD_LOGIC_VECTOR(15 DOWNTO 0);
   SIGNAL BIT_INST_OUT: STD_LOGIC;
 
+  --gpio bus
+  signal port_0 : std_logic_vector(15 downto 0);
+  signal port_1 : std_logic_vector(15 downto 0);
+  signal port_2 : std_logic_vector(15 downto 0);
+
 BEGIN
   
   cpu:  entity work.ANEM(test)
@@ -64,6 +69,19 @@ BEGIN
              W=>MEM_W,
              EN=>MEM_EN,
              INT=>OPEN);
+
+  --gpio
+  gpio: entity work.anem_port_mux2(Behavioral)
+  port map(mem_data=>data,
+           mem_addr=>mem_addr,
+           mem_w=>mem_w,
+           mem_en=>mem_en,
+           ck=>ck,
+           rst=>rst,
+           port_out=>port_0,
+           port_in_1=>port_1,
+           port_in_0=>port_2
+           );
 
   PROCESS
 

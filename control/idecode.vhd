@@ -100,7 +100,7 @@ begin
               '0';
   
   bz_off  <= instruction(11 downto 0) when opcode = ANEM_OPCODE_BZ else
-              "0000";
+              (others=>'0');
 
   mem_en <= '1' when opcode = ANEM_OPCODE_SW else
             '1' when opcode = ANEM_OPCODE_LW else
