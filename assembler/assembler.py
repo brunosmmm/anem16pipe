@@ -290,13 +290,6 @@ class Assembler:
 
         return ANEMOpcodeW[instr]+makeBinStr(int(ra),4)+makeBinStr(int(rb),4)+out
 
-    def makeMFHIInstr(self,reg):
-        
-        return ANEMOpcodeMFHI+makeBinStr(int(reg),4)+makeBinStr(0,8)
-
-    def makeMFLOInstr(self,reg):
-        
-        return ANEMOpcodeMFLO+makeBinStr(int(reg),4)+makeBinStr(0,8)
 
     def makeM1Instr(self,mop,data):
         
