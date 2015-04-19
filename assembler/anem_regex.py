@@ -13,7 +13,8 @@ LIWd = re.compile(r"LIW\s+\$(\d{1,2}),\s*(\d+)")
 #move $r1 -> $r2 pseudoinstruction
 MOVE = re.compile(r"MOVE\s+\$(\d{1,2}),\s*\$(\d{1,2})")
 #load HI & LO pseudoinstructions
-L_HILOd = re.compile(r"(LHI|LLO)\s+\$(\d{1,2}),\s*\$(\d+)")
+L_HILOd = re.compile(r"(LHI|LLO)\s+\(\d+)")
+L_HILOh = re.compile(r"(LHI|LLO)\s+(0[xX][a-fA-F0-9]+)")
 #multiply & add imm pseudoinstruction
 MADD = re.compile(r"MADD\s+\$(\d{1,2}),\s*\$(\d{1,2}),\s*([+-]?\d+)")
 

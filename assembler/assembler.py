@@ -165,10 +165,30 @@ class Assembler:
                 continue
 
             #replace LHI & LLO
+            #decimal
             m = L_HILOd.match(upLine)
             if m != None:
-                raise NotImplementedError
-
+                if m.group(1) == "LHI":
+                    self.CleanOut.append([nline,"LHH %s" % int(m.group(2))/256])
+                    self.CleanOut.append([nline,"LHL %s" % int(m.group(2))%256])
+                elif m.group(1) == "LLO":
+                    self.CleanOut.append([nline,"LLH %s" % int(m.group(2))/256])
+                    self.CleanOut.append([nline,"LLL %s" % int(m.group(2))%256])
+                
+                continue
+            
+            #hex
+            m = L_HILOh.match(upLine)
+            if m != None:
+                if m.group(1) == "LHI":
+                    self.CleanOut.append([nline,"LHH %s" % int(m.group(2),16)/256])
+                    self.CleanOut.append([nline,"LHL %s" % int(m.group(2),16)%256])
+                elif m.group(1) == "LLO":
+                    self.CleanOut.append([nline,"LLH %s" % int(m.group(2),16)/256])
+                    self.CleanOut.append([nline,"LLL %s" % int(m.group(2),16)%256])
+                
+                continue
+                
             #replace MADD
             m = MADD.match(upLine)
             if m != None:
