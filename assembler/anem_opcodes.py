@@ -31,7 +31,8 @@ ANEMOpcodeL      = { "LIU"  : '0100',
 
 ANEMOpcodeJ      = { 'J'    : '1111',
                      'JAL'  : '1101',
-                     'BZ'   : '10'
+                     'BZ'   : '10',
+                     'BHLEQ' : '0110'
                    }
 
 ANEMOpcodeW      = { 'SW'   : '0010',
@@ -39,7 +40,6 @@ ANEMOpcodeW      = { 'SW'   : '0010',
                      'JR'   : '1100'
                      }
 
-ANEMOpcodeBHLEQ = "0110"
 ANEMOpcodeM1 = "1110"
 ANEMFuncM1   =  { "LHL" : "0000",
                   "LHH" : "0001",
@@ -47,12 +47,14 @@ ANEMFuncM1   =  { "LHL" : "0000",
                   "LLH" : "0011",
                   "AIS" : "0100",
                   "AIH" : "0101",
-                  "AIL" : "0110",
-                  "MFHI" : "0111",
+                  "AIL" : "0110"
+                  }
+
+ANEMFuncM3 = {    "MFHI" : "0111",
                   "MFLO" : "1000",
                   "MTHI" : "1001",
                   "MTLO" : "1010"
-                  }
+}
 
 ##@todo bring floating point support although we do not have a FPU now
 """

@@ -49,7 +49,7 @@ def makeBinStr(i,size):
     b = format(i if i >= 0 else (1 << size) + i,'0%db' % size)
     
     if len(b) > size:
-        raise ValueError("number already bigger than desired size")
+        raise ValueError("number already bigger than desired size, maybe invalid register?")
 
     return b
 
@@ -268,7 +268,7 @@ class Assembler:
         elif l != None:
 
             #this will not work!! re-write for predicate
-            if jtype == 'BZ':
+            if jtype == 'BZ' or jtype == 'BHLEQ':
                 off_dec = int(self.labels[l.group(1)])-int(cur_index)
                 if jpred == 'T':
                     predicate = '01'
@@ -276,7 +276,10 @@ class Assembler:
                     predicate = '10'
                 else:
                     predicate = '00'
-                out = predicate+makeBinStr(off_dec, 12)
+                if jtype == 'BZ':
+                    out = predicate+makeBinStr(off_dec, 12)
+                else:
+                    out = makeBinStr(off_dec,12)
                 self.Message("BZ jump offset is %d (0b%s)" % (int(off_dec), out), AsmMsgType.AsmMsgDebug)
                 if off_dec > 2047 or off_dec < -2048:
                 #impossible BZ
@@ -314,6 +317,10 @@ class Assembler:
     def makeM1Instr(self,mop,data):
         
         return ANEMOpcodeM1+ANEMFuncM1[mop] + makeBinStr(int(data),8)
+
+    def makeM3Instr(self,mop, reg):
+        
+        return ANEMOpcodeM1+ANEMFuncM3[mop] + makeBinStr(0,4)+ makeBinStr(int(reg),4)
 
     def Assemble(self):
 
@@ -362,17 +369,21 @@ class Assembler:
                 self.binCode.append([makeBinStr(int(index),16),"1111000000000000"])
                 continue
 
-            m = typeMFHI.match(line)
-            if m != None:
-                self.binCode.append([makeBinStr(int(index),16),self.makeMFHIInstr(m.group(1))])
-
-            m = typeMFLO.match(line)
-            if m != None:
-                self.binCode.append([makeBinStr(int(index),16),self.makeMFLOInstr(m.group(1))])
-
             m = typeM1.match(line)
             if m != None:
                 self.binCode.append([makeBinStr(int(index),16),self.makeM1Instr(m.group(1),m.group(2))])
+                continue
+
+            m = typeM2.match(line)
+            if m != None:
+                self.binCode.append([makeBinStr(int(index),16),self.makeJInstr(m.group(1),m.group(2),index)])
+                continue
+
+            m = typeM3.match(line)
+            if m != None:
+                self.binCode.append([makeBinStr(int(index),16),self.makeM3Instr(m.group(1),m.group(2))])
+                continue
+
             ##@todo make floating point supported
             #m = typeF.match(line)
 
