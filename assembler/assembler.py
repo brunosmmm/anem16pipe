@@ -156,6 +156,14 @@ class Assembler:
 
                 continue
 
+            #replace MOVE
+            m = MOVE.match(upLine)
+            if m != None:
+                self.CleanOut.append([nline,"AND $%s, $0" % m.group(1)])
+                self.CleanOut.append([nline,"OR  $%s, $%s" % (m.group(1),m.group(2))])
+
+                continue
+
             if upLine != '':
                 self.CleanOut.append([nline,upLine])
 
