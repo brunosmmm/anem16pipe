@@ -13,7 +13,7 @@ LIWd = re.compile(r"LIW\s+\$(\d{1,2}),\s*(\d+)")
 #move $r1 -> $r2 pseudoinstruction
 MOVE = re.compile(r"MOVE\s+\$(\d{1,2}),\s*\$(\d{1,2})")
 #load HI & LO pseudoinstructions
-L_HILOd = re.compile(r"(LHI|LLO)\s+\(\d+)")
+L_HILOd = re.compile(r"(LHI|LLO)\s+(\d+)")
 L_HILOh = re.compile(r"(LHI|LLO)\s+(0[xX][a-fA-F0-9]+)")
 #multiply & add imm pseudoinstruction
 MADD = re.compile(r"MADD\s+\$(\d{1,2}),\s*\$(\d{1,2}),\s*([+-]?\d+)")
@@ -32,7 +32,7 @@ COMM = re.compile(r"--.*$")
 
 ##Instruction types
 typeR   = re.compile(r"^\s*(A[DN]D|S(UB|LT)|[XN]?OR)\s+\$(\d{1,2}),\s*\$(\d{1,2})\s*$")
-typeS   = re.compile(r"^\s*((SH|RO)[RL]|SAR)\s+\$(\d{1,2}),\s*(\d+)\s*$")
+typeS   = re.compile(r"^\s*((SH|RO)[RL]|SAR)\s+\$(\d{1,2}),\s*\$(\d{1,2})\s*$")
 typeJ   = re.compile(r"^\s*(J(AL)?)\s+(%?\w+%?)\s*$")
 typeHAB = re.compile(r"^\s*HAB\s*$")
 typeL   = re.compile(r"^\s*(LI[LU])\s+\$(\d{1,2}),\s*(\d+|(%\w+%[UL]?))\s*$")
