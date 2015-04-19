@@ -164,6 +164,18 @@ class Assembler:
 
                 continue
 
+            #replace LHI & LLO
+            m = L_HILOd.match(upLine)
+            if m != None:
+                raise NotImplementedError
+
+            #replace MADD
+            m = MADD.match(upLine)
+            if m != None:
+                raise NotImplementedError
+
+
+
             if upLine != '':
                 self.CleanOut.append([nline,upLine])
 
