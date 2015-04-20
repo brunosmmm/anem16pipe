@@ -9,7 +9,7 @@ NOP  = re.compile(r"NOP\s*$")
 LIW  = re.compile(r"LIW\s+\$([0-9]{1,2}),\s*((0[xX][a-fA-F0-9]+)|([0-9]+))\s*$")
 LIWb = re.compile(r"LIW\s+\$(\d{1,2}),\s*(0[bB][01]+)")
 LIWh = re.compile(r"LIW\s+\$(\d{1,2}),\s*(0[xX][a-fA-F0-9]+)")
-LIWd = re.compile(r"LIW\s+\$(\d{1,2}),\s*(\d+)")
+LIWd = re.compile(r"LIW\s+\$(\d{1,2}),\s*([+-]?\d+)")
 #move $r1 -> $r2 pseudoinstruction
 MOVE = re.compile(r"MOVE\s+\$(\d{1,2}),\s*\$(\d{1,2})")
 #load HI & LO pseudoinstructions
@@ -17,7 +17,6 @@ L_HILOd = re.compile(r"(LHI|LLO)\s+(\d+)")
 L_HILOh = re.compile(r"(LHI|LLO)\s+(0[xX][a-fA-F0-9]+)")
 #multiply & add imm pseudoinstruction
 MADD = re.compile(r"MADD\s+\$(\d{1,2}),\s*\$(\d{1,2}),\s*([+-]?\d+)")
-
 
 ##Constants
 CONST   = re.compile(r"^\..*")
@@ -35,7 +34,7 @@ typeR   = re.compile(r"^\s*(A[DN]D|S(UB|LT)|[XN]?OR)\s+\$(\d{1,2}),\s*\$(\d{1,2}
 typeS   = re.compile(r"^\s*((SH|RO)[RL]|SAR)\s+\$(\d{1,2}),\s*\$(\d{1,2})\s*$")
 typeJ   = re.compile(r"^\s*(J(AL)?)\s+(%?\w+%?)\s*$")
 typeHAB = re.compile(r"^\s*HAB\s*$")
-typeL   = re.compile(r"^\s*(LI[LU])\s+\$(\d{1,2}),\s*(\d+|(%\w+%[UL]?))\s*$")
+typeL   = re.compile(r"^\s*(LI[LU])\s+\$(\d{1,2}),\s*([+-]?\d+|(%\w+%[UL]?))\s*$")
 typeW   = re.compile(r"^\s*([SL]W)\s+\$(\d{1,2}),\s*([+-]?\d+)\(\$(\d{1,2})\)\s*$")
 typeBZ  = re.compile(r"^\s*(BZ)\s+(%?\w+%?),([TNX])\s*$")
 typeJR  = re.compile(r"^\s*(JR)\s+\$(\d{1,2})\s*$")

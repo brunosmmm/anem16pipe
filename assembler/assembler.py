@@ -165,27 +165,27 @@ class Assembler:
                 continue
 
             #replace LHI & LLO
-            #decimal
-            m = L_HILOd.match(upLine)
-            if m != None:
-                if m.group(1) == "LHI":
-                    self.CleanOut.append([nline,"LHH %s" % (int(m.group(2))/256)])
-                    self.CleanOut.append([nline,"LHL %s" % (int(m.group(2))%256)])
-                elif m.group(1) == "LLO":
-                    self.CleanOut.append([nline,"LLH %s" % (int(m.group(2))/256)])
-                    self.CleanOut.append([nline,"LLL %s" % (int(m.group(2))%256)])
-                
-                continue
-            
+
             #hex
             m = L_HILOh.match(upLine)
             if m != None:
                 if m.group(1) == "LHI":
-                    self.CleanOut.append([nline,"LHH %s" % int(m.group(2),16)/256])
-                    self.CleanOut.append([nline,"LHL %s" % int(m.group(2),16)%256])
+                    self.CleanOut.append([nline,"LHH %d" % (int(m.group(2),16)/256)])
+                    self.CleanOut.append([nline,"LHL %d" % (int(m.group(2),16)%256)])
                 elif m.group(1) == "LLO":
-                    self.CleanOut.append([nline,"LLH %s" % int(m.group(2),16)/256])
-                    self.CleanOut.append([nline,"LLL %s" % int(m.group(2),16)%256])
+                    self.CleanOut.append([nline,"LLH %d" % (int(m.group(2),16)/256)])
+                    self.CleanOut.append([nline,"LLL %d" % (int(m.group(2),16)%256)])
+                
+                continue
+            #decimal
+            m = L_HILOd.match(upLine)
+            if m != None:
+                if m.group(1) == "LHI":
+                    self.CleanOut.append([nline,"LHH %d" % (int(m.group(2))/256)])
+                    self.CleanOut.append([nline,"LHL %d" % (int(m.group(2))%256)])
+                elif m.group(1) == "LLO":
+                    self.CleanOut.append([nline,"LLH %d" % (int(m.group(2))/256)])
+                    self.CleanOut.append([nline,"LLL %d" % (int(m.group(2))%256)])
                 
                 continue
                 
@@ -263,7 +263,7 @@ class Assembler:
         u = re.match(r"%(\w+)%U",byte)
         l = re.match(r"%(\w+)%L",byte)
         x = re.match(r"%(\w+)%",byte)
-        d = re.match(r"\d+",byte)
+        d = re.match(r"[+-]?\d+",byte)
 
         if u != None:
             out = makeBinStr(int(self.labels[u.group(1)])/256,8)
