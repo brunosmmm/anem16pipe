@@ -19,7 +19,7 @@ ENTITY RegANEMB IS
        BYTE_IN        : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
        CONTROL        : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
        EN             : IN STD_LOGIC;
-       DATA_OUT 		: BUFFER STD_LOGIC_VECTOR(n-1 DOWNTO 0);
+       DATA_OUT 		: BUFFER STD_LOGIC_VECTOR(n-1 DOWNTO 0));
        END ENTITY;
 
        ARCHITECTURE shift of RegANEMB IS
@@ -68,6 +68,7 @@ ENTITY RegANEMB IS
                                                                        END IF;
 
                                                                        END IF;
+                                                                                        
 
                                                                 END PROCESS;
 

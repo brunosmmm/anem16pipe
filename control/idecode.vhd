@@ -42,10 +42,10 @@ entity anem16_idecode is
 
        hi_en : out std_logic;
        lo_en : out std_logic;
-       hi_ctl : out std_logic(2 downto 0);
-       lo_ctl : out std_logic(2 downto 0);
-       hi_mux : out std_logic(1 downto 0);
-       lo_mux : out std_logic(1 downto 0)
+       hi_ctl : out std_logic_vector(2 downto 0);
+       lo_ctl : out std_logic_vector(2 downto 0);
+       hi_mux : out std_logic_vector(1 downto 0);
+       lo_mux : out std_logic_vector(1 downto 0)
 
     );
 end entity;
@@ -70,7 +70,7 @@ begin
              "000";
   alu_ctl_0 <= "001" when opcode = ANEM_OPCODE_S else
                "010" when opcode = ANEM_OPCODE_R else
-               "011" when opcode = ANEM_OPCODE_BZ_X else
+               "011" when opcode = ANEM_OPCODE_BZ_X or opcode = ANEM_OPCODE_BZ_T or opcode = ANEM_OPCODE_BZ_N else
                "100" when opcode = ANEM_OPCODE_SW else
                "100" when opcode = ANEM_OPCODE_LW else
                "000";
@@ -108,10 +108,13 @@ begin
   jr_flag <= '1' when opcode = ANEM_OPCODE_JR and reset_detected = '0' else
              '0';
 
-  bz_flag <= '1' when opcode = ANEM_OPCODE_BZ and reset_detected = '0' else
+  bz_flag <= '1' when (opcode = ANEM_OPCODE_BZ_X or opcode = ANEM_OPCODE_BZ_T or opcode = ANEM_OPCODE_BZ_N)
+                      and reset_detected = '0' else
               '0';
   
-  bz_off  <= instruction(11 downto 0) when opcode = ANEM_OPCODE_BZ else
+  bz_off  <= instruction(11 downto 0) when opcode = ANEM_OPCODE_BZ_X
+                                        or opcode = ANEM_OPCODE_BZ_T
+                                        or opcode = ANEM_OPCODE_BZ_N else
               (others=>'0');
 
   mem_en <= '1' when opcode = ANEM_OPCODE_SW else

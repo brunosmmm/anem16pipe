@@ -66,8 +66,7 @@ signal p_id_wb_hictl_0 : std_logic_vector(2 downto 0);
 signal p_id_wb_loctl_0 : std_logic_vector(2 downto 0);
 signal p_id_wb_hiout_0 : std_logic_vector(15 downto 0);
 signal p_id_wb_loout_0 : std_logic_vector(15 downto 0);
-signal p_id_wb_hien_0  : std_logic;
-signal p_id_wb_loen_0  : std_logic;
+signal p_id_wb_hiloen_0  : std_logic_vector(1 downto 0);
 signal p_id_wb_himux_0 : std_logic_vector(1 downto 0);
 signal p_id_wb_lomux_0 : std_logic_vector(1 downto 0);
 
@@ -91,8 +90,7 @@ signal p_id_wb_hictl_1 : std_logic_vector(2 downto 0);
 signal p_id_wb_loctl_1 : std_logic_vector(2 downto 0);
 signal p_id_wb_hiout_1 : std_logic_vector(15 downto 0);
 signal p_id_wb_loout_1 : std_logic_vector(15 downto 0);
-signal p_id_wb_hien_1  : std_logic;
-signal p_id_wb_loen_1  : std_logic;
+signal p_id_wb_hiloen_1  : std_logic_vector(1 downto 0);
 signal p_id_wb_himux_1 : std_logic_vector(1 downto 0);
 signal p_id_wb_lomux_1 : std_logic_vector(1 downto 0);
 
@@ -116,8 +114,7 @@ signal p_id_wb_hictl_2 : std_logic_vector(2 downto 0);
 signal p_id_wb_loctl_2 : std_logic_vector(2 downto 0);
 signal p_id_wb_hiout_2 : std_logic_vector(15 downto 0);
 signal p_id_wb_loout_2 : std_logic_vector(15 downto 0);
-signal p_id_wb_hien_2  : std_logic;
-signal p_id_wb_loen_2  : std_logic;
+signal p_id_wb_hiloen_2  : std_logic_vector(1 downto 0);
 signal p_id_wb_himux_2 : std_logic_vector(1 downto 0);
 signal p_id_wb_lomux_2 : std_logic_vector(1 downto 0);
 
@@ -138,8 +135,7 @@ signal p_id_wb_hictl_3 : std_logic_vector(2 downto 0);
 signal p_id_wb_loctl_3 : std_logic_vector(2 downto 0);
 signal p_id_wb_hiout_3 : std_logic_vector(15 downto 0);
 signal p_id_wb_loout_3 : std_logic_vector(15 downto 0);
-signal p_id_wb_hien_3  : std_logic;
-signal p_id_wb_loen_3  : std_logic;
+signal p_id_wb_hiloen_3  : std_logic_vector(1 downto 0);
 signal p_id_wb_himux_3 : std_logic_vector(1 downto 0);
 signal p_id_wb_lomux_3 : std_logic_vector(1 downto 0);
 
@@ -236,8 +232,8 @@ BEGIN
                mem_en=>p_id_mem_memen_0,
                mem_w=>p_id_mem_memw_0,
                limmval=>p_id_wb_limm_0,
-               hi_en=>p_id_wb_hien_0,
-               lo_en=>p_id_wb_loen_0,
+               hi_en=>p_id_wb_hiloen_0(0),
+               lo_en=>p_id_wb_hiloen_0(1),
                hi_ctl=>p_id_wb_hictl_0,
                lo_ctl=>p_id_wb_loctl_0,
                hi_mux=>p_id_wb_himux_0,
@@ -279,12 +275,12 @@ BEGIN
     
     hi_mux_data <= p_id_wb_alua_3 when p_id_wb_himux_3 = "10" else
                    aih_calculate_wb when p_id_wb_himux_3 = "01" else
-                   ais_calculate(31 downto 16) when p_id_wb_himux_3 = "00" else
+                   ais_calculate_wb(31 downto 16) when p_id_wb_himux_3 = "00" else
                    (others=>'0');
 
     lo_mux_data <= p_id_wb_alua_3 when p_id_wb_lomux_3 = "10" else
                    ail_calculate_wb when p_id_wb_lomux_3 = "01" else
-                   ais_calculate(15 downto 0) when p_id_wb_lomux_3 = "00" else
+                   ais_calculate_wb(15 downto 0) when p_id_wb_lomux_3 = "00" else
                    (others=>'0');
                    
     
@@ -292,7 +288,7 @@ BEGIN
     reghi: entity work.RegANEMB(shift)
     port map(ck=>ck,
                rst=>rst,
-               en=>p_id_wb_hien_3, --pipelined, to write on WB
+               en=>p_id_wb_hiloen_3(0), --pipelined, to write on WB
                parallel_in=>hi_mux_data, --pipelined
                data_out=>p_id_wb_hiout_0, --pipelined, saved on decode
                byte_in=>p_id_wb_limm_3, --pipelined, written on WB
@@ -302,7 +298,7 @@ BEGIN
     reglo: entity work.RegANEMB(shift)
     port map(ck=>ck,
                rst=>rst,
-               en=>p_id_wb_loen_3, --pipelined, to write on WB
+               en=>p_id_wb_hiloen_3(1), --pipelined, to write on WB
                parallel_in=>lo_mux_data, --pipelined
                data_out=>p_id_wb_loout_0, --pipelined, saved on decode
                byte_in=>p_id_wb_limm_3, --pipelined, written on WB
@@ -470,21 +466,13 @@ BEGIN
                parallel_in=>p_id_wb_loout_0,
                data_out=>p_id_wb_loout_1);
 
-    preg_hien_0: entity work.RegANEM(Load)
-      generic map(1)
+    preg_hiloen_0: entity work.RegANEM(Load)
+      generic map(2)
       port map(ck=>ck,
                rst=>rst,
                en=>p_stall_id_n,
-               parallel_in=>p_id_wb_hien_0,
-               data_out=>p_id_wb_hien_1);
-
-    preg_loen_0: entity work.RegANEM(Load)
-      generic map(1)
-      port map(ck=>ck,
-               rst=>rst,
-               en=>p_stall_id_n,
-               parallel_in=>p_id_wb_loen_0,
-               data_out=>p_id_wb_loen_1);
+               parallel_in=>p_id_wb_hiloen_0,
+               data_out=>p_id_wb_hiloen_1);
 
     preg_himux_0: entity work.RegANEM(Load)
       generic map(2)
@@ -560,7 +548,7 @@ BEGIN
                parallel_in=>p_id_wb_hictl_1,
                data_out=>p_id_wb_hictl_2);
 
-    preg_loctl_2: entity work.RegANEM(Load)
+    preg_loctl_1: entity work.RegANEM(Load)
       generic map(3)
       port map(ck=>ck,
                rst=>rst,
@@ -568,7 +556,7 @@ BEGIN
                parallel_in=>p_id_wb_loctl_1,
                data_out=>p_id_wb_loctl_2);
 
-    preg_hiout_2: entity work.RegANEM(Load)
+    preg_hiout_1: entity work.RegANEM(Load)
       generic map(16)
       port map(ck=>ck,
                rst=>rst,
@@ -576,7 +564,7 @@ BEGIN
                parallel_in=>p_id_wb_hiout_1,
                data_out=>p_id_wb_hiout_2);
 
-    preg_loout_2: entity work.RegANEM(Load)
+    preg_loout_1: entity work.RegANEM(Load)
       generic map(16)
       port map(ck=>ck,
                rst=>rst,
@@ -584,21 +572,14 @@ BEGIN
                parallel_in=>p_id_wb_loout_1,
                data_out=>p_id_wb_loout_2);
 
-    preg_hien_1: entity work.RegANEM(Load)
-      generic map(1)
+    preg_hiloen_1: entity work.RegANEM(Load)
+      generic map(2)
       port map(ck=>ck,
                rst=>rst,
                en=>p_stall_id_n,
-               parallel_in=>p_id_wb_hien_1,
-               data_out=>p_id_wb_hien_2);
+               parallel_in=>p_id_wb_hiloen_1,
+               data_out=>p_id_wb_hiloen_2);
 
-    preg_loen_1: entity work.RegANEM(Load)
-      generic map(1)
-      port map(ck=>ck,
-               rst=>rst,
-               en=>p_stall_id_n,
-               parallel_in=>p_id_wb_loen_1,
-               data_out=>p_id_wb_loen_2);
 
     preg_himux_1: entity work.RegANEM(Load)
       generic map(2)
@@ -728,21 +709,13 @@ BEGIN
                parallel_in=>p_id_wb_loout_2,
                data_out=>p_id_wb_loout_3);
 
-    preg_hien_2: entity work.RegANEM(Load)
-      generic map(1)
+    preg_hiloen_2: entity work.RegANEM(Load)
+      generic map(2)
       port map(ck=>ck,
                rst=>rst,
                en=>p_stall_id_n,
-               parallel_in=>p_id_wb_hien_2,
-               data_out=>p_id_wb_hien_3);
-
-    preg_loen_2: entity work.RegANEM(Load)
-      generic map(1)
-      port map(ck=>ck,
-               rst=>rst,
-               en=>p_stall_id_n,
-               parallel_in=>p_id_wb_loen_2,
-               data_out=>p_id_wb_loen_3);
+               parallel_in=>p_id_wb_hiloen_2,
+               data_out=>p_id_wb_hiloen_3);
 
     preg_himux_2: entity work.RegANEM(Load)
       generic map(2)
