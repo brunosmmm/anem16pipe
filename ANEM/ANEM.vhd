@@ -61,6 +61,16 @@ signal p_id_mem_memw_0            : std_logic;
 
 signal p_id_wb_iaddr_0     : std_logic_vector(15 downto 0);
 
+--special registers
+signal p_id_wb_hictl_0 : std_logic_vector(2 downto 0);
+signal p_id_wb_loctl_0 : std_logic_vector(2 downto 0);
+signal p_id_wb_hiout_0 : std_logic_vector(15 downto 0);
+signal p_id_wb_loout_0 : std_logic_vector(15 downto 0);
+signal p_id_wb_hien_0  : std_logic;
+signal p_id_wb_loen_0  : std_logic;
+signal p_id_wb_himux_0 : std_logic_vector(1 downto 0);
+signal p_id_wb_lomux_0 : std_logic_vector(1 downto 0);
+
 --pipeline path after ID (ID->ALU)
 signal p_id_wb_regsela_1 : std_logic_vector(rindex_size-1 downto 0);
 signal p_id_alu_regselb_1 : std_logic_vector(rindex_size-1 downto 0);
@@ -77,6 +87,16 @@ signal p_id_mem_alua_1       : std_logic_vector(15 downto 0);
 signal p_id_alu_alub_1       : std_logic_vector(15 downto 0);
 signal p_id_wb_iaddr_1   : std_logic_vector(15 downto 0);
 
+signal p_id_wb_hictl_1 : std_logic_vector(2 downto 0);
+signal p_id_wb_loctl_1 : std_logic_vector(2 downto 0);
+signal p_id_wb_hiout_1 : std_logic_vector(15 downto 0);
+signal p_id_wb_loout_1 : std_logic_vector(15 downto 0);
+signal p_id_wb_hien_1  : std_logic;
+signal p_id_wb_loen_1  : std_logic;
+signal p_id_wb_himux_1 : std_logic_vector(1 downto 0);
+signal p_id_wb_lomux_1 : std_logic_vector(1 downto 0);
+
+
 --pipeline signals originating from ALU
 signal p_alu_wb_aluout_1 : std_logic_vector(data_size-1 downto 0);
 signal p_alu_mem_z_1     : std_logic;
@@ -92,6 +112,16 @@ signal p_id_wb_regsela_2  : std_logic_vector(rindex_size-1 downto 0);
 signal p_id_wb_regctl_2   : std_logic_vector(2 downto 0);
 signal p_id_wb_iaddr_2    : std_logic_vector(15 downto 0);
 
+signal p_id_wb_hictl_2 : std_logic_vector(2 downto 0);
+signal p_id_wb_loctl_2 : std_logic_vector(2 downto 0);
+signal p_id_wb_hiout_2 : std_logic_vector(15 downto 0);
+signal p_id_wb_loout_2 : std_logic_vector(15 downto 0);
+signal p_id_wb_hien_2  : std_logic;
+signal p_id_wb_loen_2  : std_logic;
+signal p_id_wb_himux_2 : std_logic_vector(1 downto 0);
+signal p_id_wb_lomux_2 : std_logic_vector(1 downto 0);
+
+
 --pipeline signals originating from MEM
 signal p_mem_wb_memout_2 : std_logic_vector(data_size-1 downto 0);
 
@@ -102,6 +132,16 @@ signal p_mem_wb_memout_3 : std_logic_vector(data_size-1 downto 0);
 signal p_id_wb_regsela_3 : std_logic_vector(rindex_size-1 downto 0);
 signal p_id_wb_regctl_3  : std_logic_vector(2 downto 0);
 signal p_id_wb_iaddr_3   : std_logic_vector(15 downto 0);
+signal p_id_wb_alua_3    : std_logic_vector(15 downto 0);
+
+signal p_id_wb_hictl_3 : std_logic_vector(2 downto 0);
+signal p_id_wb_loctl_3 : std_logic_vector(2 downto 0);
+signal p_id_wb_hiout_3 : std_logic_vector(15 downto 0);
+signal p_id_wb_loout_3 : std_logic_vector(15 downto 0);
+signal p_id_wb_hien_3  : std_logic;
+signal p_id_wb_loen_3  : std_logic;
+signal p_id_wb_himux_3 : std_logic_vector(1 downto 0);
+signal p_id_wb_lomux_3 : std_logic_vector(1 downto 0);
 
 --pipeline stalling
 signal p_stall_if_n  : std_logic;
@@ -140,6 +180,14 @@ signal p_flush : std_logic;
 --dummy signals
 signal p_alu_mem_z_1_v : std_logic_vector(0 downto 0);
 signal p_alu_mem_z_2_v : std_logic_vector(0 downto 0);
+
+--special register muxes
+signal hi_mux_data : std_logic_vector(15 downto 0);
+signal lo_mux_data : std_logic_vector(15 downto 0);
+
+signal ais_calculate_wb : std_logic_vector(31 downto 0);
+signal ail_calculate_wb : std_logic_vector(15 downto 0);
+signal aih_calculate_wb: std_logic_vector(15 downto 0);
 
 BEGIN
 
@@ -187,10 +235,16 @@ BEGIN
                bz_off=>p_id_alu_bzoff_0,
                mem_en=>p_id_mem_memen_0,
                mem_w=>p_id_mem_memw_0,
-               limmval=>p_id_wb_limm_0
+               limmval=>p_id_wb_limm_0,
+               hi_en=>p_id_wb_hien_0,
+               lo_en=>p_id_wb_loen_0,
+               hi_ctl=>p_id_wb_hictl_0,
+               lo_ctl=>p_id_wb_loctl_0,
+               hi_mux=>p_id_wb_himux_0,
+               lo_mux=>p_id_wb_lomux_1
                );
     
-    
+    --! @todo adjust control to account for HI/LO Inputs. Also adjust inside idecode
     --! Register bank
     regbnk: ENTITY WORK.regbnk(ANEM)
       PORT MAP(S_IN=>S_IN,
@@ -198,6 +252,8 @@ BEGIN
                ALU_IN=>p_alu_wb_aluout_3,
                BYTE_IN=>p_id_wb_limm_3,
                PC_IN=>p_id_wb_iaddr_3,
+               HI_IN=>p_id_wb_hiout_3,
+               LO_IN=>p_id_wb_loout_3,
                SEL_A=>p_id_wb_regsela_0, 
                SEL_B=>p_id_alu_regselb_0,
                DATA_IN=>p_mem_wb_memout_3,
@@ -208,6 +264,49 @@ BEGIN
                B_OUT=>p_id_alu_alub_0,
                S_OUT=>S_OUT_REG,
                SEL_W=>p_id_wb_regsela_3);
+
+    --special registers
+
+    --calculate AIS/AIL/AIH
+    ais_calculate_wb <= std_logic_vector(signed(p_id_wb_hiout_3&p_id_wb_loout_3) +
+                                         resize(signed(p_id_wb_limm_3),32));
+    ail_calculate_wb <= std_logic_vector(signed(p_id_wb_loout_3) +
+                                         resize(signed(p_id_wb_limm_3),16));
+    aih_calculate_wb <= std_logic_vector(signed(p_id_wb_hiout_3) +
+                                         resize(signed(p_id_wb_limm_3),16));
+
+    --! @todo: change signal p_id_mem_alua to go up to wb
+    
+    hi_mux_data <= p_id_wb_alua_3 when p_id_wb_himux_3 = "10" else
+                   aih_calculate_wb when p_id_wb_himux_3 = "01" else
+                   ais_calculate(31 downto 16) when p_id_wb_himux_3 = "00" else
+                   (others=>'0');
+
+    lo_mux_data <= p_id_wb_alua_3 when p_id_wb_lomux_3 = "10" else
+                   ail_calculate_wb when p_id_wb_lomux_3 = "01" else
+                   ais_calculate(15 downto 0) when p_id_wb_lomux_3 = "00" else
+                   (others=>'0');
+                   
+    
+    --! HI register skeleton
+    reghi: entity work.RegANEMB(shift)
+    port map(ck=>ck,
+               rst=>rst,
+               en=>p_id_wb_hien_3, --pipelined, to write on WB
+               parallel_in=>hi_mux_data, --pipelined
+               data_out=>p_id_wb_hiout_0, --pipelined, saved on decode
+               byte_in=>p_id_wb_limm_3, --pipelined, written on WB
+               control=>p_id_wb_hictl_3); --pipelined, to write on WB
+
+    --! LO register skeleton
+    reglo: entity work.RegANEMB(shift)
+    port map(ck=>ck,
+               rst=>rst,
+               en=>p_id_wb_loen_3, --pipelined, to write on WB
+               parallel_in=>lo_mux_data, --pipelined
+               data_out=>p_id_wb_loout_0, --pipelined, saved on decode
+               byte_in=>p_id_wb_limm_3, --pipelined, written on WB
+               control=>p_id_wb_loctl_3); --pipelined, to write on WB
 
     --forwarding muxes
     p_f_alu_alua_mux <= p_alu_wb_aluout_3 when p_f_mem_alu_a = '1' else

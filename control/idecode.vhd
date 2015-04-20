@@ -38,7 +38,14 @@ entity anem16_idecode is
 
        mem_en     : out std_logic;
        mem_w      : out std_logic;
-       limmval    : out std_logic_vector(7 downto 0)
+       limmval    : out std_logic_vector(7 downto 0);
+
+       hi_en : out std_logic;
+       lo_en : out std_logic;
+       hi_ctl : out std_logic(2 downto 0);
+       lo_ctl : out std_logic(2 downto 0);
+       hi_mux : out std_logic(1 downto 0);
+       lo_mux : out std_logic(1 downto 0);
 
     );
 end entity;
@@ -46,9 +53,14 @@ end entity;
 
 architecture pipe of anem16_idecode is
 alias opcode : std_logic_vector(3 downto 0) is instruction(15 downto 12);
+alias m1op : std_logic_vector(3 downto 0) is instruction(11 downto 8);
 signal alu_ctl_0 : std_logic_vector(2 downto 0);
 signal regbnk_ctl_0 : std_logic_vector(2 downto 0);
 signal reset_detected : std_logic;
+
+--special register decoding
+signal write_hi : std_logic;
+signal write_lo : std_logic;
 begin
   
   --asynchronous instruction decoding
@@ -58,7 +70,7 @@ begin
              "000";
   alu_ctl_0 <= "001" when opcode = ANEM_OPCODE_S else
                "010" when opcode = ANEM_OPCODE_R else
-               "011" when opcode = ANEM_OPCODE_BZ else
+               "011" when opcode = ANEM_OPCODE_BZ_X else
                "100" when opcode = ANEM_OPCODE_SW else
                "100" when opcode = ANEM_OPCODE_LW else
                "000";
@@ -111,6 +123,56 @@ begin
             '0';
 
   limmval <= instruction(7 downto 0);
+
+
+  --special register control
+
+  --detect need to write
+  write_hi <= '1' when m1op = ANEM_M1FUNC_LHL
+                    or m1op = ANEM_M1FUNC_LHH
+                    or m1op = ANEM_M1FUNC_AIH
+                    or m1op = ANEM_M1FUNC_AIS
+                    or m1op = ANEM_M1FUNC_MTHI else
+              '0';
+
+  write_lo <= '1' when m1op = ANEM_M1FUNC_LLL
+                    or m1op = ANEM_M1FUNC_LLH
+                    or m1op = ANEM_M1FUNC_AIL
+                    or m1op = ANEM_M1FUNC_AIS
+                    or m1op = ANEM_M1FUNC_MTLO else
+              '0';
+
+  --hi/lo enable outputs
+  hi_en <= '1' when opcode = ANEM_OPCODE_M1 and write_hi = '1' else
+           '0';
+  
+  lo_en <= '1' when opcode = ANEM_OPCODE_M1 and write_lo = '1' else
+           '0';
+
+  --hi/lo control outputs
+  hi_ctl <= "010" when m1op = ANEM_M1FUNC_LHH else
+            "011" when m1op = ANEM_M1FUNC_LHL else
+            "100" when m1op = ANEM_M1FUNC_AIH
+                    or m1op = ANEM_M1FUNC_MTHI
+                    or m1op = ANEM_M1FUNC_AIS else
+            "000";
+
+  lo_ctl <= "010" when m1op = ANEM_M1FUNC_LLH else
+            "011" when m1op = ANEM_M1FUNC_LLL else
+            "100" when m1op = ANEM_M1FUNC_AIL
+                    or m1op = ANEM_M1FUNC_MTLO
+                    or m1op = ANEM_M1FUNC_AIS else
+            "000";
+
+  hi_mux <= "00" when m1op = ANEM_M1FUNC_AIS else
+            "01" when m1op = ANEM_M1FUNC_AIH else
+            "10" when m1op = ANEM_M1FUNC_MTHI else
+            "11";
+
+  lo_mux <= "00" when m1op = ANEM_M1FUNC_AIS else
+            "01" when m1op = ANEM_M1FUNC_AIL else
+            "10" when m1op = ANEM_M1FUNC_MTLO else
+            "11";
 
 process(mclk,mrst)
 begin

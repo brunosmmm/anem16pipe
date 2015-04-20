@@ -45,7 +45,9 @@ ENTITY regbnk IS
        A_OUT            : OUT STD_LOGIC_VECTOR(DATA_W-1 DOWNTO 0); --! A output
        B_OUT            : OUT STD_LOGIC_VECTOR(DATA_W-1 DOWNTO 0); --! B output   
        S_OUT            : OUT STD_LOGIC; --! test mode data output
-       PC_IN            : in STD_LOGIC_VECTOR(15 downto 0) --! PC Input for JAL jumps
+       PC_IN            : in STD_LOGIC_VECTOR(15 downto 0); --! PC Input for JAL jumps
+       HI_IN            : in std_logic_vector(15 downto 0); --! data from HI register
+       LO_IN            : in std_logic_vector(15 downto 0) --! data from LO register
        );                           
   
 END ENTITY;

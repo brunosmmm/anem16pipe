@@ -12,11 +12,38 @@ package instrset is
   constant ANEM_OPCODE_S   : std_logic_vector(3 downto 0) := "0001";
   constant ANEM_OPCODE_J   : std_logic_vector(3 downto 0) := "1111";
   constant ANEM_OPCODE_JAL : std_logic_vector(3 downto 0) := "1101";
-  constant ANEM_OPCODE_BZ  : std_logic_vector(3 downto 0) := "10XX";
+  constant ANEM_OPCODE_BZ_X: std_logic_vector(3 downto 0) := "1000";
+  constant ANEM_OPCODE_BZ_T: std_logic_vector(3 downto 0) := "1001";
+  constant ANEM_OPCODE_BZ_N: std_logic_vector(3 downto 0) := "1010";
   constant ANEM_OPCODE_JR  : std_logic_vector(3 downto 0) := "1100";
   constant ANEM_OPCODE_SW  : std_logic_vector(3 downto 0) := "0010";
   constant ANEM_OPCODE_LW  : std_logic_vector(3 downto 0) := "0011";
   constant ANEM_OPCODE_LIU : std_logic_vector(3 downto 0) := "0100";
   constant ANEM_OPCODE_LIL : std_logic_vector(3 downto 0) := "0101";
+  constant ANEM_OPCODE_M1  : std_logic_vector(3 downto 0) := "1110";
+  constant ANEM_OPCODE_BHLEQ : std_logic_vector(3 downto 0) := "0110";
+  --R functions
+  constant ANEM_RFUNC_AND  : std_logic_vector(4 downto 0) := "00000";
+  constant ANEM_RFUNC_OR   : std_logic_vector(4 downto 0) := "00001";
+  constant ANEM_RFUNC_ADD  : std_logic_vector(4 downto 0) := "00010";
+  constant ANEM_RFUNC_MUL  : std_logic_vector(4 downto 0) := "00011";
+  constant ANEM_RFUNC_SUB  : std_logic_vector(4 downto 0) := "00110";
+  constant ANEM_RFUNC_SLT  : std_logic_vector(4 downto 0) := "00111"; 
+  constant ANEM_RFUNC_NOR  : std_logic_vector(4 downto 0) := "01100";
+  constant ANEM_RFUNC_XOR  : std_logic_vector(4 downto 0) := "01111";
+  constant ANEM_RFUNC_SGT  : std_logic_vector(4 downto 0) := "01000";
+  --! @todo put S functions here
+  --M1 functions
+  constant ANEM_M1FUNC_LHL : std_logic_vector(3 downto 0) := "0000";
+  constant ANEM_M1FUNC_LHH : std_logic_vector(3 downto 0) := "0001";
+  constant ANEM_M1FUNC_LLL : std_logic_vector(3 downto 0) := "0010";
+  constant ANEM_M1FUNC_LLH : std_logic_vector(3 downto 0) := "0011";
+  constant ANEM_M1FUNC_AIS : std_logic_vector(3 downto 0) := "0100";
+  constant ANEM_M1FUNC_AIH : std_logic_vector(3 downto 0) := "0101";
+  constant ANEM_M1FUNC_AIL : std_logic_vector(3 downto 0) := "0110";
+  constant ANEM_M1FUNC_MFHI : std_logic_vector(3 downto 0) := "0111";
+  constant ANEM_M1FUNC_MFLO : std_logic_vector(3 downto 0) := "1000";
+  constant ANEM_M1FUNC_MTHI : std_logic_vector(3 downto 0) := "1001";
+  constant ANEM_M1FUNC_MTLO : std_logic_vector(3 downto 0) := "1010";
 
 end package;
