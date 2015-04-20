@@ -437,6 +437,71 @@ BEGIN
                en=>p_stall_id_n,
                parallel_in=>p_id_wb_iaddr_0,
                data_out=>p_id_wb_iaddr_1);
+
+    preg_hictl_0: entity work.RegANEM(Load)
+      generic map(3)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_wb_hictl_0,
+               data_out=>p_id_wb_hictl_1);
+
+    preg_loctl_0: entity work.RegANEM(Load)
+      generic map(3)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_wb_loctl_0,
+               data_out=>p_id_wb_loctl_1);
+
+    preg_hiout_0: entity work.RegANEM(Load)
+      generic map(16)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_wb_hiout_0,
+               data_out=>p_id_wb_hiout_1);
+
+    preg_loout_0: entity work.RegANEM(Load)
+      generic map(16)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_wb_loout_0,
+               data_out=>p_id_wb_loout_1);
+
+    preg_hien_0: entity work.RegANEM(Load)
+      generic map(1)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_wb_hien_0,
+               data_out=>p_id_wb_hien_1);
+
+    preg_loen_0: entity work.RegANEM(Load)
+      generic map(1)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_wb_loen_0,
+               data_out=>p_id_wb_loen_1);
+
+    preg_himux_0: entity work.RegANEM(Load)
+      generic map(2)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_wb_himux_0,
+               data_out=>p_id_wb_himux_1);
+
+    preg_lomux_0: entity work.RegANEM(Load)
+      generic map(3)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_wb_lomux_0,
+               data_out=>p_id_wb_lomux_1);
+    
     
     --PIPELINE ALU/MEM
     PREG_ctl_1  : entity WORK.RegANEM(Load)
@@ -486,6 +551,70 @@ BEGIN
                en=>p_stall_alu_n,
                parallel_in=>p_id_wb_iaddr_1,
                data_out=>p_id_wb_iaddr_2);
+
+    preg_hictl_1: entity work.RegANEM(Load)
+      generic map(3)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_wb_hictl_1,
+               data_out=>p_id_wb_hictl_2);
+
+    preg_loctl_2: entity work.RegANEM(Load)
+      generic map(3)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_wb_loctl_1,
+               data_out=>p_id_wb_loctl_2);
+
+    preg_hiout_2: entity work.RegANEM(Load)
+      generic map(16)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_wb_hiout_1,
+               data_out=>p_id_wb_hiout_2);
+
+    preg_loout_2: entity work.RegANEM(Load)
+      generic map(16)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_wb_loout_1,
+               data_out=>p_id_wb_loout_2);
+
+    preg_hien_1: entity work.RegANEM(Load)
+      generic map(1)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_wb_hien_1,
+               data_out=>p_id_wb_hien_2);
+
+    preg_loen_1: entity work.RegANEM(Load)
+      generic map(1)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_wb_loen_1,
+               data_out=>p_id_wb_loen_2);
+
+    preg_himux_1: entity work.RegANEM(Load)
+      generic map(2)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_wb_himux_1,
+               data_out=>p_id_wb_himux_2);
+
+    preg_lomux_1: entity work.RegANEM(Load)
+      generic map(3)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_wb_lomux_1,
+               data_out=>p_id_wb_lomux_2);
 
     --ALU Flag register
     --dummy vectors
@@ -566,6 +695,70 @@ BEGIN
                en=>p_stall_alu_n,
                parallel_in=>p_id_wb_iaddr_2,
                data_out=>p_id_wb_iaddr_3);
+
+    preg_hictl_2: entity work.RegANEM(Load)
+      generic map(3)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_wb_hictl_2,
+               data_out=>p_id_wb_hictl_3);
+
+    preg_loctl_2: entity work.RegANEM(Load)
+      generic map(3)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_wb_loctl_2,
+               data_out=>p_id_wb_loctl_3);
+
+    preg_hiout_2: entity work.RegANEM(Load)
+      generic map(16)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_wb_hiout_2,
+               data_out=>p_id_wb_hiout_3);
+
+    preg_loout_2: entity work.RegANEM(Load)
+      generic map(16)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_wb_loout_2,
+               data_out=>p_id_wb_loout_3);
+
+    preg_hien_2: entity work.RegANEM(Load)
+      generic map(1)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_wb_hien_2,
+               data_out=>p_id_wb_hien_3);
+
+    preg_loen_2: entity work.RegANEM(Load)
+      generic map(1)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_wb_loen_2,
+               data_out=>p_id_wb_loen_3);
+
+    preg_himux_2: entity work.RegANEM(Load)
+      generic map(2)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_wb_himux_2,
+               data_out=>p_id_wb_himux_3);
+
+    preg_lomux_2: entity work.RegANEM(Load)
+      generic map(3)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_wb_lomux_2,
+               data_out=>p_id_wb_lomux_3);
     
     --! flush mux
     p_if_x_aneminst_mux <= inst when p_flush = '0' else
