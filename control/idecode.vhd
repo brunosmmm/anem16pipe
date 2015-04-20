@@ -45,7 +45,7 @@ entity anem16_idecode is
        hi_ctl : out std_logic(2 downto 0);
        lo_ctl : out std_logic(2 downto 0);
        hi_mux : out std_logic(1 downto 0);
-       lo_mux : out std_logic(1 downto 0);
+       lo_mux : out std_logic(1 downto 0)
 
     );
 end entity;
