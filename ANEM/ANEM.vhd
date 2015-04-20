@@ -194,6 +194,7 @@ BEGIN
     --register read
 
     inst_addr <= next_inst_addr;
+    p_id_wb_iaddr_0 <= next_inst_addr;
 
     --generate BZ flag from decoded instruction and old Z flag
     p_bztrue <= p_id_alu_bzflag_1 and p_alu_mem_z_2;
@@ -237,7 +238,7 @@ BEGIN
                hi_ctl=>p_id_wb_hictl_0,
                lo_ctl=>p_id_wb_loctl_0,
                hi_mux=>p_id_wb_himux_0,
-               lo_mux=>p_id_wb_lomux_1
+               lo_mux=>p_id_wb_lomux_0
                );
     
     --! @todo adjust control to account for HI/LO Inputs. Also adjust inside idecode
@@ -483,7 +484,7 @@ BEGIN
                data_out=>p_id_wb_himux_1);
 
     preg_lomux_0: entity work.RegANEM(Load)
-      generic map(3)
+      generic map(2)
       port map(ck=>ck,
                rst=>rst,
                en=>p_stall_id_n,
@@ -590,7 +591,7 @@ BEGIN
                data_out=>p_id_wb_himux_2);
 
     preg_lomux_1: entity work.RegANEM(Load)
-      generic map(3)
+      generic map(2)
       port map(ck=>ck,
                rst=>rst,
                en=>p_stall_id_n,
@@ -726,12 +727,20 @@ BEGIN
                data_out=>p_id_wb_himux_3);
 
     preg_lomux_2: entity work.RegANEM(Load)
-      generic map(3)
+      generic map(2)
       port map(ck=>ck,
                rst=>rst,
                en=>p_stall_id_n,
                parallel_in=>p_id_wb_lomux_2,
                data_out=>p_id_wb_lomux_3);
+
+    palu_a_3: entity WORK.RegANEM(Load)
+      generic MAP(DATA_SIZE)
+      port MAP(CK=>CK,
+               RST=>RST,
+               EN=>p_stall_id_n,
+               PARALLEL_IN=>p_id_mem_alua_2,
+               DATA_OUT=>p_id_wb_alua_3);
     
     --! flush mux
     p_if_x_aneminst_mux <= inst when p_flush = '0' else
