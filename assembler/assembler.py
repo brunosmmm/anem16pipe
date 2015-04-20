@@ -192,9 +192,10 @@ class Assembler:
             #replace MADD
             m = MADD.match(upLine)
             if m != None:
-                raise NotImplementedError
+                self.CleanOut.append([nline,"MUL $%s, $%s" % (m.group(1),m.group(2))])
+                self.CleanOut.append([nline,"AIS %d" % (int(m.group(3)))])
 
-
+                continue
 
             if upLine != '':
                 self.CleanOut.append([nline,upLine])
