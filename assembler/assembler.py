@@ -150,8 +150,15 @@ class Assembler:
             m = LIWd.match(upLine)
             if m != None:
                 #decimal
-                self.CleanOut.append([nline,"LIU $%s, %d" % (m.group(1),int(m.group(2))/256)])
-                self.CleanOut.append([nline,"LIL $%s, %d" % (m.group(1),int(m.group(2))%256)])
+
+                #hack for llvm pass
+                if int(m.group(2)) > 0xFFFF:
+                    data = int(m.group(2)) >> 8
+                else:
+                    data = int(m.group(2))
+
+                self.CleanOut.append([nline,"LIU $%s, %d" % (m.group(1),data/256)])
+                self.CleanOut.append([nline,"LIL $%s, %d" % (m.group(1),data%256)])
                 self.CleanOut.append([nline,"ADD $0,$0"])
 
                 continue
