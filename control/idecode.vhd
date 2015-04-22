@@ -45,7 +45,8 @@ entity anem16_idecode is
        hi_ctl : out std_logic_vector(2 downto 0);
        lo_ctl : out std_logic_vector(2 downto 0);
        hi_mux : out std_logic_vector(1 downto 0);
-       lo_mux : out std_logic_vector(1 downto 0)
+       lo_mux : out std_logic_vector(1 downto 0);
+       bhleq_flag : out std_logic
 
     );
 end entity;
@@ -96,6 +97,10 @@ begin
   regbnk_sela <= instruction(11 downto 8);
   regbnk_selb <= instruction(7 downto 4);
 
+  --BHLEQ flag
+  bhleq_flag <= '1' when opcode = ANEM_OPCODE_BHLEQ else
+                '0';
+  
   --unconditional jumps
   j_flag <= '1' when (opcode = ANEM_OPCODE_J or opcode = ANEM_OPCODE_JAL) and reset_detected = '0' else
             '0';
@@ -114,7 +119,8 @@ begin
   
   bz_off  <= instruction(11 downto 0) when opcode = ANEM_OPCODE_BZ_X
                                         or opcode = ANEM_OPCODE_BZ_T
-                                        or opcode = ANEM_OPCODE_BZ_N else
+                                        or opcode = ANEM_OPCODE_BZ_N
+                                        or opcode = ANEM_OPCODE_BHLEQ else --BHLEQ rides on some BZ signals
               (others=>'0');
 
   mem_en <= '1' when opcode = ANEM_OPCODE_SW else

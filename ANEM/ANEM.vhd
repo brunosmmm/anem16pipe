@@ -60,6 +60,7 @@ signal p_id_mem_memen_0           : std_logic;
 signal p_id_mem_memw_0            : std_logic;
 
 signal p_id_wb_iaddr_0     : std_logic_vector(15 downto 0);
+signal p_id_alu_bhleqflag_0 : std_logic_vector(0 downto 0);
 
 --special registers
 signal p_id_wb_hictl_0 : std_logic_vector(2 downto 0);
@@ -93,12 +94,14 @@ signal p_id_wb_loout_1 : std_logic_vector(15 downto 0);
 signal p_id_wb_hiloen_1  : std_logic_vector(1 downto 0);
 signal p_id_wb_himux_1 : std_logic_vector(1 downto 0);
 signal p_id_wb_lomux_1 : std_logic_vector(1 downto 0);
+signal p_id_alu_bhleqflag_1 :std_logic_vector(0 downto 0);
 
 
 --pipeline signals originating from ALU
 signal p_alu_wb_aluout_1 : std_logic_vector(data_size-1 downto 0);
 signal p_alu_mem_z_1     : std_logic;
 signal p_alu_mem_z_2     : std_logic;
+signal p_alu_mem_hieqlo_1 : std_logic_vector(0 downto 0);
 
 --pipeline path after ALU (ALU->MEM)
 signal p_alu_wb_aluout_2 : std_logic_vector(data_size-1 downto 0);
@@ -118,6 +121,7 @@ signal p_id_wb_hiloen_2  : std_logic_vector(1 downto 0);
 signal p_id_wb_himux_2 : std_logic_vector(1 downto 0);
 signal p_id_wb_lomux_2 : std_logic_vector(1 downto 0);
 
+signal p_alu_mem_hieqlo_2 : std_logic_vector(0 downto 0);
 
 --pipeline signals originating from MEM
 signal p_mem_wb_memout_2 : std_logic_vector(data_size-1 downto 0);
@@ -181,9 +185,16 @@ signal p_alu_mem_z_2_v : std_logic_vector(0 downto 0);
 signal hi_mux_data : std_logic_vector(15 downto 0);
 signal lo_mux_data : std_logic_vector(15 downto 0);
 
+--calculate immediate add values for HI/LO
 signal ais_calculate_wb : std_logic_vector(31 downto 0);
 signal ail_calculate_wb : std_logic_vector(15 downto 0);
 signal aih_calculate_wb: std_logic_vector(15 downto 0);
+
+--detect HI = LO asynchronously -- to decide BHLEQ on id phase
+signal hi_equals_lo : std_logic;
+
+--BHLEQ
+signal p_bhleqtrue : std_logic;
 
 BEGIN
 
@@ -198,6 +209,9 @@ BEGIN
 
     --generate BZ flag from decoded instruction and old Z flag
     p_bztrue <= p_id_alu_bzflag_1 and p_alu_mem_z_2;
+    --generate BHLEQ flag from instruction and HI = LO flag
+    p_bhleqtrue <= '1' when p_id_alu_bhleqflag_1(0) = '1' and p_alu_mem_hieqlo_2(0) = '1' else
+                   '0';
     --! instruction fetcher
     pfetch : entity work.anem16_ifetch(pipe)
       port map(mclk=>ck,
@@ -208,7 +222,8 @@ BEGIN
                nexti=>next_inst_addr,
                stall_n=>p_stall_if_n,
                bzflag=>p_bztrue,
-               bzoff=>p_id_alu_bzoff_1
+               bzoff=>p_id_alu_bzoff_1,
+               bhleqflag=>p_bhleqtrue
                );
                
     
@@ -238,7 +253,8 @@ BEGIN
                hi_ctl=>p_id_wb_hictl_0,
                lo_ctl=>p_id_wb_loctl_0,
                hi_mux=>p_id_wb_himux_0,
-               lo_mux=>p_id_wb_lomux_0
+               lo_mux=>p_id_wb_lomux_0,
+               bhleq_flag=>p_id_alu_bhleqflag_0(0)
                );
     
     --! @todo adjust control to account for HI/LO Inputs. Also adjust inside idecode
@@ -283,7 +299,10 @@ BEGIN
                    ail_calculate_wb when p_id_wb_lomux_3 = "01" else
                    ais_calculate_wb(15 downto 0) when p_id_wb_lomux_3 = "00" else
                    (others=>'0');
-                   
+
+    --detect HI = LO at ALU stage
+    p_alu_mem_hieqlo_1(0) <= '1' when p_id_wb_hiout_1 = p_id_wb_loout_1 else
+                                '0';
     
     --! HI register skeleton
     reghi: entity work.RegANEMB(shift)
@@ -414,6 +433,14 @@ BEGIN
                en=>p_stall_id_n,
                parallel_in=>p_id_alu_bz_0,
                data_out=>p_alu_x_bzout);
+
+    preg_bhleq_0 : entity work.RegANEM(Load)
+      generic map(1)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_id_alu_bhleqflag_0,
+               data_out=>p_id_alu_bhleqflag_1);
 
     p_s_alu_memenw_mux <= p_id_mem_memen_0 & p_id_mem_memw_0 when p_stall_if_n = '1' else
                           "00";
@@ -628,6 +655,16 @@ BEGIN
 
     DATA <= TO_MEM WHEN (p_id_mem_memen_2='1' AND p_id_mem_memw_2='1') ELSE
              (OTHERS=>'Z');
+
+
+    --HI = LO flag
+    preg_hieqlo_1: entity work.RegANEM(Load)
+      generic map(1)
+      port map(ck=>ck,
+               rst=>rst,
+               en=>p_stall_id_n,
+               parallel_in=>p_alu_mem_hieqlo_1,
+               data_out=>p_alu_mem_hieqlo_2);
     
     --PIPELINE MEM/WB
     preg_memout: entity work.RegANEM(Load)
