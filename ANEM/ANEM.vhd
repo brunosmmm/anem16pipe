@@ -842,7 +842,8 @@ BEGIN
       port map(mrst=>rst,
                mclk=>ck,
                bztrue=>p_bztrue,
-               
+               bhleqtrue=>p_bhleqtrue,
+
                p_stall_if_n=>p_stall_if_n,
                p_stall_id_n=>p_stall_id_n,
                p_stall_alu_n=>p_stall_alu_n,
@@ -851,17 +852,19 @@ BEGIN
                mem_en_alu=>p_id_mem_memen_1,
                mem_w_alu=>p_id_mem_memw_1,
                reg_sela_alu=>p_id_wb_regsela_1,
-               reg_selb_alu=>p_id_alu_regselb_1,
-
-               reg_sela_wb=>p_id_wb_regsela_3,
 
                reg_sela_id=>p_id_wb_regsela_0,
                reg_selb_id=>p_id_alu_regselb_0,
                mem_en_id=>p_id_mem_memen_0,
                mem_w_id=>p_id_mem_memw_0,
-               
+
                next_instruction=>p_if_id_aneminst_0,
-               bz_flag=>'0'
+
+               regctl_alu=>p_id_wb_regctl_1,
+               reg_sela_mem=>p_id_wb_regsela_2,
+               regctl_mem=>p_id_wb_regctl_2,
+               reg_sela_wb=>p_id_wb_regsela_3,
+               regctl_wb=>p_id_wb_regctl_3
                );
                
 
