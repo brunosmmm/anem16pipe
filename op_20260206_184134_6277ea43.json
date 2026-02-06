@@ -1,0 +1,24 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "complexity_factors": null,
+    "perceived_complexity": 0.5,
+    "priority": "medium",
+    "tags": [
+      "testing",
+      "trace",
+      "validation"
+    ],
+    "text": "Run all simulator test programs through GHDL trace comparison to find cross-implementation discrepancies",
+    "type": "work"
+  },
+  "entity_id": "ann_184134_3e7ckycab488",
+  "lamport_clock": 117,
+  "operation_id": "op_20260206_184134_6277ea43",
+  "operation_type": "annotation_create",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T18:41:34.166165+00:00"
+}
