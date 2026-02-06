@@ -8,16 +8,16 @@
       {
         "hash": "bf4f690ecf824cbd034c2c4d46308d9ba9b308ab",
         "hash_short": "bf4f690",
-        "linked_at": "2026-02-06T14:54:30.903361+00:00",
+        "linked_at": "2026-02-06T14:54:30.934392+00:00",
         "message": "feat(ANEM): Phase 7: MFHI/MFLO hardware implementation\n\nConnect HI/LO special registers to GPR bank "
       }
     ],
-    "last_activity": "2026-02-06T14:54:30.903361+00:00"
+    "last_activity": "2026-02-06T14:54:30.934392+00:00"
   },
-  "entity_id": "ann_133211_3e7cky084936",
-  "lamport_clock": 90,
-  "operation_id": "op_20260206_145430_bd932d30",
+  "entity_id": "ann_012010_3e7cky057234",
+  "lamport_clock": 91,
+  "operation_id": "op_20260206_145430_9730d736",
   "operation_type": "annotation_update",
   "parent_operation": null,
-  "timestamp": "2026-02-06T14:54:30.907044+00:00"
+  "timestamp": "2026-02-06T14:54:30.938095+00:00"
 }
