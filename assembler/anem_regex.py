@@ -30,7 +30,7 @@ ADDRd   = re.compile(r"\.ADDRESS\s+(\d+)")
 COMM = re.compile(r"--.*$")
 
 ##Instruction types
-typeR   = re.compile(r"^\s*(A[DN]D|S(UB|LT)|[XN]?OR|MUL)\s+\$(\d{1,2}),\s*\$(\d{1,2})\s*$")
+typeR   = re.compile(r"^\s*(A[DN]D|S(UB|LT|GT)|[XN]?OR|MUL)\s+\$(\d{1,2}),\s*\$(\d{1,2})\s*$")
 typeS   = re.compile(r"^\s*((SH|RO)[RL]|SAR)\s+\$(\d{1,2}),\s*\$(\d{1,2})\s*$")
 typeJ   = re.compile(r"^\s*(J(AL)?)\s+(%?\w+%?)\s*$")
 typeHAB = re.compile(r"^\s*HAB\s*$")

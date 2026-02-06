@@ -27,7 +27,7 @@ begin
   
   process
     
-    file contents : text is in "contents.txt";
+    file contents : text open read_mode is "contents.txt";
     variable iline : line;
 
     variable addr, inst : bit_vector (instr_w-1 downto 0); 

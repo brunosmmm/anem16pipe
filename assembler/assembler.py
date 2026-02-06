@@ -47,7 +47,7 @@ def makeBinStr(i,size):
     #twos complement if needed
 
     b = format(i if i >= 0 else (1 << size) + i,'0%db' % size)
-    
+
     if len(b) > size:
         raise ValueError("number already bigger than desired size, maybe invalid register?")
 
@@ -75,20 +75,20 @@ class Assembler:
         if msgType == AsmMsgType.AsmMsgError:
             self.AsmErrorCount += 1
             if self.AsmFatalError == True and self.AsmErrorCount >= 1:
-                print colorize("(FATAL) ",MsgColors.red),
+                print(colorize("(FATAL) ",MsgColors.red), end='')
                 fatal = True
-            elif msgType == AsmMsgType.AsmMsgWarning:
-                self.AsmWarnCount += 1
-                if Verbosity < 1:
-                    return False#dont print
-                elif msgType == AsmMsgType.AsmMsgInfo:
-                    if Verbosity < 2:
-                        return False#dont print
-                    elif msgType == AsmMsgType.AsmMsgDebug:
-                        if Verbosity < 3:
-                            return False
+        elif msgType == AsmMsgType.AsmMsgWarning:
+            self.AsmWarnCount += 1
+            if self.Verbosity < 1:
+                return False #dont print
+        elif msgType == AsmMsgType.AsmMsgInfo:
+            if self.Verbosity < 2:
+                return False #dont print
+        elif msgType == AsmMsgType.AsmMsgDebug:
+            if self.Verbosity < 3:
+                return False
 
-        print colorize(msg,MsgTypeOut[msgType])
+        print(colorize(msg,MsgTypeOut[msgType]))
 
         #just for now
         if (fatal):
@@ -99,17 +99,17 @@ class Assembler:
     ##Output messages when done
     def Done(self):
 
-        print str(self.AsmErrorCount)+ \
-              colorize(" error(s) ",MsgTypeOut[AsmMsgType.AsmMsgError])+ \
-              str(self.AsmWarnCount)+ \
-              colorize(" warning(s) ",MsgTypeOut[AsmMsgType.AsmMsgWarning])
+        print(str(self.AsmErrorCount)+
+              colorize(" error(s) ",MsgTypeOut[AsmMsgType.AsmMsgError])+
+              str(self.AsmWarnCount)+
+              colorize(" warning(s) ",MsgTypeOut[AsmMsgType.AsmMsgWarning]))
 
     ##Output messages on init
     def Init(self):
 
-        print colorize("ANEM Assembler",MsgColors.green)
+        print(colorize("ANEM Assembler",MsgColors.green))
 
-    def Clean(self):
+    def Clean(self, lines):
         nline = 0
         self.CleanOut = []
         for line in lines:
@@ -122,7 +122,7 @@ class Assembler:
             label = None
             if re.match(r".*:\s+LIW.*",upLine) != None:
                 #Cannot substitute LIW when there is a label
-                asm.Message("Line %d: label followed by LIW" % nline,AsmMsgType.AsmMsgDebug)
+                self.Message("Line %d: label followed by LIW" % nline,AsmMsgType.AsmMsgDebug)
                 label,upLine = upLine.split(':')
                 upLine = upLine.strip()
                 self.CleanOut.append([nline,label+':'])
@@ -131,7 +131,7 @@ class Assembler:
             m = LIWb.match(upLine)
             if m != None:
                 #binary value
-                self.CleanOut.append([nline,"LIU $%s, %d" % (m.group(1),int(m.group(2),2)/256)])
+                self.CleanOut.append([nline,"LIU $%s, %d" % (m.group(1),int(m.group(2),2)//256)])
                 self.CleanOut.append([nline,"LIL $%s, %d" % (m.group(1),int(m.group(2),2)%256)])
                 self.CleanOut.append([nline,"ADD $0,$0"]) #this is a NOP after LIL
                 ##@todo verify this, was a hack for non-pipelined version
@@ -141,7 +141,7 @@ class Assembler:
             m = LIWh.match(upLine)
             if m != None:
                 #hexadecimal
-                self.CleanOut.append([nline,"LIU $%s, %d" % (m.group(1),int(m.group(2),16)/256)])
+                self.CleanOut.append([nline,"LIU $%s, %d" % (m.group(1),int(m.group(2),16)//256)])
                 self.CleanOut.append([nline,"LIL $%s, %d" % (m.group(1),int(m.group(2),16)%256)])
                 self.CleanOut.append([nline,"ADD $0,$0"])
 
@@ -157,7 +157,7 @@ class Assembler:
                 else:
                     data = int(m.group(2))
 
-                self.CleanOut.append([nline,"LIU $%s, %d" % (m.group(1),data/256)])
+                self.CleanOut.append([nline,"LIU $%s, %d" % (m.group(1),data//256)])
                 self.CleanOut.append([nline,"LIL $%s, %d" % (m.group(1),data%256)])
                 self.CleanOut.append([nline,"ADD $0,$0"])
 
@@ -177,25 +177,25 @@ class Assembler:
             m = L_HILOh.match(upLine)
             if m != None:
                 if m.group(1) == "LHI":
-                    self.CleanOut.append([nline,"LHH %d" % (int(m.group(2),16)/256)])
+                    self.CleanOut.append([nline,"LHH %d" % (int(m.group(2),16)//256)])
                     self.CleanOut.append([nline,"LHL %d" % (int(m.group(2),16)%256)])
                 elif m.group(1) == "LLO":
-                    self.CleanOut.append([nline,"LLH %d" % (int(m.group(2),16)/256)])
+                    self.CleanOut.append([nline,"LLH %d" % (int(m.group(2),16)//256)])
                     self.CleanOut.append([nline,"LLL %d" % (int(m.group(2),16)%256)])
-                
+
                 continue
             #decimal
             m = L_HILOd.match(upLine)
             if m != None:
                 if m.group(1) == "LHI":
-                    self.CleanOut.append([nline,"LHH %d" % (int(m.group(2))/256)])
+                    self.CleanOut.append([nline,"LHH %d" % (int(m.group(2))//256)])
                     self.CleanOut.append([nline,"LHL %d" % (int(m.group(2))%256)])
                 elif m.group(1) == "LLO":
-                    self.CleanOut.append([nline,"LLH %d" % (int(m.group(2))/256)])
+                    self.CleanOut.append([nline,"LLH %d" % (int(m.group(2))//256)])
                     self.CleanOut.append([nline,"LLL %d" % (int(m.group(2))%256)])
-                
+
                 continue
-                
+
             #replace MADD
             m = MADD.match(upLine)
             if m != None:
@@ -242,7 +242,7 @@ class Assembler:
                     self.labels[m.group(1)] = int(m.group(2))
                     continue
 
-                asm.Message("Line %d: Invalid directive: %s" % (nline,line),AsmMsgType.AsmMsgError)
+                self.Message("Line %d: Invalid directive: %s" % (nline,line),AsmMsgType.AsmMsgError)
             else:
                 label = None
                 try:
@@ -274,7 +274,7 @@ class Assembler:
         d = re.match(r"[+-]?\d+",byte)
 
         if u != None:
-            out = makeBinStr(int(self.labels[u.group(1)])/256,8)
+            out = makeBinStr(int(self.labels[u.group(1)])//256,8)
         elif l != None:
             out = makeBinStr(int(self.labels[l.group(1)])%256,8)
         elif d != None:
@@ -343,18 +343,18 @@ class Assembler:
 
 
     def makeM1Instr(self,mop,data):
-        
+
         return ANEMOpcodeM1+ANEMFuncM1[mop] + makeBinStr(int(data),8)
 
     def makeM3Instr(self,mop, reg):
-        
+
         return ANEMOpcodeM1+ANEMFuncM3[mop] + makeBinStr(0,4)+ makeBinStr(int(reg),4)
 
     def Assemble(self):
 
         self.binCode = []
         for index,nline,line in self.code:
-            
+
 
             m = typeR.match(line)
             if m != None:
@@ -417,6 +417,12 @@ class Assembler:
 
             self.Message("Line %d: unsupported or malformed instruction: %s" % (nline, line), AsmMsgType.AsmMsgError)
 
+    def WriteContents(self, filename):
+        """Write contents.txt for VHDL progmem simulation."""
+        with open(filename, "w") as f:
+            for index, instruction in self.binCode:
+                f.write(index + " " + instruction + "\n")
+
 ##program body
 if __name__ == "__main__":
 
@@ -427,60 +433,51 @@ if __name__ == "__main__":
     try:
         fileName = sys.argv[1]
     except:
-        AsmFatalError = True
+        asm.AsmFatalError = True
         asm.Message("Error: no filename specified",AsmMsgType.AsmMsgError)
         exit(1)
 
     #load program
 
-    f = open(fileName+".asm",'r')
-    lines = f.readlines()
-    f.close()
+    with open(fileName+".asm",'r') as f:
+        lines = f.readlines()
 
     #clean
 
-    asm.Clean()
+    asm.Clean(lines)
 
     #writes .clean file
-    outFile = open(fileName+".clean","w")
-    for nline,line in asm.CleanOut:
-        outFile.write(str(nline)+'\t'+line+'\n')
-    outFile.close()
+    with open(fileName+".clean","w") as outFile:
+        for nline,line in asm.CleanOut:
+            outFile.write(str(nline)+'\t'+line+'\n')
 
     asm.Message("%s.clean written" % fileName,AsmMsgType.AsmMsgInfo)
 
     #indexer
     asm.Index()
 
-    outFile = open(fileName+".ind","w")
+    with open(fileName+".ind","w") as outFile:
+        outFile.write(".LABELS\n")
+        for label in asm.labels.keys():
+            outFile.write(label+'\t'+str(asm.labels[label])+'\n')
 
-    outFile.write(".LABELS\n")
-    for label in asm.labels.keys():
-        outFile.write(label+'\t'+str(asm.labels[label])+'\n')
-
-
-    outFile.write(".CODE\n")
-    for index,nline,iline in asm.code:
-        outFile.write(str(index)+'\t'+str(nline)+'\t'+iline+'\n')
-
-    outFile.close()
+        outFile.write(".CODE\n")
+        for index,nline,iline in asm.code:
+            outFile.write(str(index)+'\t'+str(nline)+'\t'+iline+'\n')
 
     asm.Message("%s.ind written" % fileName, AsmMsgType.AsmMsgInfo)
 
     #assembler
     asm.Assemble()
 
-    outFile = open(fileName+".bin","w")
-    print_index = False
-
-    for index,instruction in asm.binCode:
-        if print_index:
-            outFile.write(index+'\t'+instruction+'\n')
-        else:
+    with open(fileName+".bin","w") as outFile:
+        for index,instruction in asm.binCode:
             outFile.write(instruction+'\n')
-
-    outFile.close()
 
     asm.Message("%s.bin written" % fileName, AsmMsgType.AsmMsgInfo)
 
-    ##@todo convert to hex procedure
+    # Write contents.txt for VHDL simulation
+    asm.WriteContents(fileName+".contents.txt")
+    asm.Message("%s.contents.txt written (VHDL simulation format)" % fileName, AsmMsgType.AsmMsgInfo)
+
+    asm.Done()
