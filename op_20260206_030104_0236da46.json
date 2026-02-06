@@ -1,0 +1,21 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "branch": "master",
+    "content": "# Phase 4: ALU and Register Bank Fixes \u2014 Complete\n\n## Commit\n237a338 \u2014 `feat(ANEM): Phase 4: ALU and register bank fixes`\n\n## What Was Done\n\n### 1. SLT Signed Comparison Fix (`alu/alu.vhd`)\n- Was: `ALU_A < ALU_B` (unsigned std_logic_vector comparison)\n- Now: `signed(ALU_A) < signed(ALU_B)` (proper signed comparison via numeric_std)\n- Added `use ieee.numeric_std.all` import\n\n### 2. SGT Instruction Added (`alu/alu.vhd`)\n- New: `compare_gt` signal with `signed(ALU_A) > signed(ALU_B)`\n- Added ALU_CONT case `\"01000\"` \u2192 `compare_gt` in output mux\n- FUNC=\"1000\", already defined in ISA (`instrset.vhd`) and assembler\n\n### 3. Register Bank SUBCK Removal (`regbnk/regbnk.vhd`)\n- Removed: SUBCK delayed clock, REG_IN_DATA intermediate buffer, all RegSp instances\n- Now: Single process writes directly to REG_DATA on rising_edge(CK)\n- Register $0 protected via `if idx /= 0` guard\n- Test mode stubbed (S_OUT <= '0')\n- LIU/LIL partial-write stale data fixed inherently (no intermediate buffer)\n\n### 4. Tests Added (`tests/test_basic.asm`)\n- Test 11: SLT signed (-8 < 3 \u2192 1) \u2014 validates signed comparison\n- Test 12: SGT signed (3 > -8 \u2192 1) \u2014 validates new SGT instruction\n- Both would give 0 with unsigned comparison, confirming signed behavior\n\n## Key Insights\n- **Assembler LIW order**: generates LIU first, then LIL (not LIL then LIU!)\n- Initially tried zeroing upper byte on LIL \u2014 broke LIW because LIU already set upper byte\n- Reverted: LIL only sets lower byte, retaining upper (correct for LIU-first order)\n- SUBCK removal is safe: regbnk process reads OLD pipeline register values on rising_edge(CK), same as before\n\n## Dead End\n- LIL zeroing upper byte: sounded logical but broke LIW due to assembler instruction ordering\n\n## Test Results\nAll 12 tests pass (was 10 tests before this phase).\n\n## Remaining Phases\n- Phase 5: MAC peripheral fixes (accumulator stale-value bug, CONFIG_MAC_IN feedback loop, signed overflow detection)\n",
+    "context": "Completed Phase 4 implementation and committed",
+    "repository_id": "github.com/brunosmmm/anem16pipe",
+    "session_id": "20260206_011215_17b0",
+    "session_type": "Software Development",
+    "title": "Phase 4 Complete \u2014 ALU and Register Bank Fixes"
+  },
+  "entity_id": "20260206_0301_phase-4-complete-alu-and-register-bank-fixes",
+  "lamport_clock": 43,
+  "operation_id": "op_20260206_030104_0236da46",
+  "operation_type": "checkpoint_save",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T03:01:04.459224+00:00"
+}
