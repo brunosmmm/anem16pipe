@@ -1,0 +1,18 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "resolution": {
+      "summary": "Implemented all 5 Phase 1 fixes plus R/S ALU swap and assembler offset fixes. All 9 basic tests pass.",
+      "type": "fixed"
+    }
+  },
+  "entity_id": "ann_011955_3e7ckyd28bb8",
+  "lamport_clock": 22,
+  "operation_id": "op_20260206_015144_752d3400",
+  "operation_type": "annotation_resolve",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T01:51:44.726585+00:00"
+}
