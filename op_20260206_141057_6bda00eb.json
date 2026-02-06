@@ -1,0 +1,25 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "complexity_factors": null,
+    "perceived_complexity": 0.3,
+    "priority": "medium",
+    "tags": [
+      "assembly",
+      "hazard",
+      "NOP-padding",
+      "test-program"
+    ],
+    "text": "ASM-BUG-1: test_sort.asm \u2014 Missing NOP between AND $5,$0 (j=0 reset) and LW $6, 0($5)\n\nAt the top of the inner loop, `AND $5, $0` resets j to 0, followed immediately by `LW $6, 0($5)` which uses R5 as base address. With no NOP between them, the LW reads the stale R5 value (from the previous iteration) because AND hasn't reached even the EX stage when LW is decoded.\n\nThe simulator forwards from EX\u2192ID and MEM\u2192ID but NOT from ID\u2192ID (same cycle). Need at least 1 NOP after AND $5 before LW uses $5.\n\nAdditionally, there are other places in test_sort.asm where NOPs may be insufficient between producer-consumer pairs (e.g., SUB $4,$3 immediately before AND $5,$0 \u2014 though R4 isn't used until later so this may be OK). A full NOP audit of the sort program is needed.\n\nFix: Add `NOP` after `AND $5, $0` (line 59) and audit all register dependencies for sufficient pipeline spacing.",
+    "type": "bug"
+  },
+  "entity_id": "ann_141057_3e7ckya8f95c",
+  "lamport_clock": 67,
+  "operation_id": "op_20260206_141057_6bda00eb",
+  "operation_type": "annotation_create",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T14:10:57.454602+00:00"
+}
