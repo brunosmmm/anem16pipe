@@ -67,6 +67,9 @@ signal p_id_wb_hictl_0 : std_logic_vector(2 downto 0);
 signal p_id_wb_loctl_0 : std_logic_vector(2 downto 0);
 signal p_id_wb_hiout_0 : std_logic_vector(15 downto 0);
 signal p_id_wb_loout_0 : std_logic_vector(15 downto 0);
+--HI/LO write-through bypass: when WB writes HI/LO at same edge ID reads
+signal p_id_wb_hiout_0_mux : std_logic_vector(15 downto 0);
+signal p_id_wb_loout_0_mux : std_logic_vector(15 downto 0);
 signal p_id_wb_hiloen_0  : std_logic_vector(1 downto 0);
 signal p_id_wb_himux_0 : std_logic_vector(1 downto 0);
 signal p_id_wb_lomux_0 : std_logic_vector(1 downto 0);
@@ -487,12 +490,33 @@ BEGIN
                parallel_in=>p_id_wb_loctl_0,
                data_out=>p_id_wb_loctl_1);
 
+    --HI/LO write-through bypass muxes: when WB writes HI/LO at the same
+    --rising_edge that ID reads them, the RegANEMB output has the stale value.
+    --Compute the post-write value and feed it to the pipeline register.
+    p_id_wb_hiout_0_mux <=
+      p_id_wb_limm_3 & p_id_wb_hiout_0(7 downto 0)
+        when p_id_wb_hiloen_3(0) = '1' and p_id_wb_hictl_3 = "010" else  --LHH: upper byte new
+      p_id_wb_hiout_0(15 downto 8) & p_id_wb_limm_3
+        when p_id_wb_hiloen_3(0) = '1' and p_id_wb_hictl_3 = "011" else  --LHL: lower byte new
+      hi_mux_data
+        when p_id_wb_hiloen_3(0) = '1' and (p_id_wb_hictl_3 = "100" or p_id_wb_hictl_3 = "001") else
+      p_id_wb_hiout_0;
+
+    p_id_wb_loout_0_mux <=
+      p_id_wb_limm_3 & p_id_wb_loout_0(7 downto 0)
+        when p_id_wb_hiloen_3(1) = '1' and p_id_wb_loctl_3 = "010" else  --LLH: upper byte new
+      p_id_wb_loout_0(15 downto 8) & p_id_wb_limm_3
+        when p_id_wb_hiloen_3(1) = '1' and p_id_wb_loctl_3 = "011" else  --LLL: lower byte new
+      lo_mux_data
+        when p_id_wb_hiloen_3(1) = '1' and (p_id_wb_loctl_3 = "100" or p_id_wb_loctl_3 = "001") else
+      p_id_wb_loout_0;
+
     preg_hiout_0: entity work.RegANEM(Load)
       generic map(16)
       port map(ck=>ck,
                rst=>rst,
                en=>p_stall_id_n,
-               parallel_in=>p_id_wb_hiout_0,
+               parallel_in=>p_id_wb_hiout_0_mux,
                data_out=>p_id_wb_hiout_1);
 
     preg_loout_0: entity work.RegANEM(Load)
@@ -500,7 +524,7 @@ BEGIN
       port map(ck=>ck,
                rst=>rst,
                en=>p_stall_id_n,
-               parallel_in=>p_id_wb_loout_0,
+               parallel_in=>p_id_wb_loout_0_mux,
                data_out=>p_id_wb_loout_1);
 
     preg_hiloen_0: entity work.RegANEM(Load)

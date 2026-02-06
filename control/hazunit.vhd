@@ -52,6 +52,8 @@ signal nfw_data_hazard  : std_logic;
 signal sw_stall_if_n    : std_logic;
 signal lw_stall_if_n    : std_logic;
 signal nfw_stall_if_n   : std_logic;
+signal jr_stall_if_n    : std_logic;
+signal jr_data_hazard   : std_logic;
 
 signal bz_stall_if_n    : std_logic;
 signal bz_stall_counter : std_logic_vector(1 downto 0);
@@ -114,7 +116,22 @@ begin
 
   nfw_stall_if_n <= not nfw_data_hazard;
 
-  p_stall_if_n <= lw_stall_if_n and sw_stall_if_n and bz_stall_if_n and nfw_stall_if_n;
+  --JR stall: JR reads register at ID stage (for jump destination), not at ALU.
+  --No forwarding can fix this — must stall until the producer exits the pipeline.
+  --Check ALU and MEM stages; WB is handled by register bank write-through bypass.
+  --JR opcode = "1100"
+  jr_data_hazard <=
+    '1' when next_instruction(15 downto 12) = "1100" and
+             regctl_alu /= "000" and reg_sela_alu /= "0000" and
+             reg_sela_alu = reg_sela_id else
+    '1' when next_instruction(15 downto 12) = "1100" and
+             regctl_mem /= "000" and reg_sela_mem /= "0000" and
+             reg_sela_mem = reg_sela_id else
+    '0';
+
+  jr_stall_if_n <= not jr_data_hazard;
+
+  p_stall_if_n <= lw_stall_if_n and sw_stall_if_n and bz_stall_if_n and nfw_stall_if_n and jr_stall_if_n;
 
 --clocked process for BZ/BHLEQ stall only
 process(mclk,mrst)

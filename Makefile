@@ -9,11 +9,16 @@
 #   make wave       - Run simulation with waveform dump
 #   make clean      - Clean build artifacts
 #   make assemble   - Assemble test programs
+#   make trace_basic - Generate trace for test_basic (golden model comparison)
+#   make trace PROG=test_basic - Generate trace for any assembled program
+#   make compare    - Compare GHDL vs simulator traces for all tests
+#   make compare_basic - Compare traces for a single test
 
 GHDL      ?= ghdl
 GHDL_FLAGS = --std=08 --ieee=synopsys
 WORK_DIR   = work
 ASM        = python3 assembler/assembler.py
+SIM        ?= ../anem16sim/builddir/sim
 
 # VHDL source files in dependency order
 # Level 0: No dependencies (leaf entities)
@@ -48,14 +53,15 @@ SRCS_L2 = \
 TB_SRCS = \
 	tests/tb_basic.vhd \
 	tests/tb_branch.vhd \
-	tests/tb_hazard.vhd
+	tests/tb_hazard.vhd \
+	tests/tb_trace.vhd
 
 ALL_SRCS = $(SRCS_L0) $(SRCS_L1) $(SRCS_L2) $(TB_SRCS)
 
 # Test programs
 TEST_PROGS = tests/test_basic tests/test_branch tests/test_hazard
 
-.PHONY: all analyze sim wave clean assemble test
+.PHONY: all analyze sim wave clean assemble test trace compare
 
 all: analyze
 
@@ -116,6 +122,44 @@ wave: analyze assemble
 	cd $(WORK_DIR) && $(GHDL) -r $(GHDL_FLAGS) --workdir=. tb_basic \
 		--stop-time=50us --vcd=waveform.vcd 2>&1 | tee sim_output.txt
 	@echo "=== Waveform saved to $(WORK_DIR)/waveform.vcd ==="
+
+# Pattern rule: generate trace for golden model comparison
+# Usage: make trace_basic, make trace_branch, etc.
+# Or: make trace PROG=test_basic (for external .asm files)
+trace_%: analyze assemble
+	@echo "=== Generating trace: test_$* ==="
+	cp tests/test_$*.contents.txt $(WORK_DIR)/contents.txt
+	cd $(WORK_DIR) && $(GHDL) -e $(GHDL_FLAGS) --workdir=. tb_trace
+	cd $(WORK_DIR) && $(GHDL) -r $(GHDL_FLAGS) --workdir=. tb_trace \
+		-gTRACE_FILE=test_$*.trace --stop-time=100us 2>&1 | tee trace_$*_output.txt
+	@echo "=== Trace written to $(WORK_DIR)/test_$*.trace ==="
+
+# Generate trace for an arbitrary program (set PROG=name, must have tests/name.contents.txt)
+trace: analyze
+	@test -n "$(PROG)" || (echo "Usage: make trace PROG=test_name" && exit 1)
+	cp tests/$(PROG).contents.txt $(WORK_DIR)/contents.txt
+	cd $(WORK_DIR) && $(GHDL) -e $(GHDL_FLAGS) --workdir=. tb_trace
+	cd $(WORK_DIR) && $(GHDL) -r $(GHDL_FLAGS) --workdir=. tb_trace \
+		-gTRACE_FILE=$(PROG).trace --stop-time=100us 2>&1 | tee trace_output.txt
+	@echo "=== Trace written to $(WORK_DIR)/$(PROG).trace ==="
+
+# Pattern rule: compare GHDL vs simulator traces for a single test
+# Generates both traces, filters to MW+END lines, diffs them
+compare_%: trace_%
+	@echo "=== Comparing traces: test_$* ==="
+	$(SIM) -T $(WORK_DIR)/test_$*.sim.trace tests/test_$*.contents.txt > /dev/null 2>&1
+	@grep '^MW\|^END' $(WORK_DIR)/test_$*.trace > $(WORK_DIR)/test_$*.ghdl.filtered
+	@grep '^MW\|^END' $(WORK_DIR)/test_$*.sim.trace > $(WORK_DIR)/test_$*.sim.filtered
+	@if diff -u $(WORK_DIR)/test_$*.ghdl.filtered $(WORK_DIR)/test_$*.sim.filtered > $(WORK_DIR)/test_$*.diff 2>&1; then \
+		echo "  PASS test_$*: traces match (MW+END)"; \
+	else \
+		echo "  FAIL test_$*: traces differ"; \
+		cat $(WORK_DIR)/test_$*.diff; \
+	fi
+
+# Compare all test programs
+compare: compare_basic compare_branch compare_hazard
+	@echo "=== ALL TRACE COMPARISONS COMPLETE ==="
 
 # Clean build artifacts
 clean:

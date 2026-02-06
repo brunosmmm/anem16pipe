@@ -65,9 +65,23 @@ BEGIN
   --test mode stub (not implemented)
   S_OUT <= '0';
 
-  --asynchronous data out
-  A_OUT <= REG_DATA(TO_INTEGER(UNSIGNED(SEL_A)));
-  B_OUT <= REG_DATA(TO_INTEGER(UNSIGNED(SEL_B)));
+  --asynchronous data out with write-through bypass
+  --When WB writes a register at the same rising_edge that ID reads it,
+  --the combinational read gets the stale (pre-write) value. Bypass the
+  --write data for full-word writes (R/S="001", LW="100", MFHI="110",
+  --MFLO="111"). Partial writes (LIU="010", LIL="011") and JAL ("101")
+  --are covered by NFW stall, so no bypass needed.
+  A_OUT <= ALU_IN  when REG_CNT = "001" and SEL_W = SEL_A and SEL_W /= "0000" else
+           DATA_IN when REG_CNT = "100" and SEL_W = SEL_A and SEL_W /= "0000" else
+           HI_IN   when REG_CNT = "110" and SEL_W = SEL_A and SEL_W /= "0000" else
+           LO_IN   when REG_CNT = "111" and SEL_W = SEL_A and SEL_W /= "0000" else
+           REG_DATA(TO_INTEGER(UNSIGNED(SEL_A)));
+
+  B_OUT <= ALU_IN  when REG_CNT = "001" and SEL_W = SEL_B and SEL_W /= "0000" else
+           DATA_IN when REG_CNT = "100" and SEL_W = SEL_B and SEL_W /= "0000" else
+           HI_IN   when REG_CNT = "110" and SEL_W = SEL_B and SEL_W /= "0000" else
+           LO_IN   when REG_CNT = "111" and SEL_W = SEL_B and SEL_W /= "0000" else
+           REG_DATA(TO_INTEGER(UNSIGNED(SEL_B)));
 
   PROCESS(CK, RST)
     variable idx : integer;
