@@ -1,0 +1,29 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "complexity_factors": [
+      "multi_file",
+      "architecture"
+    ],
+    "perceived_complexity": 0.65,
+    "priority": "high",
+    "tags": [
+      "alu",
+      "register-bank",
+      "SGT",
+      "SLT",
+      "SUBCK"
+    ],
+    "text": "Phase 4: ALU and register bank fixes \u2014 Implement SGT in ALU output mux, fix SLT to use signed comparison (import numeric_std), redesign register bank clock scheme (remove SUBCK anti-pattern), fix LIU/LIL partial-write stale data issue",
+    "type": "todo"
+  },
+  "entity_id": "ann_012004_3e7cky1b6e23",
+  "lamport_clock": 7,
+  "operation_id": "op_20260206_012004_0537b97d",
+  "operation_type": "annotation_create",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T01:20:04.042508+00:00"
+}
