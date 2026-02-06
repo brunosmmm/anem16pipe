@@ -1,0 +1,23 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "commit_refs": [
+      {
+        "hash": "b2a13d119a576612e1400aa270d8df9219290c85",
+        "hash_short": "b2a13d1",
+        "linked_at": "2026-02-06T01:30:27.561121+00:00",
+        "message": "feat(assembler): Phase 6: Test infrastructure \u2014 fix assembler, write"
+      }
+    ],
+    "last_activity": "2026-02-06T01:30:27.561121+00:00"
+  },
+  "entity_id": "ann_012010_3e7cky057234",
+  "lamport_clock": 14,
+  "operation_id": "op_20260206_013027_badf2ed3",
+  "operation_type": "annotation_update",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T01:30:27.565243+00:00"
+}
