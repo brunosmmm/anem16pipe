@@ -1,0 +1,23 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "complexity_factors": null,
+    "perceived_complexity": 0.3,
+    "priority": "low",
+    "tags": [
+      "assembler",
+      "usability"
+    ],
+    "text": "Add hex literal support to the assembler. Currently only decimal literals are supported \u2014 e.g. `LIL $14, 0x42` fails with 'unsupported or malformed instruction'. Should support 0x prefix for hex values in immediate operands (LIL, LIU, etc).",
+    "type": "todo"
+  },
+  "entity_id": "ann_135555_3e7cky064e10",
+  "lamport_clock": 65,
+  "operation_id": "op_20260206_135555_e3905f3c",
+  "operation_type": "annotation_create",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T13:55:55.794678+00:00"
+}
