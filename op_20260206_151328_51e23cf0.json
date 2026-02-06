@@ -1,0 +1,18 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "resolution": {
+      "summary": "Invalid \u2014 test_sort.asm was never created, and the hazard described (AND\u2192LW base register) is handled by ALU\u2192ALU forwarding with 0 NOPs needed. Annotation was based on simulator (anem16sim) forwarding limitations, not hardware pipeline.",
+      "type": "wontfix"
+    }
+  },
+  "entity_id": "ann_141057_3e7ckya8f95c",
+  "lamport_clock": 105,
+  "operation_id": "op_20260206_151328_51e23cf0",
+  "operation_type": "annotation_resolve",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T15:13:28.952025+00:00"
+}
