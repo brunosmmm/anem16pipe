@@ -1,0 +1,23 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "commit_refs": [
+      {
+        "hash": "a64014eebf5ec0309bd896556ff15d24a6eb3a67",
+        "hash_short": "a64014e",
+        "linked_at": "2026-02-06T02:47:13.478176+00:00",
+        "message": "feat(ANEM): Phase 3: Forwarding coverage \u2014 Add forwarding for LIL/LIU,"
+      }
+    ],
+    "last_activity": "2026-02-06T02:47:13.478176+00:00"
+  },
+  "entity_id": "ann_012010_3e7cky057234",
+  "lamport_clock": 31,
+  "operation_id": "op_20260206_024713_04edf204",
+  "operation_type": "annotation_update",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T02:47:13.484147+00:00"
+}
