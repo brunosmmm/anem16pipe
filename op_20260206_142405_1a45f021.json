@@ -1,0 +1,18 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "resolution": {
+      "summary": "Added hex literal support to LIL/LIU instructions in assembler. Two changes: regex in anem_regex.py and hex parsing in assembler.py makeLInstr.",
+      "type": "fixed"
+    }
+  },
+  "entity_id": "ann_135555_3e7cky064e10",
+  "lamport_clock": 79,
+  "operation_id": "op_20260206_142405_1a45f021",
+  "operation_type": "annotation_resolve",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T14:24:05.406716+00:00"
+}
