@@ -1,0 +1,18 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "resolution": {
+      "summary": "Phase 3 forwarding coverage completed: added LIU/LIL/LW forwarding paths, combinational LW stall, NFW stall for non-forwardable writes, Z flag gating, MAC bus contention fix.",
+      "type": "fixed"
+    }
+  },
+  "entity_id": "ann_012001_3e7ckyf987fb",
+  "lamport_clock": 97,
+  "operation_id": "op_20260206_145634_a0e72185",
+  "operation_type": "annotation_resolve",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T14:56:34.142369+00:00"
+}
