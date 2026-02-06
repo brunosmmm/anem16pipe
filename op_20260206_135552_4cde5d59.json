@@ -1,0 +1,18 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "resolution": {
+      "summary": "Fixed JAL return address bug with two changes: (1) moved regctl '101' case outside if idx/=0 guard in regbnk.vhd so JAL can write R15 regardless of SEL_W value, (2) added +1 to p_id_wb_iaddr_0 in ANEM.vhd for MIPS PC+2 convention. Removed all debug statements. All 14 tests pass.",
+      "type": "fixed"
+    }
+  },
+  "entity_id": "ann_133211_3e7cky084936",
+  "lamport_clock": 64,
+  "operation_id": "op_20260206_135552_4cde5d59",
+  "operation_type": "annotation_resolve",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T13:55:52.621291+00:00"
+}
