@@ -1,0 +1,18 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "resolution": {
+      "summary": "By design \u2014 Z flag only updates on R/S-type ALU ops in both GHDL hardware and C++ simulator. BZ tests the flag from the most recent ALU operation, not the most recent instruction. All 9 simulator trace comparisons confirm both implementations agree. This matches standard MIPS-style flag semantics.",
+      "type": "wontfix"
+    }
+  },
+  "entity_id": "ann_030754_3e7cky0dd177",
+  "lamport_clock": 125,
+  "operation_id": "op_20260206_210427_38951238",
+  "operation_type": "annotation_resolve",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T21:04:27.437001+00:00"
+}
