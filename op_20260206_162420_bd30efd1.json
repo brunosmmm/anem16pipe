@@ -1,0 +1,21 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "branch": "master",
+    "content": "# Golden Model Trace Implementation\n\n## What Was Done\n- Created `tests/TRACE_FORMAT.md` \u2014 trace format specification for comparing GHDL pipeline vs C++ behavioral simulator\n- Created `tests/tb_trace.vhd` \u2014 trace-generating testbench that captures MW (memory write) events\n- Updated `Makefile` with `trace_%` pattern rule and `trace` target with PROG= parameter\n\n## Trace Format\n- MW events: `MW <4-hex-addr> <4-hex-data>` \u2014 emitted on rising_edge when mem_en=1 and mem_w=1\n- MAC peripheral writes (addr >= 0xFFD0) excluded\n- END marker: `END <decimal_mw_count>`\n- RF/SR register dump: deferred (GHDL external name bugs)\n\n## Verified Results\n- `make trace_basic` \u2192 23 MW events (correct)\n- `make trace_branch` \u2192 4 MW events (correct)  \n- `make trace_hazard` \u2192 6 MW events (correct)\n- `make test` \u2192 all 32 tests still pass\n\n## GHDL External Name Limitation\nVHDL-2008 external names (`<< signal path : type >>`) crash with NULL access in GHDL for:\n- Composite types (arrays of std_logic_vector)\n- Sub-component buffer ports\n- Both relative and absolute path forms\n\nTried 4+ approaches, all failed at elaboration time. Workaround: test programs SW registers to memory before HALT, making register values appear as MW events.\n\n## Key Design Decisions\n- Trace captures architecturally-visible state only (memory writes)\n- Cycle timing NOT compared (pipeline vs behavioral execute at different speeds)\n- MW events must match in exact order and exact values\n- User will implement C++ simulator side using TRACE_FORMAT.md spec\n\n## Files\n- `tests/TRACE_FORMAT.md` (new)\n- `tests/tb_trace.vhd` (new)\n- `Makefile` (modified \u2014 added trace targets)\n",
+    "context": "Completed golden model trace feature implementation",
+    "repository_id": "github.com/brunosmmm/anem16pipe",
+    "session_id": "20260206_145924_da5c",
+    "session_type": "Software Development",
+    "title": "Golden model trace implementation complete"
+  },
+  "entity_id": "20260206_1624_golden-model-trace-implementation-complete",
+  "lamport_clock": 109,
+  "operation_id": "op_20260206_162420_bd30efd1",
+  "operation_type": "checkpoint_save",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T16:24:20.620425+00:00"
+}
