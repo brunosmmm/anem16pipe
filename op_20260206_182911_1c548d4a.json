@@ -1,0 +1,17 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "last_activity": "2026-02-06T18:29:11.562036+00:00",
+    "text": "SIM-BUG: Z flag not preserved across non-ALU instructions (pipeline-level issue)\n\nThe ALU fix (gating Z set to R/S only) is necessary but insufficient. The root cause is in the pipeline:\n\n1. ALU output `aout.flags` initializes to 0 every call (alu.cpp:16)\n2. For non-ALU ops (LIL, LW, etc.), Z stays 0 in the ALU output\n3. This ALU output flows into `exec_to_mem`, overwriting the previous instruction's Z flag\n4. BZ checks `exec_to_mem.alu_out.flags` \u2014 sees Z=0, not the persisted Z from the last R/S op\n\nHardware has a separate Z register gated by `p_z_en` (ANEM.vhd:637-650):\n- Only updates on R-type (aluctl=\"001\") or S-type (aluctl=\"010\")\n- Non-ALU instructions leave it untouched\n- BZ reads this persistent registered Z, not per-instruction ALU output\n\nFix: add a persistent Z flag to the CPU that only updates for R/S type:\n```cpp\n// In EX stage pipeline advance:\nif (op == aluR || op == aluS) {\n    this->z_flag = (alu_result.flags & ANEM_ALU_Z) != 0;\n}\n// BZ resolution checks this->z_flag instead of exec_to_mem.alu_out.flags\n```\n\nTrace evidence: test_branch MW 0003 (GHDL=0001, sim=0000). SUB sets Z=1, LIL follows (does NOT update Z in HW), BZ should still see Z=1.",
+    "updated": "2026-02-06T18:29:11.562036+00:00"
+  },
+  "entity_id": "ann_180942_3e7ckyb2ceca",
+  "lamport_clock": 116,
+  "operation_id": "op_20260206_182911_1c548d4a",
+  "operation_type": "annotation_update",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T18:29:11.567060+00:00"
+}
