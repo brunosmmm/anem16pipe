@@ -271,12 +271,15 @@ class Assembler:
         u = re.match(r"%(\w+)%U",byte)
         l = re.match(r"%(\w+)%L",byte)
         x = re.match(r"%(\w+)%",byte)
+        h = re.match(r"0[xX]([a-fA-F0-9]+)",byte)
         d = re.match(r"[+-]?\d+",byte)
 
         if u != None:
             out = makeBinStr(int(self.labels[u.group(1)])//256,8)
         elif l != None:
             out = makeBinStr(int(self.labels[l.group(1)])%256,8)
+        elif h != None:
+            out = makeBinStr(int(byte,16),8)
         elif d != None:
             out = makeBinStr(int(byte),8)
         elif x != None:
