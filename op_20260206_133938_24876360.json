@@ -1,0 +1,25 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "complexity_factors": null,
+    "perceived_complexity": 0.5,
+    "priority": "critical",
+    "tags": [
+      "hw-bug",
+      "anem16pipe",
+      "JAL",
+      "alignment"
+    ],
+    "text": "B1: JAL return address bug \u2014 HW saves JAL's own PC to R15 instead of PC+1.\n\nSuspects: regbnk.vhd:102-103 saves p_id_wb_iaddr_3 (JAL's own PC). ANEM.vhd:272 feeds PC_IN without +1 adder.\nFix: Add +1 adder before PC_IN in ANEM.vhd:272, or change regbnk.vhd to use p_id_wb_iaddr_3 + 1.\nImpact: JAL/JR subroutine calls cause infinite loops because JR returns to JAL itself instead of the instruction after the delay slot.",
+    "type": "bug"
+  },
+  "entity_id": "ann_133938_3e7cky2e7a6b",
+  "lamport_clock": 61,
+  "operation_id": "op_20260206_133938_24876360",
+  "operation_type": "annotation_create",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T13:39:38.885736+00:00"
+}
