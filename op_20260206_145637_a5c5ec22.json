@@ -1,0 +1,18 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "resolution": {
+      "summary": "Phase 2 hazard unit completed: LW hazard checks both sela/selb, deny-list for non-register-reading opcodes, SW stall across 3 pipeline stages, BHLEQ added to branch stall logic, all stalls combinational.",
+      "type": "fixed"
+    }
+  },
+  "entity_id": "ann_011958_3e7cky4fd06c",
+  "lamport_clock": 98,
+  "operation_id": "op_20260206_145637_a5c5ec22",
+  "operation_type": "annotation_resolve",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T14:56:37.358963+00:00"
+}
