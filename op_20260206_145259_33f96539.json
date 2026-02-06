@@ -1,0 +1,21 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "branch": "master",
+    "content": "# MFHI/MFLO Hardware Implementation\n\n## What Was Done\nImplemented MFHI (Move From HI) and MFLO (Move From LO) instructions, connecting the HI/LO special registers to the general-purpose register bank.\n\n## Changes Made\n\n### 1. idecode.vhd \u2014 Register routing + regbnk_ctl\n- **regbnk_sela override**: M3 instructions (MFHI/MFLO/MTHI/MTLO) have dest/src register in `instruction(3:0)`, not `instruction(11:8)`. Added conditional routing when opcode=M1 and m1op matches any M3 func.\n- **regbnk_ctl_0**: Added `\"110\"` for MFHI and `\"111\"` for MFLO at the top of the priority chain.\n\n### 2. regbnk.vhd \u2014 HI/LO write cases\n- Added `WHEN \"110\" => REG_DATA(idx) <= HI_IN` (MFHI: copy HI register to GPR)\n- Added `WHEN \"111\" => REG_DATA(idx) <= LO_IN` (MFLO: copy LO register to GPR)\n- Both inside the `if idx /= 0` guard (R0 protection)\n\n### 3. hazunit.vhd \u2014 NFW stall for MFHI/MFLO\n- Added `\"110\"` and `\"111\"` to the NFW stall regctl checks across all 3 pipeline stages (ALU/MEM/WB)\n- MFHI/MFLO write GPRs via pipeline (snapshot at ID \u2192 WB), data is NOT on ALU forwarding path\n\n### 4. test_basic.asm \u2014 Tests 21-22\n- LHI 42 \u2192 MFHI $6 \u2192 SW (expect 0x002A)\n- LLO 99 \u2192 MFLO $7 \u2192 SW (expect 0x0063)\n- 1 NOP between LLO and MFHI for HI/LO register writeback timing\n- SW stall after MFHI provides implicit delay for MFLO\n\n### 5. tb_basic.vhd \u2014 Updated assertions\n- Total tests: 22 (was 20)\n- JAL return address shifted: 0x0047 \u2192 0x0051 (10 new instructions before JAL)\n\n## Key Design Decisions\n- **M3 register routing applies to ALL M3 ops** (MFHI/MFLO/MTHI/MTLO), not just MFHI/MFLO \u2014 this also fixes MTHI/MTLO which were reading the wrong GPR\n- **NFW stall (not forwarding)** because MFHI/MFLO data travels through pipeline registers (HI/LO snapshot), never appears on ALU output bus\n- **1 NOP required** between last M1 HI/LO write (at WB) and MFHI/MFLO (at ID) \u2014 same-edge read-write would get stale value\n\n## Test Results\nAll 31 tests pass: 22 basic + 4 branch + 5 hazard\n\n## Commits This Session\n- 15a5938: feat(tests): Add self-checking test infrastructure with 29 automated tests\n- a77c806: feat(tests): Add branch and hazard test suites\n- 9a9e611: feat(assembler): Add hex literal support for LIL/LIU instructions\n- (uncommitted): MFHI/MFLO hardware implementation\n\n## Related Annotations\n- ann_133944: B2 MFHI/MFLO not implemented \u2192 FIXED\n- ann_133948: B3 MUL not in ALU \u2192 still open (MUL feeds MAC, not ALU output)\n",
+    "context": "Completed MFHI/MFLO implementation for ann_133944 \u2014 all 31 tests passing",
+    "repository_id": "github.com/brunosmmm/anem16pipe",
+    "session_id": null,
+    "session_type": "Software Development",
+    "title": "MFHI/MFLO hardware implementation complete"
+  },
+  "entity_id": "20260206_1452_mfhi-mflo-hardware-implementation-complete",
+  "lamport_clock": 86,
+  "operation_id": "op_20260206_145259_33f96539",
+  "operation_type": "checkpoint_save",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T14:52:59.640152+00:00"
+}
