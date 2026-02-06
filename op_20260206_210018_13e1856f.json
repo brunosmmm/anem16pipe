@@ -8,16 +8,16 @@
       {
         "hash": "8cd7bc5125aa8da00e9577f129401cf464e3baff",
         "hash_short": "8cd7bc5",
-        "linked_at": "2026-02-06T21:00:18.556306+00:00",
+        "linked_at": "2026-02-06T21:00:18.598480+00:00",
         "message": "feat(ANEM): Phase 8: WB\u2192ID timing hazard fixes \u2014 write-through bypass and JR stall\n\nFix 3 WB\u2192ID timi"
       }
     ],
-    "last_activity": "2026-02-06T21:00:18.556306+00:00"
+    "last_activity": "2026-02-06T21:00:18.598480+00:00"
   },
-  "entity_id": "ann_180246_3e7ckye29ad6",
-  "lamport_clock": 123,
-  "operation_id": "op_20260206_210018_98fb2275",
+  "entity_id": "ann_161152_3e7cky348c40",
+  "lamport_clock": 124,
+  "operation_id": "op_20260206_210018_13e1856f",
   "operation_type": "annotation_update",
   "parent_operation": null,
-  "timestamp": "2026-02-06T21:00:18.562099+00:00"
+  "timestamp": "2026-02-06T21:00:18.602048+00:00"
 }
