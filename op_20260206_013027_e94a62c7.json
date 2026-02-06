@@ -1,0 +1,30 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "annotations_linked": [
+      "ann_012010_3e7cky057234",
+      "ann_011206_3e7cky5c541f"
+    ],
+    "code_commit": "b2a13d119a576612e1400aa270d8df9219290c85",
+    "code_commit_message": "feat(assembler): Phase 6: Test infrastructure \u2014 fix assembler, write",
+    "files": [
+      "Makefile",
+      "assembler/anem_regex.py",
+      "assembler/assembler.py",
+      "memory/progmem.vhd"
+    ],
+    "tasks_linked": [
+      "task_012019_149eba",
+      "task_011215_050c99"
+    ]
+  },
+  "entity_id": null,
+  "lamport_clock": 13,
+  "operation_id": "op_20260206_013027_e94a62c7",
+  "operation_type": "commit_linked",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T01:30:27.553439+00:00"
+}
