@@ -8,16 +8,16 @@
       {
         "hash": "a64014eebf5ec0309bd896556ff15d24a6eb3a67",
         "hash_short": "a64014e",
-        "linked_at": "2026-02-06T02:47:13.478176+00:00",
+        "linked_at": "2026-02-06T02:47:13.508910+00:00",
         "message": "feat(ANEM): Phase 3: Forwarding coverage \u2014 Add forwarding for LIL/LIU,"
       }
     ],
-    "last_activity": "2026-02-06T02:47:13.478176+00:00"
+    "last_activity": "2026-02-06T02:47:13.508910+00:00"
   },
-  "entity_id": "ann_012010_3e7cky057234",
-  "lamport_clock": 31,
-  "operation_id": "op_20260206_024713_04edf204",
+  "entity_id": "ann_012001_3e7ckyf987fb",
+  "lamport_clock": 32,
+  "operation_id": "op_20260206_024713_02baa8d5",
   "operation_type": "annotation_update",
   "parent_operation": null,
-  "timestamp": "2026-02-06T02:47:13.484147+00:00"
+  "timestamp": "2026-02-06T02:47:13.513825+00:00"
 }
