@@ -1,0 +1,30 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "complexity_factors": [
+      "ISA_extension",
+      "multi_file",
+      "pipeline_interaction",
+      "assembler_update"
+    ],
+    "perceived_complexity": 0.6,
+    "priority": "high",
+    "tags": [
+      "feature",
+      "stack",
+      "ISA",
+      "calling-convention"
+    ],
+    "text": "Implement stack support \u2014 Add dedicated SP register (or designate $15 as SP), PUSH/POP instructions that auto-decrement/increment SP and perform SW/LW. Enables nested function calls, recursion, and local variables. JAL currently saves return address to $15 \u2014 may need to rethink return address storage if $15 becomes SP. Consider: stack grows down, PUSH = SP-1 then SW, POP = LW then SP+1. May also want a CALL instruction (JAL + PUSH return addr) and RET (POP + JR).",
+    "type": "idea"
+  },
+  "entity_id": "ann_031018_3e7ckyeff20b",
+  "lamport_clock": 55,
+  "operation_id": "op_20260206_031018_e0376662",
+  "operation_type": "annotation_create",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T03:10:18.349373+00:00"
+}
