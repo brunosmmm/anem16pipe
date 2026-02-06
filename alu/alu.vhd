@@ -20,6 +20,7 @@
 
 Library ieee;
 Use ieee.std_logic_1164.all;
+Use ieee.numeric_std.all;
 
 Entity ALU is 
   Generic( n : natural := 16 );
@@ -42,6 +43,7 @@ Signal aux_move  : std_logic_vector(n downto 1);
 Signal zero      : std_logic_vector(n downto 1) := (others => '0');
 Signal zero2     : std_logic_vector(n-4 downto 1) := (others => '0');
 Signal compare   : std_logic_vector(n downto 1);
+Signal compare_gt: std_logic_vector(n downto 1);
 
 Begin
 --  ALU_OP <= "001"; -- ALU makes type R operation (arithmetic)
@@ -64,10 +66,12 @@ with ALU_OP select
   Z <= '1' when ALU_OUT = zero else
        '0' ;
 
--- SLT:
--- if A < B:       out   = 000....01
--- else:           out   = 000....00   
-  compare <= zero(n-1 downto 1)&'1' when (ALU_A < ALU_B) else
+-- SLT (signed): if A < B: out = 000....01, else: out = 000....00
+  compare <= zero(n-1 downto 1)&'1' when (signed(ALU_A) < signed(ALU_B)) else
+		     zero;
+
+-- SGT (signed): if A > B: out = 000....01, else: out = 000....00
+  compare_gt <= zero(n-1 downto 1)&'1' when (signed(ALU_A) > signed(ALU_B)) else
 		     zero;
 
   comp: entity work.complement(sub) Generic Map ( n ) Port Map (ALU_B,comp_B);
@@ -86,6 +90,7 @@ with ALU_OP select
 			  (ALU_A XOR ALU_B) when "01111",
 			  (ALU_A NOR ALU_B) when "01100",
 			  compare           when "00111",
+			  compare_gt        when "01000",
 			  zero               when others;
   
 End behavior;

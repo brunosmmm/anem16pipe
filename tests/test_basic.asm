@@ -21,6 +21,8 @@
 --   addr 7: SHL result (expected: 0x000E = 0x0007 << 1)
 --   addr 8: SHR result (expected: 0x0003 = 0x0007 >> 1)
 --   addr 9: LW result  (expected: 0x0007 = value loaded from addr 0)
+--   addr 10: SLT result (expected: 0x0001 = -8 < 3 signed)
+--   addr 11: SGT result (expected: 0x0001 = 3 > -8 signed)
 
 -- Setup: load test values into registers
 -- R1 = 3, R2 = 4, R3 = 7
@@ -86,6 +88,20 @@ SW $12, 8($0)
 LW $13, 0($0)
 ADD $13, $0
 SW $13, 9($0)
+
+-- Test 11: SLT (signed). R14 = (R9 < R1) = (-8 < 3) = 1
+-- Unsigned would give 0 (0xFFF8 > 3), so this validates signed comparison
+AND $14, $0
+OR $14, $9
+SLT $14, $1
+SW $14, 10($0)
+
+-- Test 12: SGT (signed). R14 = (R1 > R9) = (3 > -8) = 1
+-- Unsigned would give 0 (3 < 0xFFF8), so this validates signed comparison
+AND $14, $0
+OR $14, $1
+SGT $14, $9
+SW $14, 11($0)
 
 -- End: infinite loop
 HALT: J %HALT%
