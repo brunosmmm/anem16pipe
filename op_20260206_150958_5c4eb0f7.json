@@ -1,0 +1,23 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "commit_refs": [
+      {
+        "hash": "5a05b9d0d64b9257b8d760e68014283a988ceeb2",
+        "hash_short": "5a05b9d",
+        "linked_at": "2026-02-06T15:09:58.375331+00:00",
+        "message": "feat(alu): MUL to ALU output mux \u2014 single signal + mux case"
+      }
+    ],
+    "last_activity": "2026-02-06T15:09:58.375331+00:00"
+  },
+  "entity_id": "ann_031031_3e7ckyed34e0",
+  "lamport_clock": 102,
+  "operation_id": "op_20260206_150958_5c4eb0f7",
+  "operation_type": "annotation_update",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T15:09:58.380063+00:00"
+}
