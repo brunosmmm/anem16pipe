@@ -8,16 +8,16 @@
       {
         "hash": "2ec4ad6b4f249f5489f220f9fe2edf8ee7da962c",
         "hash_short": "2ec4ad6",
-        "linked_at": "2026-02-06T21:42:46.939703+00:00",
+        "linked_at": "2026-02-06T21:42:47.008845+00:00",
         "message": "feat(ANEM): Phase 9: Stack support (PUSH/POP/SPRD/SPWR) and ADDI\n\nAdd dedicated stack pointer regist"
       }
     ],
-    "last_activity": "2026-02-06T21:42:46.939703+00:00"
+    "last_activity": "2026-02-06T21:42:47.008845+00:00"
   },
-  "entity_id": "ann_012010_3e7cky057234",
-  "lamport_clock": 133,
-  "operation_id": "op_20260206_214246_e14321bf",
+  "entity_id": "ann_012001_3e7ckyf987fb",
+  "lamport_clock": 134,
+  "operation_id": "op_20260206_214247_af378fd9",
   "operation_type": "annotation_update",
   "parent_operation": null,
-  "timestamp": "2026-02-06T21:42:46.944018+00:00"
+  "timestamp": "2026-02-06T21:42:47.013522+00:00"
 }
