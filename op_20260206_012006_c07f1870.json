@@ -1,0 +1,27 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "complexity_factors": [
+      "multi_file"
+    ],
+    "perceived_complexity": 0.6,
+    "priority": "high",
+    "tags": [
+      "mac",
+      "accumulator",
+      "overflow",
+      "config-register"
+    ],
+    "text": "Phase 5: MAC peripheral fixes \u2014 Fix accumulator stale-value bug (use variables or intermediate signals), fix CONFIG_MAC_IN feedback loop (use CONFIG_MAC_OUT for read-back), fix signed overflow detection logic",
+    "type": "todo"
+  },
+  "entity_id": "ann_012006_3e7cky3aa2fe",
+  "lamport_clock": 8,
+  "operation_id": "op_20260206_012006_c07f1870",
+  "operation_type": "annotation_create",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T01:20:06.581669+00:00"
+}
