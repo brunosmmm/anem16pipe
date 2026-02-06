@@ -8,16 +8,16 @@
       {
         "hash": "b0994f66065df4a87a11ba09009e92d5eceed6eb",
         "hash_short": "b0994f6",
-        "linked_at": "2026-02-06T03:04:46.082506+00:00",
+        "linked_at": "2026-02-06T03:04:46.117342+00:00",
         "message": "feat(mac): Phase 5: MAC peripheral fixes\n\n- Fix accumulator stale-value bug: use process variables f"
       }
     ],
-    "last_activity": "2026-02-06T03:04:46.082506+00:00"
+    "last_activity": "2026-02-06T03:04:46.117342+00:00"
   },
-  "entity_id": "ann_012006_3e7cky3aa2fe",
-  "lamport_clock": 47,
-  "operation_id": "op_20260206_030446_11ec18e9",
+  "entity_id": "ann_012001_3e7ckyf987fb",
+  "lamport_clock": 48,
+  "operation_id": "op_20260206_030446_633d2af1",
   "operation_type": "annotation_update",
   "parent_operation": null,
-  "timestamp": "2026-02-06T03:04:46.088371+00:00"
+  "timestamp": "2026-02-06T03:04:46.122413+00:00"
 }
