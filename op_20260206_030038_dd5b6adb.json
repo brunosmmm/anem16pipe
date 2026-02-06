@@ -1,0 +1,35 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "annotations_linked": [
+      "ann_012010_3e7cky057234",
+      "ann_012004_3e7cky1b6e23",
+      "ann_012001_3e7ckyf987fb",
+      "ann_011958_3e7cky4fd06c",
+      "ann_011955_3e7ckyd28bb8"
+    ],
+    "code_commit": "237a338a1f0215da6c4656f656e6c6b9c43d1989",
+    "code_commit_message": "feat(ANEM): Phase 4: ALU and register bank fixes\n\n- Fix SLT to use signed comparison (was unsigned)\n- Add SGT (Set Greater Than) instruction with signed comparison\n- Remove SUBCK delayed-clock anti-pattern from register bank\n- Eliminate REG_IN_DATA intermediate buffer, write directly to REG_DATA\n- Add SLT/SGT signed comparison tests (tests 11-12)\n\nAll 12 tests pass.",
+    "files": [
+      "alu/alu.vhd",
+      "regbnk/regbnk.vhd",
+      "tests/test_basic.asm"
+    ],
+    "tasks_linked": [
+      "task_024910_95da70",
+      "task_022244_2ad705",
+      "task_015210_77544e",
+      "task_013151_5d24e7",
+      "task_012019_149eba"
+    ]
+  },
+  "entity_id": null,
+  "lamport_clock": 37,
+  "operation_id": "op_20260206_030038_dd5b6adb",
+  "operation_type": "commit_linked",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T03:00:38.546864+00:00"
+}
