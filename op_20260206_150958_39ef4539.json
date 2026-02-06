@@ -1,0 +1,27 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "annotations_linked": [
+      "ann_031031_3e7ckyed34e0"
+    ],
+    "code_commit": "5a05b9d0d64b9257b8d760e68014283a988ceeb2",
+    "code_commit_message": "feat(alu): MUL to ALU output mux \u2014 single signal + mux case",
+    "files": [
+      "alu/alu.vhd",
+      "tests/tb_basic.vhd",
+      "tests/test_basic.asm"
+    ],
+    "tasks_linked": [
+      "task_145924_1447e3"
+    ]
+  },
+  "entity_id": null,
+  "lamport_clock": 101,
+  "operation_id": "op_20260206_150958_39ef4539",
+  "operation_type": "commit_linked",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T15:09:58.366089+00:00"
+}
