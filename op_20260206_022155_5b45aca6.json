@@ -8,16 +8,16 @@
       {
         "hash": "83aaa595d95a506414c32c79c5318ef304eb0f47",
         "hash_short": "83aaa59",
-        "linked_at": "2026-02-06T02:21:55.262914+00:00",
+        "linked_at": "2026-02-06T02:21:55.294533+00:00",
         "message": "feat(control): Phase 2: Hazard unit completion \u2014 proper stall detection"
       }
     ],
-    "last_activity": "2026-02-06T02:21:55.262914+00:00"
+    "last_activity": "2026-02-06T02:21:55.294533+00:00"
   },
-  "entity_id": "ann_011958_3e7cky4fd06c",
-  "lamport_clock": 27,
-  "operation_id": "op_20260206_022155_813cc144",
+  "entity_id": "ann_011955_3e7ckyd28bb8",
+  "lamport_clock": 28,
+  "operation_id": "op_20260206_022155_5b45aca6",
   "operation_type": "annotation_update",
   "parent_operation": null,
-  "timestamp": "2026-02-06T02:21:55.268570+00:00"
+  "timestamp": "2026-02-06T02:21:55.300193+00:00"
 }
