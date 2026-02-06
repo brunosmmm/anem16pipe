@@ -1,0 +1,23 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "commit_refs": [
+      {
+        "hash": "8cd7bc5125aa8da00e9577f129401cf464e3baff",
+        "hash_short": "8cd7bc5",
+        "linked_at": "2026-02-06T21:00:18.518002+00:00",
+        "message": "feat(ANEM): Phase 8: WB\u2192ID timing hazard fixes \u2014 write-through bypass and JR stall\n\nFix 3 WB\u2192ID timi"
+      }
+    ],
+    "last_activity": "2026-02-06T21:00:18.518002+00:00"
+  },
+  "entity_id": "ann_184134_3e7ckycab488",
+  "lamport_clock": 122,
+  "operation_id": "op_20260206_210018_28c056c3",
+  "operation_type": "annotation_update",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T21:00:18.521650+00:00"
+}
