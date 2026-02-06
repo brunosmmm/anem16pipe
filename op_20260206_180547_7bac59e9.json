@@ -1,0 +1,18 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "resolution": {
+      "summary": "Added automated trace comparison: compare_% pattern rule and compare target in Makefile. Generates GHDL + sim traces, filters to MW+END lines, diffs. Results: test_hazard PASS, test_basic FAIL (3: LIW upper byte, LIL stale byte, JAL return addr), test_branch FAIL (1: BZ stale Z flag).",
+      "type": "fixed"
+    }
+  },
+  "entity_id": "ann_180246_3e7ckye29ad6",
+  "lamport_clock": 112,
+  "operation_id": "op_20260206_180547_7bac59e9",
+  "operation_type": "annotation_resolve",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T18:05:47.043203+00:00"
+}
