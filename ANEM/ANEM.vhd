@@ -165,6 +165,10 @@ signal p_f_mem_mem   : std_logic;
 
 signal p_f_regbnk_w_mem  : std_logic;
 signal p_f_regbnk_w_wb   : std_logic;
+signal p_f_wb_fwd_data   : std_logic_vector(data_size-1 downto 0);
+
+--Z flag gating
+signal p_z_en : std_logic;
 
 --misc pipeline signals
 signal p_bztrue     : std_logic;
@@ -325,13 +329,17 @@ BEGIN
                byte_in=>p_id_wb_limm_3, --pipelined, written on WB
                control=>p_id_wb_loctl_3); --pipelined, to write on WB
 
+    --WB forwarding data mux: select ALU result or LW memory data
+    p_f_wb_fwd_data <= p_mem_wb_memout_3 when p_id_wb_regctl_3 = "100" else
+                       p_alu_wb_aluout_3;
+
     --forwarding muxes (ALU stage = newer value has priority over MEM stage)
     p_f_alu_alua_mux <= p_alu_wb_aluout_2 when p_f_alu_alu_a = '1' else
-                        p_alu_wb_aluout_3 when p_f_mem_alu_a = '1' else
+                        p_f_wb_fwd_data   when p_f_mem_alu_a = '1' else
                         p_id_mem_alua_1;
 
     p_f_alu_alub_mux <= p_alu_wb_aluout_2 when p_f_alu_alu_b = '1' else
-                        p_alu_wb_aluout_3 when p_f_mem_alu_b = '1' else
+                        p_f_wb_fwd_data   when p_f_mem_alu_b = '1' else
                         p_id_alu_alub_1;
   
     --! ALU
@@ -626,15 +634,18 @@ BEGIN
                parallel_in=>p_id_wb_lomux_1,
                data_out=>p_id_wb_lomux_2);
 
-    --ALU Flag register
+    --ALU Flag register (only update Z for R-type and S-type ALU operations)
     --dummy vectors
     p_alu_mem_z_1_v(0) <= p_alu_mem_z_1;
     p_alu_mem_z_2 <= p_alu_mem_z_2_v(0);
+    p_z_en <= '1' when p_stall_alu_n = '1' and
+                        (p_id_alu_aluctl_1 = "001" or p_id_alu_aluctl_1 = "010") else
+              '0';
     PALU_Z: entity WORK.RegANEM(Load)
       generic map(1)
       port map(CK=>CK,
                RST=>RST,
-               EN=>p_stall_alu_n,
+               EN=>p_z_en,
                PARALLEL_IN=>p_alu_mem_z_1_v,
                DATA_OUT=>p_alu_mem_z_2_v);
 
@@ -811,10 +822,13 @@ BEGIN
                );
 
     
-    p_f_regbnk_w_mem <= '0' when p_id_wb_regctl_2 = "000" else
-                        '1';
-    p_f_regbnk_w_wb  <= '0' when p_id_wb_regctl_3 = "000" else
-                        '1';
+    --forwarding enables: only forward when data is available on the forwarding path
+    --MEM stage: only R/S-type ALU results (regctl "001")
+    p_f_regbnk_w_mem <= '1' when p_id_wb_regctl_2 = "001" else
+                        '0';
+    --WB stage: R/S-type ALU results ("001") or LW memory data ("100")
+    p_f_regbnk_w_wb  <= '1' when p_id_wb_regctl_3 = "001" or p_id_wb_regctl_3 = "100" else
+                        '0';
     
     --! forwarding unit
     pfw: entity work.anem16_fwunit(pipe)

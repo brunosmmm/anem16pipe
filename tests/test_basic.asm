@@ -1,12 +1,14 @@
 -- test_basic.asm
 -- Basic ANEM16 processor test program
--- Tests: R-type ALU ops, load immediate, memory ops
+-- Tests: R-type ALU ops, load immediate, memory ops, LW forwarding
 -- Results are stored to data memory for verification
 --
 -- This test relies on:
 -- - ALU->ALU forwarding for back-to-back ALU operations
--- - Hazard unit SW stall detection for store-data dependencies
--- - 3 NOPs after LIL only (no LIL/LIU forwarding yet -- Phase 3)
+-- - WB->ALU forwarding for LW data (Phase 3)
+-- - Hazard unit SW stall for store-data dependencies
+-- - Hazard unit NFW stall for LIL/LIU dependencies (Phase 3)
+-- - 0 NOPs needed between LIL and dependent instructions
 --
 -- Memory map for test results:
 --   addr 0: R-type ADD result (expected: 0x0007 = 3+4)
@@ -18,16 +20,14 @@
 --   addr 6: LIW result (expected: 0xABCD)
 --   addr 7: SHL result (expected: 0x000E = 0x0007 << 1)
 --   addr 8: SHR result (expected: 0x0003 = 0x0007 >> 1)
+--   addr 9: LW result  (expected: 0x0007 = value loaded from addr 0)
 
 -- Setup: load test values into registers
 -- R1 = 3, R2 = 4, R3 = 7
--- Need 3 NOPs after last LIL before registers are used
+-- NFW stall handles LIL dependencies (no NOPs needed)
 LIL $1, 3
 LIL $2, 4
 LIL $3, 7
-NOP
-NOP
-NOP
 
 -- Test 1: ADD. R4 = R1 + R2 = 3 + 4 = 7
 -- Back-to-back ALU ops rely on forwarding (ALU->ALU)
@@ -80,6 +80,12 @@ AND $12, $0
 OR $12, $3
 SHR $12, $1
 SW $12, 8($0)
+
+-- Test 10: LW. R13 = MEM[0] (should be 0x0007 from test 1)
+-- LW followed immediately by dependent ADD — tests LW forwarding from WB
+LW $13, 0($0)
+ADD $13, $0
+SW $13, 9($0)
 
 -- End: infinite loop
 HALT: J %HALT%

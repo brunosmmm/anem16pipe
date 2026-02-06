@@ -141,8 +141,8 @@ BEGIN
   WEN <= W AND EN; --WRITE ENABLE
   REN <= (NOT W) AND EN; --READ ENABLE
   
-  --data in/out
-  DATA <= DATA_OUT WHEN REN = '1' ELSE
+  --data in/out (only drive bus when addressed)
+  DATA <= DATA_OUT WHEN REN = '1' AND MAC_REG_SEL /= SEL_REG_NONE ELSE
           (OTHERS=>'Z');
   
   

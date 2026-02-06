@@ -32,7 +32,7 @@ entity anem16_hazunit is
        mem_w_id         : in std_logic;
        next_instruction : in std_logic_vector(15 downto 0);
 
-       --SW hazard detection: producer write-back info per stage
+       --producer write-back info per stage
        regctl_alu       : in std_logic_vector(2 downto 0);
        reg_sela_mem     : in std_logic_vector(3 downto 0);
        regctl_mem       : in std_logic_vector(2 downto 0);
@@ -44,12 +44,14 @@ entity anem16_hazunit is
 end entity;
 
 architecture pipe of anem16_hazunit is
-signal lw_stall_counter : std_logic_vector(1 downto 0);
-signal lw_hazard_verify : std_logic;
+--deny-list: instructions in ID that do NOT read registers
+signal id_reads_regs    : std_logic;
 signal lw_hazard_detect : std_logic;
 signal sw_data_hazard   : std_logic;
+signal nfw_data_hazard  : std_logic;
 signal sw_stall_if_n    : std_logic;
 signal lw_stall_if_n    : std_logic;
+signal nfw_stall_if_n   : std_logic;
 
 signal bz_stall_if_n    : std_logic;
 signal bz_stall_counter : std_logic_vector(1 downto 0);
@@ -59,21 +61,26 @@ begin
   p_stall_alu_n <= '1';
   p_stall_mem_n <= '1';
 
-  --instructions that do NOT read registers cannot cause LW hazard
-  lw_hazard_verify <= '0' when next_instruction(15 downto 12) = "0100" else  --LIU
-                      '0' when next_instruction(15 downto 12) = "0101" else  --LIL
-                      '0' when next_instruction(15 downto 12) = "1111" else  --J
-                      '0' when next_instruction(15 downto 12) = "1101" else  --JAL
-                      '0' when next_instruction(15 downto 12) = "1000" else  --BZ_X
-                      '0' when next_instruction(15 downto 12) = "1001" else  --BZ_T
-                      '0' when next_instruction(15 downto 12) = "1010" else  --BZ_N
-                      '0' when next_instruction(15 downto 12) = "0110" else  --BHLEQ
-                      '1';
+  --instructions that do NOT read registers cannot cause data hazards
+  id_reads_regs <= '0' when next_instruction(15 downto 12) = "0100" else  --LIU
+                   '0' when next_instruction(15 downto 12) = "0101" else  --LIL
+                   '0' when next_instruction(15 downto 12) = "1111" else  --J
+                   '0' when next_instruction(15 downto 12) = "1101" else  --JAL
+                   '0' when next_instruction(15 downto 12) = "1000" else  --BZ_X
+                   '0' when next_instruction(15 downto 12) = "1001" else  --BZ_T
+                   '0' when next_instruction(15 downto 12) = "1010" else  --BZ_N
+                   '0' when next_instruction(15 downto 12) = "0110" else  --BHLEQ
+                   '1';
 
   --LW destination matches either source register of dependent instruction
   lw_hazard_detect <= '1' when reg_sela_alu = reg_sela_id and reg_sela_alu /= "0000" else
                       '1' when reg_sela_alu = reg_selb_id and reg_sela_alu /= "0000" else
                       '0';
+
+  --LW stall: combinational, 1 cycle (WB forwarding provides LW data on the next cycle)
+  lw_stall_if_n <= '0' when mem_en_alu = '1' and mem_w_alu = '0' and
+                             lw_hazard_detect = '1' and id_reads_regs = '1' else
+                   '1';
 
   --SW data register hazard: SW in ID, producer writing same register in ALU/MEM/WB
   sw_data_hazard <= '1' when mem_en_id = '1' and mem_w_id = '1' and reg_sela_id /= "0000" and
@@ -86,15 +93,33 @@ begin
 
   sw_stall_if_n <= not sw_data_hazard;
 
-  p_stall_if_n <= lw_stall_if_n and sw_stall_if_n and bz_stall_if_n;
+  --NFW (non-forwardable write) stall: LIL/LIU/JAL in ALU/MEM/WB, dependent reads same reg
+  --regctl "010"=LIU, "011"=LIL, "101"=JAL — these write registers but data is NOT on ALU path
+  --combinational across 3 stages; auto-sustains as producer advances through pipeline
+  nfw_data_hazard <=
+    '1' when id_reads_regs = '1' and
+             (regctl_alu = "010" or regctl_alu = "011" or regctl_alu = "101") and
+             reg_sela_alu /= "0000" and
+             (reg_sela_alu = reg_sela_id or reg_sela_alu = reg_selb_id) else
+    '1' when id_reads_regs = '1' and
+             (regctl_mem = "010" or regctl_mem = "011" or regctl_mem = "101") and
+             reg_sela_mem /= "0000" and
+             (reg_sela_mem = reg_sela_id or reg_sela_mem = reg_selb_id) else
+    '1' when id_reads_regs = '1' and
+             (regctl_wb = "010" or regctl_wb = "011" or regctl_wb = "101") and
+             reg_sela_wb /= "0000" and
+             (reg_sela_wb = reg_sela_id or reg_sela_wb = reg_selb_id) else
+    '0';
 
+  nfw_stall_if_n <= not nfw_data_hazard;
+
+  p_stall_if_n <= lw_stall_if_n and sw_stall_if_n and bz_stall_if_n and nfw_stall_if_n;
+
+--clocked process for BZ/BHLEQ stall only
 process(mclk,mrst)
 begin
 
   if mrst = '1' then
-
-    lw_stall_if_n <= '1';
-    lw_stall_counter <= "00";
 
     bz_stall_if_n <= '1';
     bz_stall_counter <= "00";
@@ -116,23 +141,6 @@ begin
 
       --release
       bz_stall_if_n <= '1';
-
-    end if;
-
-    --lw stalls
-    if lw_stall_counter /= "00" then
-
-      lw_stall_counter <= std_logic_vector(unsigned(lw_stall_counter) - 1);
-
-    elsif mem_en_alu = '1' and mem_w_alu = '0' and lw_hazard_detect = '1' and lw_hazard_verify = '1' then
-
-      --load-use hazard: stall until LW data available through register bank
-      lw_stall_if_n <= '0';
-      lw_stall_counter <= "01";
-
-    else
-
-      lw_stall_if_n <= '1';
 
     end if;
 
