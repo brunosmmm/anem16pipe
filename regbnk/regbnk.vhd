@@ -13,10 +13,11 @@
 --001                  Loads ALU output (ALU_IN) in selected register (A)
 --010                  Loads BYTE_IN in upper half of selected register (A)
 --011                  Loads BYTE_IN in lower half of selected register (A)
---                     (also zeros upper half to avoid stale data)
 --100                  Loads data from memory in selected register (A)
 --101                  Load  PC into register 15 (JAL)
---000, 110, 111        No operation
+--110                  Loads HI register value into selected register (MFHI)
+--111                  Loads LO register value into selected register (MFLO)
+--000                  No operation
 ---------------------------------------------------------
 
 LIBRARY IEEE;
@@ -104,6 +105,12 @@ BEGIN
 
           WHEN "001" => --ALU -> A
             REG_DATA(idx) <= ALU_IN;
+
+          WHEN "110" => --HI -> A (MFHI)
+            REG_DATA(idx) <= HI_IN;
+
+          WHEN "111" => --LO -> A (MFLO)
+            REG_DATA(idx) <= LO_IN;
 
           WHEN OTHERS => NULL;
 

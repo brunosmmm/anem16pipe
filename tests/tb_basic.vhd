@@ -140,8 +140,8 @@ begin
     report "Total memory writes logged: " & integer'image(log_count) severity note;
 
     -- Verify we got all expected writes
-    assert log_count >= 20
-      report "FAIL: Expected at least 20 memory writes, got " & integer'image(log_count)
+    assert log_count >= 22
+      report "FAIL: Expected at least 22 memory writes, got " & integer'image(log_count)
       severity failure;
 
     -- Test 1: ADD 3+4 = 7
@@ -288,23 +288,39 @@ begin
       severity failure;
     report "PASS Test 20: LIL stale byte=FF05" severity note;
 
-    -- Test 13: JAL subroutine result = 0x0042
-    assert mem_log(18).addr = x"000C" and mem_log(18).data = x"0042"
-      report "FAIL Test 13 JAL sub: addr=" & to_hstring(unsigned(mem_log(18).addr)) &
+    -- Test 21: MFHI = 0x002A (42 from HI register)
+    assert mem_log(18).addr = x"0014" and mem_log(18).data = x"002A"
+      report "FAIL Test 21 MFHI: addr=" & to_hstring(unsigned(mem_log(18).addr)) &
              " data=" & to_hstring(unsigned(mem_log(18).data)) &
+             " expected addr=0014 data=002A"
+      severity failure;
+    report "PASS Test 21: MFHI=002A" severity note;
+
+    -- Test 22: MFLO = 0x0063 (99 from LO register)
+    assert mem_log(19).addr = x"0015" and mem_log(19).data = x"0063"
+      report "FAIL Test 22 MFLO: addr=" & to_hstring(unsigned(mem_log(19).addr)) &
+             " data=" & to_hstring(unsigned(mem_log(19).data)) &
+             " expected addr=0015 data=0063"
+      severity failure;
+    report "PASS Test 22: MFLO=0063" severity note;
+
+    -- Test 13: JAL subroutine result = 0x0042
+    assert mem_log(20).addr = x"000C" and mem_log(20).data = x"0042"
+      report "FAIL Test 13 JAL sub: addr=" & to_hstring(unsigned(mem_log(20).addr)) &
+             " data=" & to_hstring(unsigned(mem_log(20).data)) &
              " expected addr=000C data=0042"
       severity failure;
     report "PASS Test 13: JAL subroutine=0042" severity note;
 
     -- Test 14: JAL return address R15
-    assert mem_log(19).addr = x"000D" and mem_log(19).data = x"0047"
-      report "FAIL Test 14 JAL R15: addr=" & to_hstring(unsigned(mem_log(19).addr)) &
-             " data=" & to_hstring(unsigned(mem_log(19).data)) &
-             " expected addr=000D data=0047"
+    assert mem_log(21).addr = x"000D" and mem_log(21).data = x"0051"
+      report "FAIL Test 14 JAL R15: addr=" & to_hstring(unsigned(mem_log(21).addr)) &
+             " data=" & to_hstring(unsigned(mem_log(21).data)) &
+             " expected addr=000D data=0051"
       severity failure;
-    report "PASS Test 14: JAL return addr=0047" severity note;
+    report "PASS Test 14: JAL return addr=0051" severity note;
 
-    report "=== ALL 20 TESTS PASSED ===" severity note;
+    report "=== ALL 22 TESTS PASSED ===" severity note;
 
     -- Stop simulation
     std.env.stop;

@@ -87,7 +87,9 @@ begin
   --controls register writing on WB phase
   regbnk_ctl <= regbnk_ctl_0 when reset_detected = '0' else
                 "000";
-  regbnk_ctl_0 <= "010" when opcode = ANEM_OPCODE_LIU else --LIU INSTRUCTION
+  regbnk_ctl_0 <= "110" when opcode = ANEM_OPCODE_M1 and m1op = ANEM_M1FUNC_MFHI else --MFHI
+                  "111" when opcode = ANEM_OPCODE_M1 and m1op = ANEM_M1FUNC_MFLO else --MFLO
+                  "010" when opcode = ANEM_OPCODE_LIU else --LIU INSTRUCTION
                   "011" when opcode = ANEM_OPCODE_LIL else --LIL INSTRUCTION
                   "001" when opcode = ANEM_OPCODE_R else --R TYPE INSTRUCTION
                   "001" when opcode = ANEM_OPCODE_S else --S TYPE INSTRUCTION
@@ -95,7 +97,11 @@ begin
                   "101" when opcode = ANEM_OPCODE_JAL else --JAL INSTRUCTION
                   "000";
 
-  regbnk_sela <= instruction(11 downto 8);
+  --M3 instructions (MFHI/MFLO/MTHI/MTLO) have dest/src register in bits 3:0
+  regbnk_sela <= instruction(3 downto 0) when opcode = ANEM_OPCODE_M1 and
+                                              (m1op = ANEM_M1FUNC_MFHI or m1op = ANEM_M1FUNC_MFLO or
+                                               m1op = ANEM_M1FUNC_MTHI or m1op = ANEM_M1FUNC_MTLO) else
+                 instruction(11 downto 8);
   regbnk_selb <= instruction(7 downto 4);
 
   --BHLEQ flag

@@ -93,20 +93,21 @@ begin
 
   sw_stall_if_n <= not sw_data_hazard;
 
-  --NFW (non-forwardable write) stall: LIL/LIU/JAL in ALU/MEM/WB, dependent reads same reg
-  --regctl "010"=LIU, "011"=LIL, "101"=JAL — these write registers but data is NOT on ALU path
+  --NFW (non-forwardable write) stall: LIL/LIU/JAL/MFHI/MFLO in ALU/MEM/WB, dependent reads same reg
+  --regctl "010"=LIU, "011"=LIL, "101"=JAL, "110"=MFHI, "111"=MFLO
+  --these write registers but data is NOT on ALU path
   --combinational across 3 stages; auto-sustains as producer advances through pipeline
   nfw_data_hazard <=
     '1' when id_reads_regs = '1' and
-             (regctl_alu = "010" or regctl_alu = "011" or regctl_alu = "101") and
+             (regctl_alu = "010" or regctl_alu = "011" or regctl_alu = "101" or regctl_alu = "110" or regctl_alu = "111") and
              reg_sela_alu /= "0000" and
              (reg_sela_alu = reg_sela_id or reg_sela_alu = reg_selb_id) else
     '1' when id_reads_regs = '1' and
-             (regctl_mem = "010" or regctl_mem = "011" or regctl_mem = "101") and
+             (regctl_mem = "010" or regctl_mem = "011" or regctl_mem = "101" or regctl_mem = "110" or regctl_mem = "111") and
              reg_sela_mem /= "0000" and
              (reg_sela_mem = reg_sela_id or reg_sela_mem = reg_selb_id) else
     '1' when id_reads_regs = '1' and
-             (regctl_wb = "010" or regctl_wb = "011" or regctl_wb = "101") and
+             (regctl_wb = "010" or regctl_wb = "011" or regctl_wb = "101" or regctl_wb = "110" or regctl_wb = "111") and
              reg_sela_wb /= "0000" and
              (reg_sela_wb = reg_sela_id or reg_sela_wb = reg_selb_id) else
     '0';

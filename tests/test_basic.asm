@@ -31,6 +31,8 @@
 --   addr 17: $0 immutability (expected: 0x0000)
 --   addr 18: LW base+offset (expected: 0x8003 from addr 16)
 --   addr 19: LIL stale byte (expected: 0xFF05 = LIU FF then LIL 05)
+--   addr 20: MFHI result (expected: 0x002A = 42, from HI register)
+--   addr 21: MFLO result (expected: 0x0063 = 99, from LO register)
 
 -- Setup: load test values into registers
 -- R1 = 3, R2 = 4, R3 = 7
@@ -152,6 +154,20 @@ SW $4, 2($5)
 LIU $8, 255
 LIL $8, 5
 SW $8, 3($5)
+
+-- Test 21: MFHI. Load HI=42 via LHI, then move to GPR
+-- Test 22: MFLO. Load LO=99 via LLO, then move to GPR
+-- LHI expands to LHH+LHL, LLO expands to LLH+LLL (M1 instructions)
+-- 1 NOP needed after LLO for HI/LO register writeback timing
+-- MFLO gets correct LO automatically because SW stall after MFHI provides delay
+LIL $5, 20
+LHI 42
+LLO 99
+NOP
+MFHI $6
+SW $6, 0($5)
+MFLO $7
+SW $7, 1($5)
 
 -- Test 13: JAL/JR. Call subroutine, verify return and R15 value.
 -- JAL saves PC+2 to R15 (skip JAL + delay slot). Subroutine stores
