@@ -1,0 +1,21 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "branch": "master",
+    "content": "# JAL Return Address Bug Fix\n\n## Problem\nJAL instruction never wrote return address to R15, causing JR $15 to jump to address 0 (infinite restart loop).\n\n## Root Causes (Two-Part)\n\n### 1. Register Bank R0 Guard Blocked JAL Write\nIn `regbnk/regbnk.vhd`, the Phase 4 rewrite placed the \"101\" (JAL \u2192 R15) case inside `if idx /= 0`. For JAL, `SEL_W = instruction(11:8)` contains jump offset bits (not a register index), so when the offset's upper nibble is \"0000\", idx=0 and the guard blocks the R15 write \u2014 even though R15 is hardcoded in that case.\n\n**Fix:** Moved \"101\" case outside the `if idx /= 0` guard as a separate `if REG_CNT = \"101\"` block.\n\n### 2. Missing +1 Offset for MIPS PC+2 Convention  \nOriginal code: `p_id_wb_iaddr_0 <= next_inst_addr` saved PC+1. MIPS convention requires PC+2 (skip JAL + delay slot).\n\n**Fix:** Changed to `std_logic_vector(unsigned(next_inst_addr) + 1)` which gives PC+2.\n\n## Files Changed\n- `regbnk/regbnk.vhd` - Restructured process to handle JAL R15 write outside R0 guard\n- `ANEM/ANEM.vhd` - Added +1 offset to iaddr, removed debug process\n- `control/idecode.vhd` - Removed debug process (kept numeric_std import)\n- `tests/test_basic.asm` - Added test 13: JAL/JR subroutine call/return\n\n## Verification\nAll 14 memory writes correct. Test 13 confirms:\n- addr 0x000C = 0x0042 (subroutine executed, wrote 66)\n- addr 0x000D = 0x0033 (R15 = 51 = PC+2 for JAL at addr 49)\n\n## Key Insight\nFor JAL, `instruction(11:8)` is NOT a register selector \u2014 it's part of the 12-bit jump offset. The register bank's `SEL_W` port receives these bits, but JAL writes to hardcoded R15. The R0 protection guard must not apply to JAL's hardcoded write.\n",
+    "context": "Fixed critical JAL/JR bug preventing subroutine calls from working",
+    "repository_id": "github.com/brunosmmm/anem16pipe",
+    "session_id": "20260206_011215_17b0",
+    "session_type": "Debugging",
+    "title": "JAL return address bug fixed"
+  },
+  "entity_id": "20260206_1356_jal-return-address-bug-fixed",
+  "lamport_clock": 66,
+  "operation_id": "op_20260206_135621_147d0db1",
+  "operation_type": "checkpoint_save",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T13:56:21.447794+00:00"
+}
