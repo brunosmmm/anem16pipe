@@ -163,7 +163,8 @@ signal p_f_mem_alu_a : std_logic;
 signal p_f_mem_alu_b : std_logic;
 signal p_f_mem_mem   : std_logic;
 
-signal p_f_regbnk_w  : std_logic;
+signal p_f_regbnk_w_mem  : std_logic;
+signal p_f_regbnk_w_wb   : std_logic;
 
 --misc pipeline signals
 signal p_bztrue     : std_logic;
@@ -324,13 +325,13 @@ BEGIN
                byte_in=>p_id_wb_limm_3, --pipelined, written on WB
                control=>p_id_wb_loctl_3); --pipelined, to write on WB
 
-    --forwarding muxes
-    p_f_alu_alua_mux <= p_alu_wb_aluout_3 when p_f_mem_alu_a = '1' else
-                        p_alu_wb_aluout_2 when p_f_alu_alu_a = '1' else
+    --forwarding muxes (ALU stage = newer value has priority over MEM stage)
+    p_f_alu_alua_mux <= p_alu_wb_aluout_2 when p_f_alu_alu_a = '1' else
+                        p_alu_wb_aluout_3 when p_f_mem_alu_a = '1' else
                         p_id_mem_alua_1;
-    
-    p_f_alu_alub_mux <= p_alu_wb_aluout_3 when p_f_mem_alu_b = '1' else
-                        p_alu_wb_aluout_2 when p_f_alu_alu_b = '1' else
+
+    p_f_alu_alub_mux <= p_alu_wb_aluout_2 when p_f_alu_alu_b = '1' else
+                        p_alu_wb_aluout_3 when p_f_mem_alu_b = '1' else
                         p_id_alu_alub_1;
   
     --! ALU
@@ -362,8 +363,8 @@ BEGIN
                DATA_OUT=>p_id_alu_alub_1);
 
 
-    --! stall multiplexer
-    p_s_alu_aluctl_mux <= p_id_alu_aluctl_0 when p_stall_if_n = '1' else
+    --! stall/flush multiplexer
+    p_s_alu_aluctl_mux <= p_id_alu_aluctl_0 when p_stall_if_n = '1' and p_bztrue = '0' and p_bhleqtrue = '0' else
                           "000";
     PALU_OP: entity WORK.RegANEM(Load)
       generic MAP(ALUOP_SIZE)
@@ -389,7 +390,7 @@ BEGIN
                parallel_in=>p_id_alu_alufunc_0,
                data_out=>p_id_alu_alufunc_1);
 
-    p_s_wb_regctl_mux <= p_id_wb_regctl_0 when p_stall_if_n = '1' else
+    p_s_wb_regctl_mux <= p_id_wb_regctl_0 when p_stall_if_n = '1' and p_bztrue = '0' and p_bhleqtrue = '0' else
                          "000";
     PREG_cnt_0  : entity WORK.RegANEM(Load)
       generic MAP(3)
@@ -442,7 +443,7 @@ BEGIN
                parallel_in=>p_id_alu_bhleqflag_0,
                data_out=>p_id_alu_bhleqflag_1);
 
-    p_s_alu_memenw_mux <= p_id_mem_memen_0 & p_id_mem_memw_0 when p_stall_if_n = '1' else
+    p_s_alu_memenw_mux <= p_id_mem_memen_0 & p_id_mem_memw_0 when p_stall_if_n = '1' and p_bztrue = '0' and p_bhleqtrue = '0' else
                           "00";
     p_id_mem_memw_1 <= p_alu_x_memop(0);
     p_id_mem_memen_1 <= p_alu_x_memop(1);
@@ -572,7 +573,7 @@ BEGIN
       generic map(3)
       port map(ck=>ck,
                rst=>rst,
-               en=>p_stall_id_n,
+               en=>p_stall_alu_n,
                parallel_in=>p_id_wb_hictl_1,
                data_out=>p_id_wb_hictl_2);
 
@@ -580,7 +581,7 @@ BEGIN
       generic map(3)
       port map(ck=>ck,
                rst=>rst,
-               en=>p_stall_id_n,
+               en=>p_stall_alu_n,
                parallel_in=>p_id_wb_loctl_1,
                data_out=>p_id_wb_loctl_2);
 
@@ -588,7 +589,7 @@ BEGIN
       generic map(16)
       port map(ck=>ck,
                rst=>rst,
-               en=>p_stall_id_n,
+               en=>p_stall_alu_n,
                parallel_in=>p_id_wb_hiout_1,
                data_out=>p_id_wb_hiout_2);
 
@@ -596,7 +597,7 @@ BEGIN
       generic map(16)
       port map(ck=>ck,
                rst=>rst,
-               en=>p_stall_id_n,
+               en=>p_stall_alu_n,
                parallel_in=>p_id_wb_loout_1,
                data_out=>p_id_wb_loout_2);
 
@@ -604,7 +605,7 @@ BEGIN
       generic map(2)
       port map(ck=>ck,
                rst=>rst,
-               en=>p_stall_id_n,
+               en=>p_stall_alu_n,
                parallel_in=>p_id_wb_hiloen_1,
                data_out=>p_id_wb_hiloen_2);
 
@@ -613,7 +614,7 @@ BEGIN
       generic map(2)
       port map(ck=>ck,
                rst=>rst,
-               en=>p_stall_id_n,
+               en=>p_stall_alu_n,
                parallel_in=>p_id_wb_himux_1,
                data_out=>p_id_wb_himux_2);
 
@@ -621,7 +622,7 @@ BEGIN
       generic map(2)
       port map(ck=>ck,
                rst=>rst,
-               en=>p_stall_id_n,
+               en=>p_stall_alu_n,
                parallel_in=>p_id_wb_lomux_1,
                data_out=>p_id_wb_lomux_2);
 
@@ -643,7 +644,7 @@ BEGIN
       generic map(2)
       port map(ck=>ck,
                rst=>rst,
-               en=>p_stall_id_n,
+               en=>p_stall_alu_n,
                parallel_in=>p_alu_x_memop,
                data_out=>p_mem_x_memop);
 
@@ -662,7 +663,7 @@ BEGIN
       generic map(1)
       port map(ck=>ck,
                rst=>rst,
-               en=>p_stall_id_n,
+               en=>p_stall_alu_n,
                parallel_in=>p_alu_mem_hieqlo_1,
                data_out=>p_alu_mem_hieqlo_2);
     
@@ -687,7 +688,7 @@ BEGIN
       generic MAP(3)
       port map(ck=>ck,
                rst=>rst,
-               en=>p_stall_alu_n,
+               en=>p_stall_mem_n,
                parallel_in=>p_id_wb_regctl_2,
                data_out=>p_id_wb_regctl_3);
     
@@ -695,7 +696,7 @@ BEGIN
       generic MAP(RINDEX_SIZE)
       port map(ck=>ck,
                rst=>rst,
-               en=>p_stall_alu_n,
+               en=>p_stall_mem_n,
                parallel_in=>p_id_wb_regsela_2,
                data_out=>p_id_wb_regsela_3);
 
@@ -703,7 +704,7 @@ BEGIN
       generic map(8)
       port map(ck=>ck,
                rst=>rst,
-               en=>p_stall_alu_n,
+               en=>p_stall_mem_n,
                parallel_in=>p_id_wb_limm_2,
                data_out=>p_id_wb_limm_3);
 
@@ -711,7 +712,7 @@ BEGIN
       generic map(16)
       port map(ck=>ck,
                rst=>rst,
-               en=>p_stall_alu_n,
+               en=>p_stall_mem_n,
                parallel_in=>p_id_wb_iaddr_2,
                data_out=>p_id_wb_iaddr_3);
 
@@ -719,7 +720,7 @@ BEGIN
       generic map(3)
       port map(ck=>ck,
                rst=>rst,
-               en=>p_stall_id_n,
+               en=>p_stall_mem_n,
                parallel_in=>p_id_wb_hictl_2,
                data_out=>p_id_wb_hictl_3);
 
@@ -727,7 +728,7 @@ BEGIN
       generic map(3)
       port map(ck=>ck,
                rst=>rst,
-               en=>p_stall_id_n,
+               en=>p_stall_mem_n,
                parallel_in=>p_id_wb_loctl_2,
                data_out=>p_id_wb_loctl_3);
 
@@ -735,7 +736,7 @@ BEGIN
       generic map(16)
       port map(ck=>ck,
                rst=>rst,
-               en=>p_stall_id_n,
+               en=>p_stall_mem_n,
                parallel_in=>p_id_wb_hiout_2,
                data_out=>p_id_wb_hiout_3);
 
@@ -743,7 +744,7 @@ BEGIN
       generic map(16)
       port map(ck=>ck,
                rst=>rst,
-               en=>p_stall_id_n,
+               en=>p_stall_mem_n,
                parallel_in=>p_id_wb_loout_2,
                data_out=>p_id_wb_loout_3);
 
@@ -751,7 +752,7 @@ BEGIN
       generic map(2)
       port map(ck=>ck,
                rst=>rst,
-               en=>p_stall_id_n,
+               en=>p_stall_mem_n,
                parallel_in=>p_id_wb_hiloen_2,
                data_out=>p_id_wb_hiloen_3);
 
@@ -759,7 +760,7 @@ BEGIN
       generic map(2)
       port map(ck=>ck,
                rst=>rst,
-               en=>p_stall_id_n,
+               en=>p_stall_mem_n,
                parallel_in=>p_id_wb_himux_2,
                data_out=>p_id_wb_himux_3);
 
@@ -767,7 +768,7 @@ BEGIN
       generic map(2)
       port map(ck=>ck,
                rst=>rst,
-               en=>p_stall_id_n,
+               en=>p_stall_mem_n,
                parallel_in=>p_id_wb_lomux_2,
                data_out=>p_id_wb_lomux_3);
 
@@ -775,7 +776,7 @@ BEGIN
       generic MAP(DATA_SIZE)
       port MAP(CK=>CK,
                RST=>RST,
-               EN=>p_stall_id_n,
+               EN=>p_stall_mem_n,
                PARALLEL_IN=>p_id_mem_alua_2,
                DATA_OUT=>p_id_wb_alua_3);
     
@@ -810,8 +811,10 @@ BEGIN
                );
 
     
-    p_f_regbnk_w <= '0' when p_id_wb_regctl_1 = "000" else
-                    '1';
+    p_f_regbnk_w_mem <= '0' when p_id_wb_regctl_2 = "000" else
+                        '1';
+    p_f_regbnk_w_wb  <= '0' when p_id_wb_regctl_3 = "000" else
+                        '1';
     
     --! forwarding unit
     pfw: entity work.anem16_fwunit(pipe)
@@ -820,18 +823,19 @@ BEGIN
                reg_sela_alu=>p_id_wb_regsela_1,
                reg_selb_alu=>p_id_alu_regselb_1,
 
-               regbnk_write=>p_f_regbnk_w,
+               regbnk_write_mem=>p_f_regbnk_w_mem,
+               regbnk_write_wb=>p_f_regbnk_w_wb,
                mem_enable=>p_id_mem_memen_1,
                aluctl=>p_id_alu_aluctl_1,
                f_alu_alu_a=>p_f_alu_alu_a,
                f_alu_alu_b=>p_f_alu_alu_b,
                f_mem_alu_a=>p_f_mem_alu_a,
                f_mem_alu_b=>p_f_mem_alu_b
-               
+
                );
 
-    --what???
-    p_flush <= '0'; --for now
+    --flush pipeline on taken branches/jumps
+    p_flush <= p_id_x_jflag or p_id_x_jrflag or p_bztrue or p_bhleqtrue;
 
     --! hazard unit
     phaz: entity work.anem16_hazunit(pipe)

@@ -3,6 +3,9 @@
 -- Tests: R-type ALU ops, load immediate, memory ops
 -- Results are stored to data memory for verification
 --
+-- NOTE: 3 NOPs before each SW to ensure register writeback completes
+-- (no store-data forwarding yet -- Phase 3)
+--
 -- Memory map for test results:
 --   addr 0: R-type ADD result (expected: 0x0007 = 3+4)
 --   addr 1: R-type SUB result (expected: 0x0001 = 4-3)
@@ -18,9 +21,15 @@
 -- R1 = 3, R2 = 4, R3 = 7
 LIL $1, 3
 NOP
+NOP
+NOP
 LIL $2, 4
 NOP
+NOP
+NOP
 LIL $3, 7
+NOP
+NOP
 NOP
 
 -- R-type tests
@@ -29,21 +38,19 @@ ADD $4, $1
 NOP
 ADD $4, $2
 NOP
-
--- Store R4 to memory addr 0
--- Note: SW $reg, offset($base) stores $reg to mem[$base + offset]
--- R0 = 0, so SW $4, 0($0) stores to address 0
+NOP
+NOP
 SW $4, 0($0)
 NOP
 
 -- R5 = R2 - R1 = 4 - 3 = 1
--- SUB $A, $B computes A = A - B
--- First copy R2 to R5
 AND $5, $0
 NOP
 OR $5, $2
 NOP
 SUB $5, $1
+NOP
+NOP
 NOP
 SW $5, 1($0)
 NOP
@@ -55,6 +62,8 @@ OR $6, $3
 NOP
 AND $6, $1
 NOP
+NOP
+NOP
 SW $6, 2($0)
 NOP
 
@@ -64,6 +73,8 @@ NOP
 OR $7, $1
 NOP
 OR $7, $3
+NOP
+NOP
 NOP
 SW $7, 3($0)
 NOP
@@ -75,6 +86,8 @@ OR $8, $3
 NOP
 XOR $8, $1
 NOP
+NOP
+NOP
 SW $8, 4($0)
 NOP
 
@@ -85,11 +98,15 @@ OR $9, $3
 NOP
 NOR $9, $0
 NOP
+NOP
+NOP
 SW $9, 5($0)
 NOP
 
 -- LIW test: R10 = 0xABCD
 LIW $10, 0xABCD
+NOP
+NOP
 SW $10, 6($0)
 NOP
 
@@ -101,6 +118,8 @@ OR $11, $3
 NOP
 SHL $11, $1
 NOP
+NOP
+NOP
 SW $11, 7($0)
 NOP
 
@@ -110,6 +129,8 @@ NOP
 OR $12, $3
 NOP
 SHR $12, $1
+NOP
+NOP
 NOP
 SW $12, 8($0)
 NOP

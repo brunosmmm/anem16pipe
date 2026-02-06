@@ -297,7 +297,7 @@ class Assembler:
 
             #this will not work!! re-write for predicate
             if jtype == 'BZ' or jtype == 'BHLEQ':
-                off_dec = int(self.labels[l.group(1)])-int(cur_index)
+                off_dec = int(self.labels[l.group(1)])-int(cur_index)-2
                 if jpred == 'T':
                     predicate = '01'
                 elif jpred == 'N':
@@ -314,7 +314,7 @@ class Assembler:
                     self.AsmFatalError = True
                     self.Message("INST %s: BZ cannot jump to intended place. OFFSET = %d" % (cur_index, off_dec), AsmMsgType.AsmMsgError)
             else:
-                offset = int(self.labels[l.group(1)]) - int(cur_index)
+                offset = int(self.labels[l.group(1)]) - int(cur_index) - 1
 
                 if offset > 2047 or offset < -2048:
                     #impossible jump

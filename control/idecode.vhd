@@ -69,8 +69,8 @@ begin
   --controls ALU in ALU phase
   alu_ctl <= alu_ctl_0 when reset_detected = '0' else
              "000";
-  alu_ctl_0 <= "001" when opcode = ANEM_OPCODE_S else
-               "010" when opcode = ANEM_OPCODE_R else
+  alu_ctl_0 <= "001" when opcode = ANEM_OPCODE_R else
+               "010" when opcode = ANEM_OPCODE_S else
                "011" when opcode = ANEM_OPCODE_BZ_X or opcode = ANEM_OPCODE_BZ_T or opcode = ANEM_OPCODE_BZ_N else
                "100" when opcode = ANEM_OPCODE_SW else
                "100" when opcode = ANEM_OPCODE_LW else
@@ -107,6 +107,7 @@ begin
   
   --! @todo this is going to be a relative jump when using J type
   j_dest <= "0000" & instruction(11 downto 0) when opcode = ANEM_OPCODE_J else
+            "0000" & instruction(11 downto 0) when opcode = ANEM_OPCODE_JAL else
             regbnk_aout                       when opcode = ANEM_OPCODE_JR else
             (others=>'0');
 
