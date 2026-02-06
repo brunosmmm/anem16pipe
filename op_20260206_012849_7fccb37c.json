@@ -1,0 +1,18 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "resolution": {
+      "summary": "Phase 6 test infrastructure complete: (1) Ported assembler to Python 3 with all bug fixes (Message elif nesting, Verbosity reference, global lines, SGT regex, integer division). (2) Created test_basic.asm \u2014 directed test program covering R-type ALU ops, shifts, load immediate, memory store. (3) Created GHDL Makefile with analyze/sim/wave/clean targets. (4) Created self-checking test bench tb_basic.vhd with memory write monitoring. (5) Fixed progmem.vhd VHDL-87 file syntax for VHDL-2008 compatibility. Successfully compiled all 18 VHDL files and ran simulation \u2014 confirmed bugs: all ALU results are 0x0000 (forwarding broken), J-to-self doesn't halt (flush disabled), only LIW works (direct register load bypasses ALU).",
+      "type": "fixed"
+    }
+  },
+  "entity_id": "ann_012010_3e7cky057234",
+  "lamport_clock": 11,
+  "operation_id": "op_20260206_012849_7fccb37c",
+  "operation_type": "annotation_resolve",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T01:28:49.672262+00:00"
+}
