@@ -8,16 +8,16 @@
       {
         "hash": "237a338a1f0215da6c4656f656e6c6b9c43d1989",
         "hash_short": "237a338",
-        "linked_at": "2026-02-06T03:00:38.599966+00:00",
+        "linked_at": "2026-02-06T03:00:38.637774+00:00",
         "message": "feat(ANEM): Phase 4: ALU and register bank fixes\n\n- Fix SLT to use signed comparison (was unsigned)\n"
       }
     ],
-    "last_activity": "2026-02-06T03:00:38.599966+00:00"
+    "last_activity": "2026-02-06T03:00:38.637774+00:00"
   },
-  "entity_id": "ann_012004_3e7cky1b6e23",
-  "lamport_clock": 39,
-  "operation_id": "op_20260206_030038_90652cee",
+  "entity_id": "ann_012001_3e7ckyf987fb",
+  "lamport_clock": 40,
+  "operation_id": "op_20260206_030038_6ce92030",
   "operation_type": "annotation_update",
   "parent_operation": null,
-  "timestamp": "2026-02-06T03:00:38.606413+00:00"
+  "timestamp": "2026-02-06T03:00:38.645032+00:00"
 }
