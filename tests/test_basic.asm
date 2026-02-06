@@ -33,6 +33,7 @@
 --   addr 19: LIL stale byte (expected: 0xFF05 = LIU FF then LIL 05)
 --   addr 20: MFHI result (expected: 0x002A = 42, from HI register)
 --   addr 21: MFLO result (expected: 0x0063 = 99, from LO register)
+--   addr 22: MUL result (expected: 0x000C = 3*4 = 12)
 
 -- Setup: load test values into registers
 -- R1 = 3, R2 = 4, R3 = 7
@@ -168,6 +169,13 @@ MFHI $6
 SW $6, 0($5)
 MFLO $7
 SW $7, 1($5)
+
+-- Test 23: MUL. R1=3, R2=4, R8 = R1 * R2 = 12 = 0x000C
+-- MUL now produces low 16 bits in ALU (no need for MAC peripheral)
+AND $8, $0
+OR $8, $1
+MUL $8, $2
+SW $8, 2($5)
 
 -- Test 13: JAL/JR. Call subroutine, verify return and R15 value.
 -- JAL saves PC+2 to R15 (skip JAL + delay slot). Subroutine stores
