@@ -1,0 +1,26 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "complexity_factors": null,
+    "perceived_complexity": 0.6,
+    "priority": "critical",
+    "tags": [
+      "hw-bug",
+      "anem16pipe",
+      "MFHI",
+      "MFLO",
+      "alignment"
+    ],
+    "text": "B2: MFHI/MFLO not implemented in hardware \u2014 M1 opcode has no regbnk_ctl output in idecode.vhd, so MFHI/MFLO never write HI/LO values to GPR.\n\nSuspects: idecode.vhd missing case for M1 opcode in regbnk_ctl signal generation. regbnk.vhd needs new regbnk_ctl codes (e.g. \"110\"/\"111\") to select HI/LO as write source.\nFix: Add M1 opcode handling in idecode.vhd to set regbnk_ctl appropriately. Add HI/LO mux paths in regbnk.vhd.\nImpact: Any program using MFHI/MFLO (test_hilo) will produce wrong results on hardware.",
+    "type": "bug"
+  },
+  "entity_id": "ann_133944_3e7cky67a50d",
+  "lamport_clock": 62,
+  "operation_id": "op_20260206_133944_84be5657",
+  "operation_type": "annotation_create",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T13:39:44.268321+00:00"
+}
