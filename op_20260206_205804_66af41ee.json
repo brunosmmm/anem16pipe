@@ -1,0 +1,18 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "resolution": {
+      "summary": "Fixed 3 WB\u2192ID timing hazards: register bank write-through bypass, HI/LO write-through bypass, JR stall detection. All 9 simulator tests + 32 assertion tests pass.",
+      "type": "fixed"
+    }
+  },
+  "entity_id": "ann_184134_3e7ckycab488",
+  "lamport_clock": 119,
+  "operation_id": "op_20260206_205804_66af41ee",
+  "operation_type": "annotation_resolve",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T20:58:04.400276+00:00"
+}
