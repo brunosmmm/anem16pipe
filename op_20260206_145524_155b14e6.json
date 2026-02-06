@@ -1,0 +1,18 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "resolution": {
+      "summary": "Implemented MFHI/MFLO hardware support: regbnk_sela M3 routing, regbnk_ctl codes 110/111, HI_IN/LO_IN write cases in regbnk, NFW stall in hazunit. All 31 tests pass.",
+      "type": "fixed"
+    }
+  },
+  "entity_id": "ann_133944_3e7cky67a50d",
+  "lamport_clock": 96,
+  "operation_id": "op_20260206_145524_155b14e6",
+  "operation_type": "annotation_resolve",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T14:55:24.406155+00:00"
+}
