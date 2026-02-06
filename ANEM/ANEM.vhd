@@ -210,7 +210,7 @@ BEGIN
     --register read
 
     inst_addr <= next_inst_addr;
-    p_id_wb_iaddr_0 <= next_inst_addr;
+    p_id_wb_iaddr_0 <= std_logic_vector(unsigned(next_inst_addr) + 1);
 
     --generate BZ flag from decoded instruction and old Z flag
     p_bztrue <= p_id_alu_bzflag_1 and p_alu_mem_z_2;

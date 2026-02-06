@@ -82,6 +82,12 @@ BEGIN
 
       idx := TO_INTEGER(UNSIGNED(SEL_W));
 
+      --JAL writes to hardcoded R15 regardless of SEL_W
+      --(SEL_W contains jump offset bits for JAL, not a register index)
+      IF REG_CNT = "101" THEN
+        REG_DATA(15) <= PC_IN;
+      END IF;
+
       --register 0 is read-only (hardwired to zero)
       IF idx /= 0 THEN
 
@@ -98,9 +104,6 @@ BEGIN
 
           WHEN "001" => --ALU -> A
             REG_DATA(idx) <= ALU_IN;
-
-          WHEN "101" => --PC -> $15 (JAL)
-            REG_DATA(15) <= PC_IN;
 
           WHEN OTHERS => NULL;
 

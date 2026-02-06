@@ -1,7 +1,11 @@
 # Makefile for ANEM16pipe GHDL simulation
 # Usage:
 #   make analyze    - Compile all VHDL files
-#   make sim        - Run basic test simulation
+#   make sim        - Run basic test simulation (backward compat)
+#   make test       - Run all tests
+#   make test_basic - Run basic instruction tests
+#   make test_branch - Run branch tests
+#   make test_hazard - Run hazard/forwarding tests
 #   make wave       - Run simulation with waveform dump
 #   make clean      - Clean build artifacts
 #   make assemble   - Assemble test programs
@@ -42,14 +46,16 @@ SRCS_L2 = \
 
 # Test benches
 TB_SRCS = \
-	tests/tb_basic.vhd
+	tests/tb_basic.vhd \
+	tests/tb_branch.vhd \
+	tests/tb_hazard.vhd
 
 ALL_SRCS = $(SRCS_L0) $(SRCS_L1) $(SRCS_L2) $(TB_SRCS)
 
 # Test programs
-TEST_PROGS = tests/test_basic
+TEST_PROGS = tests/test_basic tests/test_branch tests/test_hazard
 
-.PHONY: all analyze sim wave clean assemble
+.PHONY: all analyze sim wave clean assemble test
 
 all: analyze
 
@@ -86,14 +92,21 @@ assemble:
 	done
 	@echo "=== Assembly complete ==="
 
-# Run simulation (basic test)
-sim: analyze assemble
-	@echo "=== Running simulation: tb_basic ==="
-	cp tests/test_basic.contents.txt $(WORK_DIR)/contents.txt
-	cd $(WORK_DIR) && $(GHDL) -e $(GHDL_FLAGS) --workdir=. tb_basic
-	cd $(WORK_DIR) && $(GHDL) -r $(GHDL_FLAGS) --workdir=. tb_basic \
-		--stop-time=50us 2>&1 | tee sim_output.txt
-	@echo "=== Simulation complete ==="
+# Pattern rule: run a single test
+test_%: analyze assemble
+	@echo "=== Running test: tb_$* ==="
+	cp tests/test_$*.contents.txt $(WORK_DIR)/contents.txt
+	cd $(WORK_DIR) && $(GHDL) -e $(GHDL_FLAGS) --workdir=. tb_$*
+	cd $(WORK_DIR) && $(GHDL) -r $(GHDL_FLAGS) --workdir=. tb_$* \
+		--stop-time=50us 2>&1 | tee sim_$*_output.txt
+	@echo "=== Test tb_$* complete ==="
+
+# Run all tests
+test: test_basic test_branch test_hazard
+	@echo "=== ALL TEST SUITES COMPLETE ==="
+
+# Backward compatibility: make sim = make test_basic
+sim: test_basic
 
 # Run simulation with VCD waveform dump
 wave: analyze assemble

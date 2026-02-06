@@ -1,6 +1,6 @@
 -- test_basic.asm
 -- Basic ANEM16 processor test program
--- Tests: R-type ALU ops, load immediate, memory ops, LW forwarding
+-- Tests: R-type ALU ops, load immediate, memory ops, LW forwarding, JAL/JR
 -- Results are stored to data memory for verification
 --
 -- This test relies on:
@@ -11,18 +11,26 @@
 -- - 0 NOPs needed between LIL and dependent instructions
 --
 -- Memory map for test results:
---   addr 0: R-type ADD result (expected: 0x0007 = 3+4)
---   addr 1: R-type SUB result (expected: 0x0001 = 4-3)
---   addr 2: R-type AND result (expected: 0x0003 = 0x07 & 0x03)
---   addr 3: R-type OR  result (expected: 0x0007 = 0x03 | 0x07)
---   addr 4: R-type XOR result (expected: 0x0004 = 0x07 ^ 0x03)
---   addr 5: R-type NOR result (expected: 0xFFF8 = ~(0x07 | 0x00))
---   addr 6: LIW result (expected: 0xABCD)
---   addr 7: SHL result (expected: 0x000E = 0x0007 << 1)
---   addr 8: SHR result (expected: 0x0003 = 0x0007 >> 1)
---   addr 9: LW result  (expected: 0x0007 = value loaded from addr 0)
+--   addr 0:  R-type ADD result (expected: 0x0007 = 3+4)
+--   addr 1:  R-type SUB result (expected: 0x0001 = 4-3)
+--   addr 2:  R-type AND result (expected: 0x0003 = 0x07 & 0x03)
+--   addr 3:  R-type OR  result (expected: 0x0007 = 0x03 | 0x07)
+--   addr 4:  R-type XOR result (expected: 0x0004 = 0x07 ^ 0x03)
+--   addr 5:  R-type NOR result (expected: 0xFFF8 = ~(0x07 | 0x00))
+--   addr 6:  LIW result (expected: 0xABCD)
+--   addr 7:  SHL result (expected: 0x000E = 0x0007 << 1)
+--   addr 8:  SHR result (expected: 0x0003 = 0x0007 >> 1)
+--   addr 9:  LW result  (expected: 0x0007 = value loaded from addr 0)
 --   addr 10: SLT result (expected: 0x0001 = -8 < 3 signed)
 --   addr 11: SGT result (expected: 0x0001 = 3 > -8 signed)
+--   addr 12: JAL subroutine result (expected: 0x0042 = 66)
+--   addr 13: JAL return address R15 (expected: address after delay slot)
+--   addr 14: SAR result (expected: 0xFFFC = 0xFFF8 >>> 1)
+--   addr 15: ROL result (expected: 0xFFF1 = 0xFFF8 ROL 1)
+--   addr 16: ROR result (expected: 0x8003 = 0x0007 ROR 1)
+--   addr 17: $0 immutability (expected: 0x0000)
+--   addr 18: LW base+offset (expected: 0x8003 from addr 16)
+--   addr 19: LIL stale byte (expected: 0xFF05 = LIU FF then LIL 05)
 
 -- Setup: load test values into registers
 -- R1 = 3, R2 = 4, R3 = 7
@@ -102,6 +110,66 @@ AND $14, $0
 OR $14, $1
 SGT $14, $9
 SW $14, 11($0)
+
+-- Test 15: SAR. R9 = 0xFFF8 >>> 1 = 0xFFFC (sign-extended right shift)
+-- R9 already has 0xFFF8 from test 6 (NOR clobbered later by test 11, but
+-- actually test 11 puts R9 through SLT, which doesn't write back to R9;
+-- wait — test 11 uses R14, and R9 still has the NOR result)
+-- Actually SAR reads R9 which was set to FFF8 by NOR in test 6.
+-- But test 11 did OR $14,$9 / SLT $14,$1 — so R9 still = 0xFFF8.
+SAR $9, $1
+SW $9, 14($0)
+
+-- Test 16: ROL. R9 = 0xFFF8 ROL 1 = 0xFFF1 (rotate left)
+-- Reload R9 = 0xFFF8 = NOR(7|0) since SAR modified it
+AND $9, $0
+OR $9, $3
+NOR $9, $0
+ROL $9, $1
+SW $9, 15($0)
+
+-- Test 17: ROR. R6 = 0x0007 ROR 1 = 0x8003 (rotate right)
+-- Use R5=16 as base for addresses >= 16
+LIL $5, 16
+AND $6, $0
+OR $6, $3
+ROR $6, $1
+SW $6, 0($5)
+
+-- Test 18: $0 immutability. Write to $0, read back, should be 0x0000
+ADD $0, $3
+SW $0, 1($5)
+
+-- Test 19: LW base+offset. Load from addr 16 (where ROR result was stored)
+-- R4 = MEM[R5 + 0] = MEM[16] = 0x8003
+LW $4, 0($5)
+ADD $4, $0
+SW $4, 2($5)
+
+-- Test 20: LIL stale byte. LIU sets upper byte, LIL sets lower byte
+-- LIL does NOT clear upper byte (only writes lower 8 bits)
+-- R8 = LIU 0xFF, then LIL 0x05 => upper byte stays 0xFF => 0xFF05
+LIU $8, 255
+LIL $8, 5
+SW $8, 3($5)
+
+-- Test 13: JAL/JR. Call subroutine, verify return and R15 value.
+-- JAL saves PC+2 to R15 (skip JAL + delay slot). Subroutine stores
+-- 66 (0x0042) to addr 12. After return, store R15 to addr 13 to verify
+-- it equals the address of the instruction after the delay slot.
+JAL %SUBR%
+NOP
+-- We return here. R15 should contain this instruction's address.
+-- Store R15 to addr 13 for verification.
+SW $15, 13($0)
+J %HALT%
+NOP
+
+-- Subroutine: store 0x0042 to addr 12, then return
+SUBR: LIL $14, 66
+SW $14, 12($0)
+JR $15
+NOP
 
 -- End: infinite loop
 HALT: J %HALT%
