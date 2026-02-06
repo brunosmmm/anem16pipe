@@ -1,0 +1,18 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "resolution": {
+      "summary": "Duplicate of ann_031031 \u2014 MUL implemented in ALU at commit 5a05b9d. Added 16x16\u219216 combinational multiplier with aux_mul_full intermediate signal and ALU output mux case \"00011\".",
+      "type": "duplicate"
+    }
+  },
+  "entity_id": "ann_133948_3e7cky48bd72",
+  "lamport_clock": 104,
+  "operation_id": "op_20260206_151131_4e36d665",
+  "operation_type": "annotation_resolve",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T15:11:31.499494+00:00"
+}
