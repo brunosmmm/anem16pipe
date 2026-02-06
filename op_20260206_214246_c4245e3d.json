@@ -1,0 +1,48 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "annotations_linked": [
+      "ann_184134_3e7ckycab488",
+      "ann_180246_3e7ckye29ad6",
+      "ann_161152_3e7cky348c40",
+      "ann_133944_3e7cky67a50d",
+      "ann_133211_3e7cky084936",
+      "ann_012010_3e7cky057234",
+      "ann_012001_3e7ckyf987fb",
+      "ann_011958_3e7cky4fd06c",
+      "ann_011955_3e7ckyd28bb8"
+    ],
+    "code_commit": "2ec4ad6b4f249f5489f220f9fe2edf8ee7da962c",
+    "code_commit_message": "feat(ANEM): Phase 9: Stack support (PUSH/POP/SPRD/SPWR) and ADDI\n\nAdd dedicated stack pointer register with SP forwarding chain,\nstack operations (opcode 0111), and immediate add (opcode 1011).\nAll 47 tests pass (23 basic + 4 branch + 5 hazard + 15 stack).",
+    "files": [
+      "ANEM/ANEM.vhd",
+      "ANEM/instrset.vhd",
+      "Makefile",
+      "assembler/anem_opcodes.py",
+      "assembler/anem_regex.py",
+      "assembler/assembler.py",
+      "control/hazunit.vhd",
+      "control/idecode.vhd"
+    ],
+    "tasks_linked": [
+      "task_184141_f49320",
+      "task_180319_de24ab",
+      "task_161156_5920fc",
+      "task_143150_741b80",
+      "task_133216_6e8ac3",
+      "task_022244_2ad705",
+      "task_015210_77544e",
+      "task_013151_5d24e7",
+      "task_012019_149eba"
+    ]
+  },
+  "entity_id": null,
+  "lamport_clock": 127,
+  "operation_id": "op_20260206_214246_c4245e3d",
+  "operation_type": "commit_linked",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T21:42:46.690548+00:00"
+}
