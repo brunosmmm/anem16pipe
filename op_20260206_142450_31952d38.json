@@ -8,16 +8,16 @@
       {
         "hash": "9a9e61155b547d99dc587f2e9041dbff6cc3312c",
         "hash_short": "9a9e611",
-        "linked_at": "2026-02-06T14:24:50.407959+00:00",
+        "linked_at": "2026-02-06T14:24:50.447238+00:00",
         "message": "feat(assembler): Add hex literal support for LIL/LIU instructions"
       }
     ],
-    "last_activity": "2026-02-06T14:24:50.407959+00:00"
+    "last_activity": "2026-02-06T14:24:50.447238+00:00"
   },
-  "entity_id": "ann_135555_3e7cky064e10",
-  "lamport_clock": 81,
-  "operation_id": "op_20260206_142450_62a64194",
+  "entity_id": "ann_012010_3e7cky057234",
+  "lamport_clock": 82,
+  "operation_id": "op_20260206_142450_31952d38",
   "operation_type": "annotation_update",
   "parent_operation": null,
-  "timestamp": "2026-02-06T14:24:50.412713+00:00"
+  "timestamp": "2026-02-06T14:24:50.452232+00:00"
 }
