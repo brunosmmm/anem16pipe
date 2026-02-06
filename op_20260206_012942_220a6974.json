@@ -1,0 +1,21 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "branch": "master",
+    "content": "## Phase 6: Test Infrastructure \u2014 Complete\n\n### What was done\n1. **Assembler ported to Python 3** with bug fixes:\n   - Fixed `Message()` dead-code `elif` nesting (Warning/Info/Debug branches were unreachable)\n   - Fixed `Verbosity` reference to `self.Verbosity`\n   - Fixed global `lines` dependency \u2192 now passed as parameter to `Clean()`\n   - Added SGT to `typeR` regex in `anem_regex.py`\n   - Converted all `print` statements to function calls\n   - Fixed integer division (`/` \u2192 `//`)\n   - Added `WriteContents()` method for VHDL simulation format output\n   - Uses `with` statements for file handling\n\n2. **Test program created** (`tests/test_basic.asm`):\n   - Tests: LIL, ADD, SUB, AND, OR, XOR, NOR, LIW, SHL, SHR\n   - Results stored to memory addresses 0-8 for verification\n   - Uses NOP padding to avoid pipeline hazards\n   - Ends with J-to-self halt loop\n\n3. **GHDL Makefile** with targets: `analyze`, `sim`, `wave`, `clean`, `assemble`\n\n4. **Self-checking test bench** (`tests/tb_basic.vhd`):\n   - No GPIO dependency (uses CPU + progmem + datamem + MAC only)\n   - Monitors and logs all memory writes with address/data/cycle\n   - Uses `std.env.stop` for clean termination\n\n5. **Fixed progmem.vhd** VHDL-87 `file ... is in` syntax \u2192 VHDL-2008 `file ... open read_mode is`\n\n### Simulation Results (confirming known bugs)\n- **All ALU results = 0x0000** except LIW (0xABCD) \u2014 confirms forwarding is broken\n- **Program loops instead of halting** \u2014 confirms flush is disabled (J doesn't stop execution)\n- **Memory writes happen at correct addresses (0-8)** \u2014 basic pipeline flow works\n- **Program repeats every ~265 cycles** \u2014 J creates a loop through entire program\n- **72 total memory writes in 2048 cycles** \u2014 approximately 8 complete program iterations\n\n### Files Changed\n- `assembler/assembler.py` \u2014 Python 3 port + bug fixes\n- `assembler/anem_regex.py` \u2014 Added SGT to typeR regex\n- `memory/progmem.vhd` \u2014 VHDL-2008 file syntax\n- `tests/test_basic.asm` \u2014 Directed test program (NEW)\n- `tests/tb_basic.vhd` \u2014 Self-checking test bench (NEW)\n- `Makefile` \u2014 GHDL simulation build system (NEW)\n\n### Next Steps\n- Phase 1: Fix critical pipeline bugs (flush, stall enables, forwarding priority)\n- Re-run simulation after each fix to verify incremental improvement",
+    "context": "Completed Phase 6 test infrastructure for anem16pipe processor",
+    "repository_id": "github.com/brunosmmm/anem16pipe",
+    "session_id": "20260206_011215_17b0",
+    "session_type": "Software Development",
+    "title": "Phase 6 Test Infrastructure Complete"
+  },
+  "entity_id": "20260206_0129_phase-6-test-infrastructure-complete",
+  "lamport_clock": 12,
+  "operation_id": "op_20260206_012942_220a6974",
+  "operation_type": "checkpoint_save",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T01:29:42.779432+00:00"
+}
