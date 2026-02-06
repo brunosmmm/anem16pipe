@@ -1,0 +1,34 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "annotations_linked": [
+      "ann_012010_3e7cky057234",
+      "ann_012001_3e7ckyf987fb",
+      "ann_011958_3e7cky4fd06c",
+      "ann_011955_3e7ckyd28bb8"
+    ],
+    "code_commit": "a64014eebf5ec0309bd896556ff15d24a6eb3a67",
+    "code_commit_message": "feat(ANEM): Phase 3: Forwarding coverage \u2014 Add forwarding for LIL/LIU,",
+    "files": [
+      "ANEM/ANEM.vhd",
+      "control/hazunit.vhd",
+      "mac/mac.vhd",
+      "tests/test_basic.asm"
+    ],
+    "tasks_linked": [
+      "task_022244_2ad705",
+      "task_015210_77544e",
+      "task_013151_5d24e7",
+      "task_012019_149eba"
+    ]
+  },
+  "entity_id": null,
+  "lamport_clock": 30,
+  "operation_id": "op_20260206_024713_e3c7dc64",
+  "operation_type": "commit_linked",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T02:47:13.464791+00:00"
+}
