@@ -22,6 +22,13 @@ package instrset is
   constant ANEM_OPCODE_LIL : std_logic_vector(3 downto 0) := "0101";
   constant ANEM_OPCODE_M1  : std_logic_vector(3 downto 0) := "1110";
   constant ANEM_OPCODE_BHLEQ : std_logic_vector(3 downto 0) := "0110";
+  constant ANEM_OPCODE_STK  : std_logic_vector(3 downto 0) := "0111";
+  constant ANEM_OPCODE_ADDI : std_logic_vector(3 downto 0) := "1011";
+  --STK functions
+  constant ANEM_STKFUNC_PUSH : std_logic_vector(3 downto 0) := "0000";
+  constant ANEM_STKFUNC_POP  : std_logic_vector(3 downto 0) := "0001";
+  constant ANEM_STKFUNC_SPRD : std_logic_vector(3 downto 0) := "0010";
+  constant ANEM_STKFUNC_SPWR : std_logic_vector(3 downto 0) := "0011";
   --R functions
   constant ANEM_RFUNC_AND  : std_logic_vector(4 downto 0) := "00000";
   constant ANEM_RFUNC_OR   : std_logic_vector(4 downto 0) := "00001";

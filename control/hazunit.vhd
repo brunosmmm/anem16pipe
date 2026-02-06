@@ -72,6 +72,10 @@ begin
                    '0' when next_instruction(15 downto 12) = "1001" else  --BZ_T
                    '0' when next_instruction(15 downto 12) = "1010" else  --BZ_N
                    '0' when next_instruction(15 downto 12) = "0110" else  --BHLEQ
+                   '0' when next_instruction(15 downto 12) = "0111" and
+                            next_instruction(3 downto 0) = "0001" else    --POP (reads SP not GPR)
+                   '0' when next_instruction(15 downto 12) = "0111" and
+                            next_instruction(3 downto 0) = "0010" else    --SPRD (reads SP not GPR)
                    '1';
 
   --LW destination matches either source register of dependent instruction

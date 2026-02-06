@@ -204,6 +204,46 @@ signal hi_equals_lo : std_logic;
 --BHLEQ
 signal p_bhleqtrue : std_logic;
 
+--Stack Pointer signals
+signal sp_reg_out      : std_logic_vector(15 downto 0); --SP register output
+signal sp_forwarded    : std_logic_vector(15 downto 0); --SP after forwarding chain
+
+--sp_ctl pipeline: "001"=PUSH, "010"=POP, "011"=SPRD, "100"=SPWR, "000"=none
+signal p_id_wb_spctl_0    : std_logic_vector(2 downto 0);
+signal p_id_wb_spctl_1    : std_logic_vector(2 downto 0);
+signal p_id_wb_spctl_2    : std_logic_vector(2 downto 0);
+signal p_id_wb_spctl_3    : std_logic_vector(2 downto 0);
+signal p_s_wb_spctl_mux   : std_logic_vector(2 downto 0); --flush mux
+
+--sp_val: SP value read at ID, pipelined to ALU
+signal p_id_alu_spval_0   : std_logic_vector(15 downto 0);
+signal p_id_alu_spval_1   : std_logic_vector(15 downto 0);
+
+--sp_new: computed SP (ALU stage), pipelined to MEM and WB
+signal p_sp_new_1         : std_logic_vector(15 downto 0);
+signal p_sp_new_2         : std_logic_vector(15 downto 0);
+signal p_sp_new_3         : std_logic_vector(15 downto 0);
+
+--sp_addr: memory address for PUSH/POP (ALU stage), pipelined to MEM
+signal p_sp_addr_1        : std_logic_vector(15 downto 0);
+signal p_sp_addr_2        : std_logic_vector(15 downto 0);
+
+--SP write enables per stage (for forwarding chain)
+signal sp_writes_1        : std_logic;
+signal sp_writes_2        : std_logic;
+signal sp_writes_3        : std_logic;
+
+--ADDI immediate select pipeline
+signal p_id_alu_immsel_0  : std_logic_vector(0 downto 0);
+signal p_id_alu_immsel_1  : std_logic_vector(0 downto 0);
+
+--ALU input overrides
+signal alu_a_final        : std_logic_vector(data_size-1 downto 0);
+signal alu_b_final        : std_logic_vector(data_size-1 downto 0);
+
+--MEM_ADDR mux
+signal mem_addr_final     : std_logic_vector(data_size-1 downto 0);
+
 BEGIN
 
     --BIDIRECTIONAL DATA BUS
@@ -262,7 +302,9 @@ BEGIN
                lo_ctl=>p_id_wb_loctl_0,
                hi_mux=>p_id_wb_himux_0,
                lo_mux=>p_id_wb_lomux_0,
-               bhleq_flag=>p_id_alu_bhleqflag_0(0)
+               bhleq_flag=>p_id_alu_bhleqflag_0(0),
+               sp_ctl=>p_id_wb_spctl_0,
+               alu_imm_sel=>p_id_alu_immsel_0(0)
                );
     
     --! @todo adjust control to account for HI/LO Inputs. Also adjust inside idecode
@@ -344,14 +386,24 @@ BEGIN
     p_f_alu_alub_mux <= p_alu_wb_aluout_2 when p_f_alu_alu_b = '1' else
                         p_f_wb_fwd_data   when p_f_mem_alu_b = '1' else
                         p_id_alu_alub_1;
-  
+
+    --ALU_A override: SPRD uses SP value instead of register
+    alu_a_final <= p_id_alu_spval_1 when p_id_wb_spctl_1 = "011" else  --SPRD
+                   p_f_alu_alua_mux;
+
+    --ALU_B override: ADDI uses sign-extended 8-bit immediate; SPRD uses zero
+    alu_b_final <= (15 downto 8 => p_id_wb_limm_1(7)) & p_id_wb_limm_1
+                     when p_id_alu_immsel_1(0) = '1' else   --ADDI: sign-extend imm8
+                   (others => '0') when p_id_wb_spctl_1 = "011" else  --SPRD: B=0, compute SP+0
+                   p_f_alu_alub_mux;
+
     --! ALU
     alu: ENTITY WORK.ALU(behavior)
       GENERIC MAP(N=>DATA_SIZE)
-      PORT MAP(ALU_A=>p_f_alu_alua_mux,
-               ALU_B=>p_f_alu_alub_mux,
+      PORT MAP(ALU_A=>alu_a_final,
+               ALU_B=>alu_b_final,
                SHAMT=>p_id_alu_alushamt_1,
-               ALU_OP=>p_id_alu_aluctl_1, 
+               ALU_OP=>p_id_alu_aluctl_1,
                FUNC=>p_id_alu_alufunc_1,
                Z=>p_alu_mem_z_1,
                ALU_OUT=>p_alu_wb_aluout_1);
@@ -550,8 +602,72 @@ BEGIN
                en=>p_stall_id_n,
                parallel_in=>p_id_wb_lomux_0,
                data_out=>p_id_wb_lomux_1);
-    
-    
+
+    --SP register (process-based for non-zero reset to 0xFFCF)
+    sp_reg: process(ck, rst)
+    begin
+      if rst = '1' then
+        sp_reg_out <= x"FFCF";
+      elsif rising_edge(ck) then
+        if sp_writes_3 = '1' then
+          sp_reg_out <= p_sp_new_3;
+        end if;
+      end if;
+    end process;
+
+    --SP write enables per stage (PUSH, POP, SPWR all write SP)
+    sp_writes_1 <= '1' when p_id_wb_spctl_1 = "001" or p_id_wb_spctl_1 = "010" or p_id_wb_spctl_1 = "100" else '0';
+    sp_writes_2 <= '1' when p_id_wb_spctl_2 = "001" or p_id_wb_spctl_2 = "010" or p_id_wb_spctl_2 = "100" else '0';
+    sp_writes_3 <= '1' when p_id_wb_spctl_3 = "001" or p_id_wb_spctl_3 = "010" or p_id_wb_spctl_3 = "100" else '0';
+
+    --SP forwarding chain (combinational at ID stage, newest wins)
+    sp_forwarded <= p_sp_new_1  when sp_writes_1 = '1' else  --ALU (newest)
+                    p_sp_new_2  when sp_writes_2 = '1' else  --MEM
+                    p_sp_new_3  when sp_writes_3 = '1' else  --WB
+                    sp_reg_out;                               --register
+
+    --SP value captured at ID stage (forwarded)
+    p_id_alu_spval_0 <= sp_forwarded;
+
+    --SP adder (at ALU stage, parallel to main ALU)
+    --PUSH: sp_new = SP-1, sp_addr = SP-1 (pre-decrement, write to new SP)
+    --POP:  sp_new = SP+1, sp_addr = SP   (post-increment, read from old SP)
+    --SPWR: sp_new = forwarded register value (from ALU_A path)
+    p_sp_new_1 <= std_logic_vector(unsigned(p_id_alu_spval_1) - 1) when p_id_wb_spctl_1 = "001" else  --PUSH
+                  std_logic_vector(unsigned(p_id_alu_spval_1) + 1) when p_id_wb_spctl_1 = "010" else  --POP
+                  p_f_alu_alua_mux                                 when p_id_wb_spctl_1 = "100" else  --SPWR
+                  p_id_alu_spval_1;
+
+    p_sp_addr_1 <= std_logic_vector(unsigned(p_id_alu_spval_1) - 1) when p_id_wb_spctl_1 = "001" else  --PUSH: write to SP-1
+                   p_id_alu_spval_1                                 when p_id_wb_spctl_1 = "010" else  --POP: read from SP
+                   (others => '0');
+
+    --sp_ctl flush mux (zero on flush/stall, same condition as regctl)
+    p_s_wb_spctl_mux <= p_id_wb_spctl_0 when p_stall_if_n = '1' and p_bztrue = '0' and p_bhleqtrue = '0' else
+                        "000";
+
+    --Pipeline ID/ALU: sp_ctl
+    preg_spctl_0: entity work.RegANEM(Load)
+      generic map(3)
+      port map(ck=>ck, rst=>rst, en=>p_stall_id_n,
+               parallel_in=>p_s_wb_spctl_mux,
+               data_out=>p_id_wb_spctl_1);
+
+    --Pipeline ID/ALU: sp_val (forwarded SP)
+    preg_spval_0: entity work.RegANEM(Load)
+      generic map(16)
+      port map(ck=>ck, rst=>rst, en=>p_stall_id_n,
+               parallel_in=>p_id_alu_spval_0,
+               data_out=>p_id_alu_spval_1);
+
+    --Pipeline ID/ALU: alu_imm_sel
+    preg_immsel_0: entity work.RegANEM(Load)
+      generic map(1)
+      port map(ck=>ck, rst=>rst, en=>p_stall_id_n,
+               parallel_in=>p_id_alu_immsel_0,
+               data_out=>p_id_alu_immsel_1);
+
+
     --PIPELINE ALU/MEM
     PREG_ctl_1  : entity WORK.RegANEM(Load)
       generic MAP(3)
@@ -658,6 +774,27 @@ BEGIN
                parallel_in=>p_id_wb_lomux_1,
                data_out=>p_id_wb_lomux_2);
 
+    --Pipeline ALU/MEM: sp_ctl
+    preg_spctl_1: entity work.RegANEM(Load)
+      generic map(3)
+      port map(ck=>ck, rst=>rst, en=>p_stall_alu_n,
+               parallel_in=>p_id_wb_spctl_1,
+               data_out=>p_id_wb_spctl_2);
+
+    --Pipeline ALU/MEM: sp_new
+    preg_spnew_1: entity work.RegANEM(Load)
+      generic map(16)
+      port map(ck=>ck, rst=>rst, en=>p_stall_alu_n,
+               parallel_in=>p_sp_new_1,
+               data_out=>p_sp_new_2);
+
+    --Pipeline ALU/MEM: sp_addr (memory address for PUSH/POP)
+    preg_spaddr_1: entity work.RegANEM(Load)
+      generic map(16)
+      port map(ck=>ck, rst=>rst, en=>p_stall_alu_n,
+               parallel_in=>p_sp_addr_1,
+               data_out=>p_sp_addr_2);
+
     --ALU Flag register (only update Z for R-type and S-type ALU operations)
     --dummy vectors
     p_alu_mem_z_1_v(0) <= p_alu_mem_z_1;
@@ -683,7 +820,10 @@ BEGIN
                parallel_in=>p_alu_x_memop,
                data_out=>p_mem_x_memop);
 
-    MEM_ADDR <= p_alu_wb_aluout_2;
+    --MEM_ADDR mux: use SP address for PUSH/POP, else ALU output (LW/SW)
+    mem_addr_final <= p_sp_addr_2 when p_id_wb_spctl_2 = "001" or p_id_wb_spctl_2 = "010" else
+                      p_alu_wb_aluout_2;
+    MEM_ADDR <= mem_addr_final;
     TO_MEM  <= p_id_mem_alua_2;
     MEM_EN  <= p_id_mem_memen_2;
     MEM_W   <= p_id_mem_memw_2;
@@ -806,6 +946,20 @@ BEGIN
                en=>p_stall_mem_n,
                parallel_in=>p_id_wb_lomux_2,
                data_out=>p_id_wb_lomux_3);
+
+    --Pipeline MEM/WB: sp_ctl
+    preg_spctl_2: entity work.RegANEM(Load)
+      generic map(3)
+      port map(ck=>ck, rst=>rst, en=>p_stall_mem_n,
+               parallel_in=>p_id_wb_spctl_2,
+               data_out=>p_id_wb_spctl_3);
+
+    --Pipeline MEM/WB: sp_new
+    preg_spnew_2: entity work.RegANEM(Load)
+      generic map(16)
+      port map(ck=>ck, rst=>rst, en=>p_stall_mem_n,
+               parallel_in=>p_sp_new_2,
+               data_out=>p_sp_new_3);
 
     palu_a_3: entity WORK.RegANEM(Load)
       generic MAP(DATA_SIZE)

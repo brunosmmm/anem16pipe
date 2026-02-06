@@ -47,7 +47,10 @@ entity anem16_idecode is
        lo_ctl : out std_logic_vector(2 downto 0);
        hi_mux : out std_logic_vector(1 downto 0);
        lo_mux : out std_logic_vector(1 downto 0);
-       bhleq_flag : out std_logic
+       bhleq_flag : out std_logic;
+
+       sp_ctl     : out std_logic_vector(2 downto 0);
+       alu_imm_sel : out std_logic
 
     );
 end entity;
@@ -56,6 +59,7 @@ end entity;
 architecture pipe of anem16_idecode is
 alias opcode : std_logic_vector(3 downto 0) is instruction(15 downto 12);
 alias m1op : std_logic_vector(3 downto 0) is instruction(11 downto 8);
+alias stkfunc : std_logic_vector(3 downto 0) is instruction(3 downto 0);
 signal alu_ctl_0 : std_logic_vector(2 downto 0);
 signal regbnk_ctl_0 : std_logic_vector(2 downto 0);
 signal reset_detected : std_logic;
@@ -71,6 +75,8 @@ begin
   alu_ctl <= alu_ctl_0 when reset_detected = '0' else
              "000";
   alu_ctl_0 <= "001" when opcode = ANEM_OPCODE_R else
+               "001" when opcode = ANEM_OPCODE_ADDI else
+               "001" when opcode = ANEM_OPCODE_STK and stkfunc = ANEM_STKFUNC_SPRD else
                "010" when opcode = ANEM_OPCODE_S else
                "011" when opcode = ANEM_OPCODE_BZ_X or opcode = ANEM_OPCODE_BZ_T or opcode = ANEM_OPCODE_BZ_N else
                "100" when opcode = ANEM_OPCODE_SW else
@@ -80,7 +86,9 @@ begin
   alu_shamt <= instruction(7 downto 4) when alu_ctl_0 /= "000" else
                "0000";
   
-  alu_func <= instruction(3 downto 0) when alu_ctl_0 /= "000" else
+  alu_func <= ANEM_RFUNC_ADD(3 downto 0) when opcode = ANEM_OPCODE_ADDI else
+              ANEM_RFUNC_ADD(3 downto 0) when opcode = ANEM_OPCODE_STK and stkfunc = ANEM_STKFUNC_SPRD else
+              instruction(3 downto 0) when alu_ctl_0 /= "000" else
               "0000";
 
   
@@ -93,6 +101,9 @@ begin
                   "011" when opcode = ANEM_OPCODE_LIL else --LIL INSTRUCTION
                   "001" when opcode = ANEM_OPCODE_R else --R TYPE INSTRUCTION
                   "001" when opcode = ANEM_OPCODE_S else --S TYPE INSTRUCTION
+                  "001" when opcode = ANEM_OPCODE_ADDI else --ADDI INSTRUCTION
+                  "001" when opcode = ANEM_OPCODE_STK and stkfunc = ANEM_STKFUNC_SPRD else --SPRD
+                  "100" when opcode = ANEM_OPCODE_STK and stkfunc = ANEM_STKFUNC_POP else --POP (like LW)
                   "100" when opcode = ANEM_OPCODE_LW else --LW INSTRUCTION
                   "101" when opcode = ANEM_OPCODE_JAL else --JAL INSTRUCTION
                   "000";
@@ -133,14 +144,27 @@ begin
 
   mem_en <= '1' when opcode = ANEM_OPCODE_SW else
             '1' when opcode = ANEM_OPCODE_LW else
+            '1' when opcode = ANEM_OPCODE_STK and (stkfunc = ANEM_STKFUNC_PUSH or stkfunc = ANEM_STKFUNC_POP) else
             '0' when reset_detected = '1' else
             '0';
 
   mem_w <=  '1' when opcode = ANEM_OPCODE_SW and reset_detected = '0' else
+            '1' when opcode = ANEM_OPCODE_STK and stkfunc = ANEM_STKFUNC_PUSH and reset_detected = '0' else
             '0';
 
   limmval <= instruction(7 downto 0);
 
+  --stack pointer control
+  --sp_ctl: "001"=PUSH, "010"=POP, "011"=SPRD, "100"=SPWR, "000"=none
+  sp_ctl <= "001" when opcode = ANEM_OPCODE_STK and stkfunc = ANEM_STKFUNC_PUSH else
+            "010" when opcode = ANEM_OPCODE_STK and stkfunc = ANEM_STKFUNC_POP else
+            "011" when opcode = ANEM_OPCODE_STK and stkfunc = ANEM_STKFUNC_SPRD else
+            "100" when opcode = ANEM_OPCODE_STK and stkfunc = ANEM_STKFUNC_SPWR else
+            "000";
+
+  --ADDI immediate select (1 = use sign-extended immediate for ALU_B)
+  alu_imm_sel <= '1' when opcode = ANEM_OPCODE_ADDI else
+                 '0';
 
   --special register control
 

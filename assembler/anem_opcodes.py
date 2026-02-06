@@ -56,6 +56,15 @@ ANEMFuncM3 = {    "MFHI" : "0111",
                   "MTLO" : "1010"
 }
 
+ANEMOpcodeSTK = "0111"
+ANEMFuncSTK = {   "PUSH" : "0000",
+                  "POP"  : "0001",
+                  "SPRD" : "0010",
+                  "SPWR" : "0011"
+}
+
+ANEMOpcodeADDI = "1011"
+
 ##@todo bring floating point support although we do not have a FPU now
 """
 ANEMOpcodeF      = { "FADD"   :  "0010",

@@ -54,12 +54,13 @@ TB_SRCS = \
 	tests/tb_basic.vhd \
 	tests/tb_branch.vhd \
 	tests/tb_hazard.vhd \
+	tests/tb_stack.vhd \
 	tests/tb_trace.vhd
 
 ALL_SRCS = $(SRCS_L0) $(SRCS_L1) $(SRCS_L2) $(TB_SRCS)
 
 # Test programs
-TEST_PROGS = tests/test_basic tests/test_branch tests/test_hazard
+TEST_PROGS = tests/test_basic tests/test_branch tests/test_hazard tests/test_stack
 
 .PHONY: all analyze sim wave clean assemble test trace compare
 
@@ -108,7 +109,7 @@ test_%: analyze assemble
 	@echo "=== Test tb_$* complete ==="
 
 # Run all tests
-test: test_basic test_branch test_hazard
+test: test_basic test_branch test_hazard test_stack
 	@echo "=== ALL TEST SUITES COMPLETE ==="
 
 # Backward compatibility: make sim = make test_basic
@@ -158,7 +159,7 @@ compare_%: trace_%
 	fi
 
 # Compare all test programs
-compare: compare_basic compare_branch compare_hazard
+compare: compare_basic compare_branch compare_hazard compare_stack
 	@echo "=== ALL TRACE COMPARISONS COMPLETE ==="
 
 # Clean build artifacts

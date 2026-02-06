@@ -353,6 +353,12 @@ class Assembler:
 
         return ANEMOpcodeM1+ANEMFuncM3[mop] + makeBinStr(0,4)+ makeBinStr(int(reg),4)
 
+    def makeSTKInstr(self, sop, reg):
+        return ANEMOpcodeSTK+makeBinStr(int(reg),4)+makeBinStr(0,4)+ANEMFuncSTK[sop]
+
+    def makeADDIInstr(self, reg, imm):
+        return ANEMOpcodeADDI+makeBinStr(int(reg),4)+makeBinStr(int(imm),8)
+
     def Assemble(self):
 
         self.binCode = []
@@ -413,6 +419,16 @@ class Assembler:
             m = typeM3.match(line)
             if m != None:
                 self.binCode.append([makeBinStr(int(index),16),self.makeM3Instr(m.group(1),m.group(2))])
+                continue
+
+            m = typeSTK.match(line)
+            if m != None:
+                self.binCode.append([makeBinStr(int(index),16),self.makeSTKInstr(m.group(1),m.group(2))])
+                continue
+
+            m = typeADDI.match(line)
+            if m != None:
+                self.binCode.append([makeBinStr(int(index),16),self.makeADDIInstr(m.group(1),m.group(2))])
                 continue
 
             ##@todo make floating point supported
