@@ -1,0 +1,18 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "resolution": {
+      "summary": "Phase 4: Fixed SLT signed comparison, added SGT instruction, removed SUBCK anti-pattern from register bank, eliminated REG_IN_DATA intermediate buffer. All 12 tests pass.",
+      "type": "fixed"
+    }
+  },
+  "entity_id": "ann_012004_3e7cky1b6e23",
+  "lamport_clock": 44,
+  "operation_id": "op_20260206_030222_c2d7a584",
+  "operation_type": "annotation_resolve",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T03:02:22.912564+00:00"
+}
