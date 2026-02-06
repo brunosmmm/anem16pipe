@@ -1,0 +1,32 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "complexity_factors": [
+      "architectural",
+      "multi_file",
+      "ISA_extension",
+      "new_control_logic",
+      "pipeline_interaction"
+    ],
+    "perceived_complexity": 0.85,
+    "priority": "high",
+    "tags": [
+      "feature",
+      "interrupts",
+      "exceptions",
+      "pipeline",
+      "ISA"
+    ],
+    "text": "Implement interrupt/exception handling \u2014 Add interrupt vector table, status register (interrupt enable/disable, interrupt pending flags), and pipeline flush-on-interrupt logic. Needs: IVT in memory, ISR entry/return instructions (RETI), ability to save/restore PC and status on interrupt, masking. Reuse existing branch flush mechanism as starting point for pipeline interrupt injection. Consider: edge vs level triggered, priority levels, nested interrupt support.",
+    "type": "idea"
+  },
+  "entity_id": "ann_031013_3e7cky2d8e07",
+  "lamport_clock": 54,
+  "operation_id": "op_20260206_031013_2d435b14",
+  "operation_type": "annotation_create",
+  "parent_operation": null,
+  "timestamp": "2026-02-06T03:10:13.649137+00:00"
+}
