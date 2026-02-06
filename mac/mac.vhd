@@ -135,8 +135,8 @@ BEGIN
   --interrupt
   INT <= CONFIG_MAC_INT;
   
-  --CONFIG_MAC write logic
-  CONFIG_MAC_IN <= (DATA AND CONFIG_MAC_ACCESS_MASK) OR (CONFIG_MAC_IN AND (NOT CONFIG_MAC_ACCESS_MASK));
+  --CONFIG_MAC write logic (merge writable bits from DATA with read-only bits from current register)
+  CONFIG_MAC_IN <= (DATA AND CONFIG_MAC_ACCESS_MASK) OR (CONFIG_MAC_OUT AND (NOT CONFIG_MAC_ACCESS_MASK));
   
   WEN <= W AND EN; --WRITE ENABLE
   REN <= (NOT W) AND EN; --READ ENABLE
