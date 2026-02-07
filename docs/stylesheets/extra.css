@@ -1,0 +1,133 @@
+/* Bit-field encoding diagrams */
+.bit-field {
+  display: flex;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.8rem;
+  margin: 1em 0;
+  border: 2px solid var(--md-default-fg-color--light);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bit-field .field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-right: 1px solid var(--md-default-fg-color--lightest);
+  padding: 0;
+}
+
+.bit-field .field:last-child {
+  border-right: none;
+}
+
+.bit-field .bits {
+  font-size: 0.65rem;
+  color: var(--md-default-fg-color--light);
+  padding: 2px 8px;
+  background: var(--md-default-bg-color--light);
+  width: 100%;
+  text-align: center;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+}
+
+.bit-field .value {
+  padding: 6px 12px;
+  font-weight: 600;
+  text-align: center;
+  width: 100%;
+}
+
+/* Field type colors */
+.bit-field .field-opcode .value {
+  background-color: rgba(63, 81, 181, 0.15);
+  color: #3f51b5;
+}
+
+.bit-field .field-reg .value {
+  background-color: rgba(76, 175, 80, 0.15);
+  color: #4caf50;
+}
+
+.bit-field .field-func .value {
+  background-color: rgba(255, 152, 0, 0.15);
+  color: #ff9800;
+}
+
+.bit-field .field-imm .value {
+  background-color: rgba(156, 39, 176, 0.15);
+  color: #9c27b0;
+}
+
+.bit-field .field-offset .value {
+  background-color: rgba(0, 188, 212, 0.15);
+  color: #00bcd4;
+}
+
+.bit-field .field-unused .value {
+  background-color: rgba(158, 158, 158, 0.1);
+  color: #9e9e9e;
+}
+
+/* Dark mode adjustments */
+[data-md-color-scheme="slate"] .bit-field .field-opcode .value {
+  background-color: rgba(63, 81, 181, 0.25);
+  color: #7986cb;
+}
+
+[data-md-color-scheme="slate"] .bit-field .field-reg .value {
+  background-color: rgba(76, 175, 80, 0.25);
+  color: #81c784;
+}
+
+[data-md-color-scheme="slate"] .bit-field .field-func .value {
+  background-color: rgba(255, 152, 0, 0.25);
+  color: #ffb74d;
+}
+
+[data-md-color-scheme="slate"] .bit-field .field-imm .value {
+  background-color: rgba(156, 39, 176, 0.25);
+  color: #ba68c8;
+}
+
+[data-md-color-scheme="slate"] .bit-field .field-offset .value {
+  background-color: rgba(0, 188, 212, 0.25);
+  color: #4dd0e1;
+}
+
+/* Pipeline stage badges */
+.stage-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.stage-if { background: #e3f2fd; color: #1565c0; }
+.stage-id { background: #e8f5e9; color: #2e7d32; }
+.stage-alu { background: #fff3e0; color: #e65100; }
+.stage-mem { background: #fce4ec; color: #c62828; }
+.stage-wb { background: #f3e5f5; color: #6a1b9a; }
+
+[data-md-color-scheme="slate"] .stage-if { background: rgba(21, 101, 192, 0.3); color: #64b5f6; }
+[data-md-color-scheme="slate"] .stage-id { background: rgba(46, 125, 50, 0.3); color: #81c784; }
+[data-md-color-scheme="slate"] .stage-alu { background: rgba(230, 81, 0, 0.3); color: #ffb74d; }
+[data-md-color-scheme="slate"] .stage-mem { background: rgba(198, 40, 40, 0.3); color: #ef9a9a; }
+[data-md-color-scheme="slate"] .stage-wb { background: rgba(106, 27, 154, 0.3); color: #ce93d8; }
+
+/* Instruction quick-reference table */
+.inst-table th {
+  white-space: nowrap;
+}
+
+.inst-table td:first-child {
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 600;
+}
+
+.inst-table td:nth-child(2) {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.85rem;
+}

@@ -1,0 +1,74 @@
+site_name: ANEM16pipe Documentation
+site_description: 16-bit pipelined processor — ISA reference, pipeline architecture, and tooling
+repo_name: anem16pipe
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: deep purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: deep purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - toc.follow
+  icon:
+    repo: fontawesome/brands/github
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - tables
+  - attr_list
+  - md_in_html
+  - def_list
+  - toc:
+      permalink: true
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Home: index.md
+  - ISA Reference:
+    - Overview: isa/index.md
+    - Arithmetic & Logic (R-Type): isa/r-type.md
+    - Shifts (S-Type): isa/s-type.md
+    - Memory Access: isa/memory.md
+    - Immediates & Loads: isa/immediates.md
+    - Branches & Jumps: isa/branches.md
+    - HI/LO Registers (M1): isa/hilo.md
+    - Stack Operations: isa/stack.md
+    - Interrupts & Exceptions: isa/interrupt.md
+  - Pipeline Architecture: pipeline.md
+  - Assembler Guide: assembler.md
+  - Testing: testing.md
+  - Specifications:
+    - Interrupt Implementation: interrupt_spec.md
+    - Stack Implementation: stack_spec.md
