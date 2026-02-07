@@ -1,0 +1,49 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "annotations_linked": [
+      "ann_184134_3e7ckycab488",
+      "ann_180246_3e7ckye29ad6",
+      "ann_161152_3e7cky348c40",
+      "ann_031031_3e7ckyed34e0",
+      "ann_025806_3e7ckyf6335c"
+    ],
+    "code_commit": "186a95f",
+    "code_commit_message": "feat(ANEM): Phase 10: Interrupt & exception handling",
+    "files": [
+      "ANEM/ANEM.vhd",
+      "ANEM/instrset.vhd",
+      "Makefile",
+      "assembler/anem_opcodes.py",
+      "assembler/anem_regex.py",
+      "assembler/assembler.py",
+      "control/hazunit.vhd",
+      "control/idecode.vhd",
+      "control/ifetch.vhd",
+      "docs/interrupt_spec.md",
+      "tests/tb_basic.vhd",
+      "tests/tb_branch.vhd",
+      "tests/tb_hazard.vhd",
+      "tests/tb_interrupt.vhd",
+      "tests/tb_stack.vhd",
+      "tests/tb_trace.vhd",
+      "tests/test_interrupt.asm"
+    ],
+    "tasks_linked": [
+      "task_184141_f49320",
+      "task_180319_de24ab",
+      "task_161156_5920fc",
+      "task_145924_1447e3",
+      "task_025810_b470b7"
+    ]
+  },
+  "entity_id": null,
+  "lamport_clock": 144,
+  "operation_id": "op_20260207_031346_a27e4ee3",
+  "operation_type": "commit_linked",
+  "parent_operation": null,
+  "timestamp": "2026-02-07T03:13:46.129377+00:00"
+}
