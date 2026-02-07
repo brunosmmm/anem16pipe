@@ -8,16 +8,16 @@
       {
         "hash": "186a95f",
         "hash_short": "186a95f",
-        "linked_at": "2026-02-07T03:13:46.143071+00:00",
+        "linked_at": "2026-02-07T03:13:46.222831+00:00",
         "message": "feat(ANEM): Phase 10: Interrupt & exception handling"
       }
     ],
-    "last_activity": "2026-02-07T03:13:46.143071+00:00"
+    "last_activity": "2026-02-07T03:13:46.222831+00:00"
   },
-  "entity_id": "ann_184134_3e7ckycab488",
-  "lamport_clock": 145,
-  "operation_id": "op_20260207_031346_f7b80ca4",
+  "entity_id": "ann_180246_3e7ckye29ad6",
+  "lamport_clock": 146,
+  "operation_id": "op_20260207_031346_cb108c0b",
   "operation_type": "annotation_update",
   "parent_operation": null,
-  "timestamp": "2026-02-07T03:13:46.151578+00:00"
+  "timestamp": "2026-02-07T03:13:46.230812+00:00"
 }
