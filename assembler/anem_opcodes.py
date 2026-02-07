@@ -65,6 +65,16 @@ ANEMFuncSTK = {   "PUSH" : "0000",
 
 ANEMOpcodeADDI = "1011"
 
+ANEMFuncSYSCALL = "1011"
+ANEMFuncM4      = "1100"
+ANEMSubM4 = {  "RETI"  : "0000",
+               "EI"    : "0001",
+               "DI"    : "0010",
+               "MFEPC" : "0011",
+               "MFECA" : "0100",
+               "MTEPC" : "0101"
+}
+
 ##@todo bring floating point support although we do not have a FPU now
 """
 ANEMOpcodeF      = { "FADD"   :  "0010",

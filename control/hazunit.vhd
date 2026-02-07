@@ -37,7 +37,11 @@ entity anem16_hazunit is
        reg_sela_mem     : in std_logic_vector(3 downto 0);
        regctl_mem       : in std_logic_vector(2 downto 0);
        reg_sela_wb      : in std_logic_vector(3 downto 0);
-       regctl_wb        : in std_logic_vector(2 downto 0)
+       regctl_wb        : in std_logic_vector(2 downto 0);
+
+       --EPC write tracking (for MTEPC → RETI/MFEPC stall)
+       epcwr_alu        : in std_logic;
+       epcwr_mem        : in std_logic
 
        );
 
@@ -54,6 +58,8 @@ signal lw_stall_if_n    : std_logic;
 signal nfw_stall_if_n   : std_logic;
 signal jr_stall_if_n    : std_logic;
 signal jr_data_hazard   : std_logic;
+signal epc_stall_if_n   : std_logic;
+signal epc_read_hazard  : std_logic;
 
 signal bz_stall_if_n    : std_logic;
 signal bz_stall_counter : std_logic_vector(1 downto 0);
@@ -76,6 +82,11 @@ begin
                             next_instruction(3 downto 0) = "0001" else    --POP (reads SP not GPR)
                    '0' when next_instruction(15 downto 12) = "0111" and
                             next_instruction(3 downto 0) = "0010" else    --SPRD (reads SP not GPR)
+                   '0' when next_instruction(15 downto 12) = "1110" and
+                            next_instruction(11 downto 8) = "1011" else   --SYSCALL (no GPR read)
+                   '0' when next_instruction(15 downto 12) = "1110" and
+                            next_instruction(11 downto 8) = "1100" and
+                            next_instruction(7 downto 4) /= "0101" else   --M4 except MTEPC
                    '1';
 
   --LW destination matches either source register of dependent instruction
@@ -135,7 +146,18 @@ begin
 
   jr_stall_if_n <= not jr_data_hazard;
 
-  p_stall_if_n <= lw_stall_if_n and sw_stall_if_n and bz_stall_if_n and nfw_stall_if_n and jr_stall_if_n;
+  --EPC read stall: RETI or MFEPC in ID, MTEPC in ALU or MEM (WB handled by bypass)
+  --RETI = M1 "1100" sub "0000", MFEPC = M1 "1100" sub "0011"
+  epc_read_hazard <=
+    '1' when next_instruction(15 downto 12) = "1110" and
+             next_instruction(11 downto 8) = "1100" and
+             (next_instruction(7 downto 4) = "0000" or next_instruction(7 downto 4) = "0011") and
+             (epcwr_alu = '1' or epcwr_mem = '1') else
+    '0';
+
+  epc_stall_if_n <= not epc_read_hazard;
+
+  p_stall_if_n <= lw_stall_if_n and sw_stall_if_n and bz_stall_if_n and nfw_stall_if_n and jr_stall_if_n and epc_stall_if_n;
 
 --clocked process for BZ/BHLEQ stall only
 process(mclk,mrst)

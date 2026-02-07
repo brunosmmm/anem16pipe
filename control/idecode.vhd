@@ -50,7 +50,15 @@ entity anem16_idecode is
        bhleq_flag : out std_logic;
 
        sp_ctl     : out std_logic_vector(2 downto 0);
-       alu_imm_sel : out std_logic
+       alu_imm_sel : out std_logic;
+
+       --interrupt/exception
+       epc_in       : in std_logic_vector(15 downto 0); --! EPC for RETI j_dest
+       syscall_flag : out std_logic;
+       reti_flag    : out std_logic;
+       ei_flag      : out std_logic;
+       di_flag      : out std_logic;
+       exc_ctl      : out std_logic_vector(2 downto 0) --! "001"=MFEPC, "010"=MFECA, "011"=MTEPC
 
     );
 end entity;
@@ -60,6 +68,7 @@ architecture pipe of anem16_idecode is
 alias opcode : std_logic_vector(3 downto 0) is instruction(15 downto 12);
 alias m1op : std_logic_vector(3 downto 0) is instruction(11 downto 8);
 alias stkfunc : std_logic_vector(3 downto 0) is instruction(3 downto 0);
+alias m4sub : std_logic_vector(3 downto 0) is instruction(7 downto 4);
 signal alu_ctl_0 : std_logic_vector(2 downto 0);
 signal regbnk_ctl_0 : std_logic_vector(2 downto 0);
 signal reset_detected : std_logic;
@@ -77,6 +86,8 @@ begin
   alu_ctl_0 <= "001" when opcode = ANEM_OPCODE_R else
                "001" when opcode = ANEM_OPCODE_ADDI else
                "001" when opcode = ANEM_OPCODE_STK and stkfunc = ANEM_STKFUNC_SPRD else
+               "001" when opcode = ANEM_OPCODE_M1 and m1op = ANEM_M1FUNC_M4 and
+                          (m4sub = ANEM_M4SUB_MFEPC or m4sub = ANEM_M4SUB_MFECA or m4sub = ANEM_M4SUB_MTEPC) else
                "010" when opcode = ANEM_OPCODE_S else
                "011" when opcode = ANEM_OPCODE_BZ_X or opcode = ANEM_OPCODE_BZ_T or opcode = ANEM_OPCODE_BZ_N else
                "100" when opcode = ANEM_OPCODE_SW else
@@ -88,6 +99,8 @@ begin
   
   alu_func <= ANEM_RFUNC_ADD(3 downto 0) when opcode = ANEM_OPCODE_ADDI else
               ANEM_RFUNC_ADD(3 downto 0) when opcode = ANEM_OPCODE_STK and stkfunc = ANEM_STKFUNC_SPRD else
+              ANEM_RFUNC_ADD(3 downto 0) when opcode = ANEM_OPCODE_M1 and m1op = ANEM_M1FUNC_M4 and
+                                              (m4sub = ANEM_M4SUB_MFEPC or m4sub = ANEM_M4SUB_MFECA or m4sub = ANEM_M4SUB_MTEPC) else
               instruction(3 downto 0) when alu_ctl_0 /= "000" else
               "0000";
 
@@ -97,6 +110,8 @@ begin
                 "000";
   regbnk_ctl_0 <= "110" when opcode = ANEM_OPCODE_M1 and m1op = ANEM_M1FUNC_MFHI else --MFHI
                   "111" when opcode = ANEM_OPCODE_M1 and m1op = ANEM_M1FUNC_MFLO else --MFLO
+                  "001" when opcode = ANEM_OPCODE_M1 and m1op = ANEM_M1FUNC_M4 and
+                             (m4sub = ANEM_M4SUB_MFEPC or m4sub = ANEM_M4SUB_MFECA) else --MFEPC/MFECA
                   "010" when opcode = ANEM_OPCODE_LIU else --LIU INSTRUCTION
                   "011" when opcode = ANEM_OPCODE_LIL else --LIL INSTRUCTION
                   "001" when opcode = ANEM_OPCODE_R else --R TYPE INSTRUCTION
@@ -109,9 +124,13 @@ begin
                   "000";
 
   --M3 instructions (MFHI/MFLO/MTHI/MTLO) have dest/src register in bits 3:0
+  --M4 MFEPC/MFECA/MTEPC also have register in bits 3:0
   regbnk_sela <= instruction(3 downto 0) when opcode = ANEM_OPCODE_M1 and
                                               (m1op = ANEM_M1FUNC_MFHI or m1op = ANEM_M1FUNC_MFLO or
                                                m1op = ANEM_M1FUNC_MTHI or m1op = ANEM_M1FUNC_MTLO) else
+                 instruction(3 downto 0) when opcode = ANEM_OPCODE_M1 and m1op = ANEM_M1FUNC_M4 and
+                                              (m4sub = ANEM_M4SUB_MFEPC or m4sub = ANEM_M4SUB_MFECA or
+                                               m4sub = ANEM_M4SUB_MTEPC) else
                  instruction(11 downto 8);
   regbnk_selb <= instruction(7 downto 4);
 
@@ -127,6 +146,8 @@ begin
   j_dest <= "0000" & instruction(11 downto 0) when opcode = ANEM_OPCODE_J else
             "0000" & instruction(11 downto 0) when opcode = ANEM_OPCODE_JAL else
             regbnk_aout                       when opcode = ANEM_OPCODE_JR else
+            epc_in                            when opcode = ANEM_OPCODE_M1 and m1op = ANEM_M1FUNC_M4 and
+                                                   m4sub = ANEM_M4SUB_RETI else
             (others=>'0');
 
   jr_flag <= '1' when opcode = ANEM_OPCODE_JR and reset_detected = '0' else
@@ -165,6 +186,31 @@ begin
   --ADDI immediate select (1 = use sign-extended immediate for ALU_B)
   alu_imm_sel <= '1' when opcode = ANEM_OPCODE_ADDI else
                  '0';
+
+  --SYSCALL flag
+  syscall_flag <= '1' when opcode = ANEM_OPCODE_M1 and m1op = ANEM_M1FUNC_SYSCALL and reset_detected = '0' else
+                  '0';
+
+  --RETI flag (acts like JR but targets EPC)
+  reti_flag <= '1' when opcode = ANEM_OPCODE_M1 and m1op = ANEM_M1FUNC_M4 and
+                         m4sub = ANEM_M4SUB_RETI and reset_detected = '0' else
+               '0';
+
+  --EI flag
+  ei_flag <= '1' when opcode = ANEM_OPCODE_M1 and m1op = ANEM_M1FUNC_M4 and
+                       m4sub = ANEM_M4SUB_EI and reset_detected = '0' else
+             '0';
+
+  --DI flag
+  di_flag <= '1' when opcode = ANEM_OPCODE_M1 and m1op = ANEM_M1FUNC_M4 and
+                       m4sub = ANEM_M4SUB_DI and reset_detected = '0' else
+             '0';
+
+  --exc_ctl: "001"=MFEPC, "010"=MFECA, "011"=MTEPC, "000"=none
+  exc_ctl <= "001" when opcode = ANEM_OPCODE_M1 and m1op = ANEM_M1FUNC_M4 and m4sub = ANEM_M4SUB_MFEPC else
+             "010" when opcode = ANEM_OPCODE_M1 and m1op = ANEM_M1FUNC_M4 and m4sub = ANEM_M4SUB_MFECA else
+             "011" when opcode = ANEM_OPCODE_M1 and m1op = ANEM_M1FUNC_M4 and m4sub = ANEM_M4SUB_MTEPC else
+             "000";
 
   --special register control
 

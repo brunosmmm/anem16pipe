@@ -52,5 +52,15 @@ package instrset is
   constant ANEM_M1FUNC_MFLO : std_logic_vector(3 downto 0) := "1000";
   constant ANEM_M1FUNC_MTHI : std_logic_vector(3 downto 0) := "1001";
   constant ANEM_M1FUNC_MTLO : std_logic_vector(3 downto 0) := "1010";
+  --Interrupt/Exception
+  constant ANEM_M1FUNC_SYSCALL : std_logic_vector(3 downto 0) := "1011";
+  constant ANEM_M1FUNC_M4      : std_logic_vector(3 downto 0) := "1100";
+  constant ANEM_M4SUB_RETI  : std_logic_vector(3 downto 0) := "0000";
+  constant ANEM_M4SUB_EI    : std_logic_vector(3 downto 0) := "0001";
+  constant ANEM_M4SUB_DI    : std_logic_vector(3 downto 0) := "0010";
+  constant ANEM_M4SUB_MFEPC : std_logic_vector(3 downto 0) := "0011";
+  constant ANEM_M4SUB_MFECA : std_logic_vector(3 downto 0) := "0100";
+  constant ANEM_M4SUB_MTEPC : std_logic_vector(3 downto 0) := "0101";
+  constant ANEM_EXC_VECTOR  : std_logic_vector(15 downto 0) := x"0002";
 
 end package;

@@ -19,8 +19,11 @@ entity anem16_ifetch is
        bzoff     : in std_logic_vector(11 downto 0);
        bhleqflag : in std_logic;
 
+       exc_flag   : in std_logic; --! exception/interrupt vector jump
+       exc_vector : in std_logic_vector(15 downto 0); --! exception vector address
+
        stall_n    : in std_logic; --! stall fetch
-       
+
        nexti     : out std_logic_vector(15 downto 0) --! next address
        );
   
@@ -47,7 +50,12 @@ begin
       initializing <= '0';
     else
     
-    if jflag = '1' then
+    if exc_flag = '1' then
+
+      --exception/interrupt: absolute jump to vector
+      i_addr <= exc_vector;
+
+    elsif jflag = '1' then
 
       --relative jump
       i_addr <= std_logic_vector(unsigned(resize(signed(jdest(11 downto 0)),16)) + unsigned(i_addr));

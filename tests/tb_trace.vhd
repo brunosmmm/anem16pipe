@@ -71,7 +71,8 @@ begin
       MEM_EN    => mem_en,
       MEM_ADDR  => mem_addr,
       DATA      => data,
-      INST_ADDR => inst_addr
+      INST_ADDR => inst_addr,
+      INT       => '0'
     );
 
   -- Program memory

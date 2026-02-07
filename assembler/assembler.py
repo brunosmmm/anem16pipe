@@ -359,6 +359,12 @@ class Assembler:
     def makeADDIInstr(self, reg, imm):
         return ANEMOpcodeADDI+makeBinStr(int(reg),4)+makeBinStr(int(imm),8)
 
+    def makeSYSCALLInstr(self, svc_num):
+        return ANEMOpcodeM1+ANEMFuncSYSCALL+makeBinStr(int(svc_num),8)
+
+    def makeM4Instr(self, mop, reg=0):
+        return ANEMOpcodeM1+ANEMFuncM4+ANEMSubM4[mop]+makeBinStr(int(reg),4)
+
     def Assemble(self):
 
         self.binCode = []
@@ -431,6 +437,21 @@ class Assembler:
                 self.binCode.append([makeBinStr(int(index),16),self.makeADDIInstr(m.group(1),m.group(2))])
                 continue
 
+            m = typeSYSCALL.match(line)
+            if m != None:
+                self.binCode.append([makeBinStr(int(index),16),self.makeSYSCALLInstr(m.group(1))])
+                continue
+
+            m = typeM4_noreg.match(line)
+            if m != None:
+                self.binCode.append([makeBinStr(int(index),16),self.makeM4Instr(m.group(1))])
+                continue
+
+            m = typeM4_reg.match(line)
+            if m != None:
+                self.binCode.append([makeBinStr(int(index),16),self.makeM4Instr(m.group(1),m.group(2))])
+                continue
+
             ##@todo make floating point supported
             #m = typeF.match(line)
 
@@ -494,6 +515,13 @@ if __name__ == "__main__":
             outFile.write(instruction+'\n')
 
     asm.Message("%s.bin written" % fileName, AsmMsgType.AsmMsgInfo)
+
+    # Write symbol table
+    with open(fileName + ".sym", "w") as outFile:
+        for label in asm.labels.keys():
+            outFile.write(label + '\t' + str(asm.labels[label]) + '\n')
+
+    asm.Message("%s.sym written" % fileName, AsmMsgType.AsmMsgInfo)
 
     # Write contents.txt for VHDL simulation
     asm.WriteContents(fileName+".contents.txt")

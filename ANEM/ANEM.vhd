@@ -5,6 +5,7 @@
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.NUMERIC_STD.ALL;
+USE WORK.INSTRSET.ALL;
 
 ENTITY ANEM IS
     
@@ -16,7 +17,7 @@ ENTITY ANEM IS
             ALUSHAMT_SIZE : INTEGER := 4; --! SHAMT field width
             ALUFUNC_SIZE : INTEGER := 4); --! FUNC field width
 
-    PORT(CK,RST: IN STD_LOGIC;            
+    PORT(CK,RST: IN STD_LOGIC;
         TEST: IN STD_LOGIC;                              --! TEST MODE ENABLE
         INST: IN STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0); --! INSTRUCTION INPUT
         S_IN: IN STD_LOGIC;                              --! TEST MODE DATA IN
@@ -25,7 +26,8 @@ ENTITY ANEM IS
         MEM_EN: OUT STD_LOGIC;                           --! DATA MEM ENABLE FLAG
         MEM_ADDR: OUT STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0); --! DATA MEM ADDRESS
         DATA : INOUT STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0); --! DATA BUS
-        INST_ADDR: OUT STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0)); --! INSTRUCTION FETCH ADDRESS
+        INST_ADDR: OUT STD_LOGIC_VECTOR(DATA_SIZE-1 DOWNTO 0); --! INSTRUCTION FETCH ADDRESS
+        INT: IN STD_LOGIC);                              --! EXTERNAL INTERRUPT
                                                               
 END ANEM;
 
@@ -244,6 +246,38 @@ signal alu_b_final        : std_logic_vector(data_size-1 downto 0);
 --MEM_ADDR mux
 signal mem_addr_final     : std_logic_vector(data_size-1 downto 0);
 
+--Interrupt/Exception signals
+signal epc_reg            : std_logic_vector(15 downto 0); --EPC register
+signal eca_reg            : std_logic_vector(15 downto 0); --ECA register
+signal ien_reg            : std_logic;                     --IEN (interrupt enable)
+signal epc_bypass         : std_logic_vector(15 downto 0); --EPC with write-through bypass
+
+--Decoder output flags
+signal p_id_x_syscall_flag : std_logic;
+signal p_id_x_reti_flag    : std_logic;
+signal p_id_x_ei_flag      : std_logic;
+signal p_id_x_di_flag      : std_logic;
+signal p_id_wb_excctl_0    : std_logic_vector(2 downto 0); --exc_ctl from decoder
+
+--exc_ctl pipeline: ID->ALU->MEM->WB
+signal p_id_wb_excctl_1    : std_logic_vector(2 downto 0);
+signal p_id_wb_excctl_2    : std_logic_vector(2 downto 0);
+signal p_id_wb_excctl_3    : std_logic_vector(2 downto 0);
+signal p_s_wb_excctl_mux   : std_logic_vector(2 downto 0); --flush mux
+
+--epcwr pipeline: tracks MTEPC through pipeline for write at WB
+signal p_id_wb_epcwr_0     : std_logic_vector(0 downto 0);
+signal p_id_wb_epcwr_1     : std_logic_vector(0 downto 0);
+signal p_id_wb_epcwr_2     : std_logic_vector(0 downto 0);
+signal p_id_wb_epcwr_3     : std_logic_vector(0 downto 0);
+signal p_s_wb_epcwr_mux    : std_logic_vector(0 downto 0); --flush mux
+
+--External interrupt logic
+signal ext_int_take        : std_logic;
+signal p_exc_flag          : std_logic;
+signal p_flush_no_int      : std_logic;
+signal syscall_flag_gated  : std_logic;
+
 BEGIN
 
     --BIDIRECTIONAL DATA BUS
@@ -266,12 +300,14 @@ BEGIN
                mrst=>rst,
                jflag=>p_id_x_jflag,
                jdest=>p_id_x_jdest,
-               jrflag=>p_id_x_jrflag,
+               jrflag=>p_id_x_jrflag or p_id_x_reti_flag,
                nexti=>next_inst_addr,
                stall_n=>p_stall_if_n,
                bzflag=>p_bztrue,
                bzoff=>p_id_alu_bzoff_1,
-               bhleqflag=>p_bhleqtrue
+               bhleqflag=>p_bhleqtrue,
+               exc_flag=>p_exc_flag,
+               exc_vector=>ANEM_EXC_VECTOR
                );
                
     
@@ -304,7 +340,13 @@ BEGIN
                lo_mux=>p_id_wb_lomux_0,
                bhleq_flag=>p_id_alu_bhleqflag_0(0),
                sp_ctl=>p_id_wb_spctl_0,
-               alu_imm_sel=>p_id_alu_immsel_0(0)
+               alu_imm_sel=>p_id_alu_immsel_0(0),
+               epc_in=>epc_bypass,
+               syscall_flag=>p_id_x_syscall_flag,
+               reti_flag=>p_id_x_reti_flag,
+               ei_flag=>p_id_x_ei_flag,
+               di_flag=>p_id_x_di_flag,
+               exc_ctl=>p_id_wb_excctl_0
                );
     
     --! @todo adjust control to account for HI/LO Inputs. Also adjust inside idecode
@@ -387,14 +429,17 @@ BEGIN
                         p_f_wb_fwd_data   when p_f_mem_alu_b = '1' else
                         p_id_alu_alub_1;
 
-    --ALU_A override: SPRD uses SP value instead of register
+    --ALU_A override: SPRD uses SP, MFEPC uses EPC, MFECA uses ECA
     alu_a_final <= p_id_alu_spval_1 when p_id_wb_spctl_1 = "011" else  --SPRD
+                   epc_bypass       when p_id_wb_excctl_1 = "001" else  --MFEPC: ALU_A=EPC
+                   eca_reg          when p_id_wb_excctl_1 = "010" else  --MFECA: ALU_A=ECA
                    p_f_alu_alua_mux;
 
-    --ALU_B override: ADDI uses sign-extended 8-bit immediate; SPRD uses zero
+    --ALU_B override: ADDI uses sign-extended 8-bit immediate; SPRD/MFEPC/MFECA/MTEPC use zero
     alu_b_final <= (15 downto 8 => p_id_wb_limm_1(7)) & p_id_wb_limm_1
                      when p_id_alu_immsel_1(0) = '1' else   --ADDI: sign-extend imm8
                    (others => '0') when p_id_wb_spctl_1 = "011" else  --SPRD: B=0, compute SP+0
+                   (others => '0') when p_id_wb_excctl_1 /= "000" else  --MFEPC/MFECA/MTEPC: B=0
                    p_f_alu_alub_mux;
 
     --! ALU
@@ -667,6 +712,86 @@ BEGIN
                parallel_in=>p_id_alu_immsel_0,
                data_out=>p_id_alu_immsel_1);
 
+    --Pipeline ID/ALU: exc_ctl (with flush mux)
+    p_s_wb_excctl_mux <= p_id_wb_excctl_0 when p_stall_if_n = '1' and p_bztrue = '0' and p_bhleqtrue = '0' else
+                         "000";
+    preg_excctl_0: entity work.RegANEM(Load)
+      generic map(3)
+      port map(ck=>ck, rst=>rst, en=>p_stall_id_n,
+               parallel_in=>p_s_wb_excctl_mux,
+               data_out=>p_id_wb_excctl_1);
+
+    --Pipeline ID/ALU: epcwr (MTEPC marker, with flush mux)
+    p_id_wb_epcwr_0(0) <= '1' when p_id_wb_excctl_0 = "011" else '0';
+    p_s_wb_epcwr_mux(0) <= p_id_wb_epcwr_0(0) when p_stall_if_n = '1' and p_bztrue = '0' and p_bhleqtrue = '0' else
+                            '0';
+    preg_epcwr_0: entity work.RegANEM(Load)
+      generic map(1)
+      port map(ck=>ck, rst=>rst, en=>p_stall_id_n,
+               parallel_in=>p_s_wb_epcwr_mux,
+               data_out=>p_id_wb_epcwr_1);
+
+    --EPC register (process-based, written by SYSCALL, ext_int, MTEPC at WB)
+    epc_proc: process(ck, rst)
+    begin
+      if rst = '1' then
+        epc_reg <= x"0000";
+      elsif rising_edge(ck) then
+        if syscall_flag_gated = '1' then
+          --SYSCALL: save return address (next_inst_addr + 1 = SYSCALL_addr + 2)
+          epc_reg <= p_id_wb_iaddr_0;
+        elsif ext_int_take = '1' then
+          --External interrupt: save flushed instruction address (re-execute after RETI)
+          epc_reg <= next_inst_addr;
+        elsif p_id_wb_epcwr_3(0) = '1' then
+          --MTEPC at WB: write from ALU output
+          epc_reg <= p_alu_wb_aluout_3;
+        end if;
+      end if;
+    end process;
+
+    --ECA register (process-based, written by SYSCALL and ext_int)
+    eca_proc: process(ck, rst)
+    begin
+      if rst = '1' then
+        eca_reg <= x"0000";
+      elsif rising_edge(ck) then
+        if syscall_flag_gated = '1' then
+          --SYSCALL: bit 8 = 1 for software trap, bits 7:0 = service number
+          eca_reg <= "0000000" & '1' & p_if_id_aneminst_0(7 downto 0);
+        elsif ext_int_take = '1' then
+          --External interrupt: bit 8 = 0, bits 7:0 = 0xFF
+          eca_reg <= x"00FF";
+        end if;
+      end if;
+    end process;
+
+    --IEN register (process-based, interrupt enable)
+    ien_proc: process(ck, rst)
+    begin
+      if rst = '1' then
+        ien_reg <= '0';
+      elsif rising_edge(ck) then
+        if syscall_flag_gated = '1' or ext_int_take = '1' then
+          --Exception entry: disable interrupts
+          ien_reg <= '0';
+        elsif p_id_x_ei_flag = '1' and p_stall_if_n = '1' then
+          --EI: enable interrupts
+          ien_reg <= '1';
+        elsif p_id_x_di_flag = '1' and p_stall_if_n = '1' then
+          --DI: disable interrupts
+          ien_reg <= '0';
+        elsif p_id_x_reti_flag = '1' and p_stall_if_n = '1' then
+          --RETI: re-enable interrupts
+          ien_reg <= '1';
+        end if;
+      end if;
+    end process;
+
+    --EPC write-through bypass: when MTEPC writes at WB and RETI/MFEPC reads at ID
+    epc_bypass <= p_alu_wb_aluout_3 when p_id_wb_epcwr_3(0) = '1' else
+                  epc_reg;
+
 
     --PIPELINE ALU/MEM
     PREG_ctl_1  : entity WORK.RegANEM(Load)
@@ -794,6 +919,20 @@ BEGIN
       port map(ck=>ck, rst=>rst, en=>p_stall_alu_n,
                parallel_in=>p_sp_addr_1,
                data_out=>p_sp_addr_2);
+
+    --Pipeline ALU/MEM: exc_ctl
+    preg_excctl_1: entity work.RegANEM(Load)
+      generic map(3)
+      port map(ck=>ck, rst=>rst, en=>p_stall_alu_n,
+               parallel_in=>p_id_wb_excctl_1,
+               data_out=>p_id_wb_excctl_2);
+
+    --Pipeline ALU/MEM: epcwr
+    preg_epcwr_1: entity work.RegANEM(Load)
+      generic map(1)
+      port map(ck=>ck, rst=>rst, en=>p_stall_alu_n,
+               parallel_in=>p_id_wb_epcwr_1,
+               data_out=>p_id_wb_epcwr_2);
 
     --ALU Flag register (only update Z for R-type and S-type ALU operations)
     --dummy vectors
@@ -961,6 +1100,20 @@ BEGIN
                parallel_in=>p_sp_new_2,
                data_out=>p_sp_new_3);
 
+    --Pipeline MEM/WB: exc_ctl
+    preg_excctl_2: entity work.RegANEM(Load)
+      generic map(3)
+      port map(ck=>ck, rst=>rst, en=>p_stall_mem_n,
+               parallel_in=>p_id_wb_excctl_2,
+               data_out=>p_id_wb_excctl_3);
+
+    --Pipeline MEM/WB: epcwr
+    preg_epcwr_2: entity work.RegANEM(Load)
+      generic map(1)
+      port map(ck=>ck, rst=>rst, en=>p_stall_mem_n,
+               parallel_in=>p_id_wb_epcwr_2,
+               data_out=>p_id_wb_epcwr_3);
+
     palu_a_3: entity WORK.RegANEM(Load)
       generic MAP(DATA_SIZE)
       port MAP(CK=>CK,
@@ -1026,8 +1179,21 @@ BEGIN
 
                );
 
-    --flush pipeline on taken branches/jumps
-    p_flush <= p_id_x_jflag or p_id_x_jrflag or p_bztrue or p_bhleqtrue;
+    --SYSCALL gating: suppress during flush/stall (same condition as regctl/aluctl flush mux)
+    syscall_flag_gated <= p_id_x_syscall_flag when p_stall_if_n = '1' and p_bztrue = '0' and p_bhleqtrue = '0' else
+                          '0';
+
+    --flush pipeline on taken branches/jumps/exceptions
+    p_flush_no_int <= p_id_x_jflag or p_id_x_jrflag or p_id_x_reti_flag or p_bztrue or p_bhleqtrue or syscall_flag_gated;
+
+    --External interrupt detection (combinational, "quiet cycle")
+    ext_int_take <= INT and ien_reg and (not p_flush_no_int) and p_stall_if_n;
+
+    --Exception flag: drives ifetch to exception vector
+    p_exc_flag <= syscall_flag_gated or ext_int_take;
+
+    --Combined flush
+    p_flush <= p_flush_no_int or ext_int_take;
 
     --! hazard unit
     phaz: entity work.anem16_hazunit(pipe)
@@ -1056,7 +1222,10 @@ BEGIN
                reg_sela_mem=>p_id_wb_regsela_2,
                regctl_mem=>p_id_wb_regctl_2,
                reg_sela_wb=>p_id_wb_regsela_3,
-               regctl_wb=>p_id_wb_regctl_3
+               regctl_wb=>p_id_wb_regctl_3,
+
+               epcwr_alu=>p_id_wb_epcwr_1(0),
+               epcwr_mem=>p_id_wb_epcwr_2(0)
                );
                
 
