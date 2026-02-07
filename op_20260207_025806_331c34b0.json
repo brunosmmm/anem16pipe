@@ -1,0 +1,23 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "complexity_factors": null,
+    "perceived_complexity": 0.65,
+    "priority": "medium",
+    "tags": [
+      "documentation",
+      "mkdocs"
+    ],
+    "text": "Create MkDocs Material documentation site \u2014 ISA reference, pipeline architecture, assembler guide, testing guide. Multi-page, searchable, with bit-field diagrams and Mermaid pipeline timing.",
+    "type": "work"
+  },
+  "entity_id": "ann_025806_3e7ckyf6335c",
+  "lamport_clock": 140,
+  "operation_id": "op_20260207_025806_331c34b0",
+  "operation_type": "annotation_create",
+  "parent_operation": null,
+  "timestamp": "2026-02-07T02:58:06.260849+00:00"
+}
