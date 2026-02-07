@@ -1,0 +1,21 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "branch": "master",
+    "content": "# Phase 10: Interrupt & Exception Handling - Complete\n\n## What Was Done\nImplemented full interrupt and exception support for ANEM16pipe across 17 files.\n\n## New Instructions\n- **SYSCALL n** (M1 func \"1011\"): Software trap with 8-bit service number, saves EPC/ECA, jumps to vector 0x0002\n- **RETI** (M4 sub \"0000\"): Return from exception, PC\u2190EPC, IEN\u21901\n- **EI** (M4 sub \"0001\"): Enable interrupts (IEN\u21901)\n- **DI** (M4 sub \"0010\"): Disable interrupts (IEN\u21900)\n- **MFEPC $rn** (M4 sub \"0011\"): GPR[rn]\u2190EPC via ALU pass-through\n- **MFECA $rn** (M4 sub \"0100\"): GPR[rn]\u2190ECA via ALU pass-through\n- **MTEPC $rn** (M4 sub \"0101\"): EPC\u2190GPR[rn] (pipelined write at WB)\n\n## New Registers\n- **EPC** (16-bit): Exception return address\n- **ECA** (16-bit): Exception cause (bit 8=SYSCALL, bits 7:0=service number or 0xFF for ext)\n- **IEN** (1-bit): Interrupt enable gate\n\n## Key Design Decisions\n1. SYSCALL resolves at ID stage (same as J/JAL), 2-cycle penalty\n2. External interrupt fires at IF level on \"quiet cycles\" (no flush/stall active)\n3. RETI reuses JR path with j_dest=EPC\n4. EPC write-through bypass for WB\u2192ID same-cycle overlap\n5. EPC read stall for MTEPC in ALU/MEM when RETI/MFEPC in ID\n6. MFEPC/MFECA use existing ALU forwarding (regctl=\"001\"), no NFW stall needed\n7. Single exception vector at 0x0002\n\n## Bugs Fixed During Implementation\n1. ANEM.vhd missing `use work.instrset.all` \u2192 ANEM_EXC_VECTOR not found\n2. MFECA passed only lower 8 bits of ECA (truncated bit 8) \u2192 full eca_reg\n3. Test program used HAB causing infinite loop \u2192 tight J loop\n4. tb_interrupt NUM_CYCLES too high for stop-time \u2192 reduced to 2048\n\n## Files Modified (17)\n- ANEM/instrset.vhd, ANEM/ANEM.vhd\n- control/ifetch.vhd, control/idecode.vhd, control/hazunit.vhd\n- assembler/anem_opcodes.py, anem_regex.py, assembler.py\n- tests/tb_basic.vhd, tb_branch.vhd, tb_hazard.vhd, tb_stack.vhd, tb_trace.vhd (INT=>'0')\n- tests/test_interrupt.asm, tb_interrupt.vhd (new)\n- docs/interrupt_spec.md (new, for simulator)\n- Makefile\n\n## Verification\n- All 57 tests pass (23 basic + 4 branch + 5 hazard + 15 stack + 10 interrupt)\n- 4 existing trace comparisons pass (no regressions)\n- test_interrupt trace differs from sim (expected: simulator lacks interrupt support)\n",
+    "context": "Completed Phase 10 interrupt/exception handling feature implementation",
+    "repository_id": "github.com/brunosmmm/anem16pipe",
+    "session_id": null,
+    "session_type": "Software Development",
+    "title": "Phase 10 Interrupt Exception Handling Complete"
+  },
+  "entity_id": "20260207_0121_phase-10-interrupt-exception-handling-complete",
+  "lamport_clock": 139,
+  "operation_id": "op_20260207_012150_292aa565",
+  "operation_type": "checkpoint_save",
+  "parent_operation": null,
+  "timestamp": "2026-02-07T01:21:50.811008+00:00"
+}
