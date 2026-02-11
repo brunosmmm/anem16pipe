@@ -80,7 +80,7 @@ begin
     port map(
       ck      => ck,
       en      => '1',
-      address => inst_addr(7 downto 0),
+      address => inst_addr,
       instr   => inst
     );
 

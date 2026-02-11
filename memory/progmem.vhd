@@ -11,7 +11,7 @@ use std.textio.all;
 use ieee.std_logic_unsigned.all;
 
 entity progmem is
-  generic (addr_w        : integer := 8; --! address width
+  generic (addr_w        : integer := 16; --! address width
            instr_w      : integer := 16); --! data width
   port(ck,en         : in std_logic;
        address       : in std_logic_vector(addr_w-1 downto 0); --! address
