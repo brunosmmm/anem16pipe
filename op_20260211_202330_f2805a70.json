@@ -1,0 +1,21 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "branch": "master",
+    "content": "# Peripheral Implementation Complete\n\n## Summary\nImplemented 3 memory-mapped peripherals for the ANEM16 pipeline processor:\n- **GPIO** (gpio/gpio.vhd) \u2014 2-port, 16-bit, per-bit tristate, direction register\n- **Timer** (timer/timer.vhd) \u2014 16-bit counter, prescaler, compare match, auto-reload, interrupt\n- **UART** (uart/uart.vhd) \u2014 TX/RX FSMs, 16x oversampling baud generator, status flags\n\n## Test Results\nAll 72 tests pass across 8 test suites:\n- 23 basic + 4 branch + 5 hazard + 15 stack + 10 interrupt (existing, no regressions)\n- 8 GPIO + 5 timer + 6 UART (new)\n\n## Files Created (9)\n- `gpio/gpio.vhd`, `timer/timer.vhd`, `uart/uart.vhd` \u2014 peripherals\n- `tests/tb_gpio.vhd`, `tests/tb_timer.vhd`, `tests/tb_uart.vhd` \u2014 test benches\n- `tests/test_gpio.asm`, `tests/test_timer.asm`, `tests/test_uart.asm` \u2014 test programs\n\n## Files Modified (8)\n- 6 existing test benches: added GPIO/Timer/UART instances\n- `ANEM/TB/test_bench.vhd`: replaced anem_port_mux2 placeholder with real GPIO\n- `Makefile`: added new sources, test targets, UART special rule (200us)\n\n## Key Bugs Fixed\n1. **GPIO metavalues**: Undriven pins (Z/U/X) resolved to '0' via weak pull-down in readback\n2. **UART BZ,N loop exit**: NOP (ADD $0,$0) between ADDI and BZ is R-type \u2192 computes 0+0=0 \u2192 sets Z=1 \u2192 BZ,N (branch when Z=0) falls through. Fix: Z-setter must be immediately before BZ.\n\n## Critical Pipeline Insight\nADD $0,$0 (the common NOP) is R-type and updates the Z flag (Z=1 from 0+0=0). ALL working BZ loops in the codebase place the Z-setting instruction immediately before BZ with zero NOPs. This is a mandatory pattern for ANEM16.\n\n## Address Map\n| Address | Peripheral | Register |\n|---------|-----------|----------|\n| 0xFFD0 | GPIO | Port A Data |\n| 0xFFD1 | GPIO | Port A Direction |\n| 0xFFD2 | GPIO | Port B Data |\n| 0xFFD3 | GPIO | Port B Direction |\n| 0xFFD7 | Timer | Count |\n| 0xFFD8 | Timer | Control |\n| 0xFFD9 | Timer | Status |\n| 0xFFDA | Timer | Compare |\n| 0xFFDB | UART | Data (TX/RX) |\n| 0xFFDC | UART | Control |\n| 0xFFDD | UART | Status |\n| 0xFFDE | UART | Baud Divisor |\n",
+    "context": "Completed peripheral implementation plan. All 72 tests pass.",
+    "repository_id": "github.com/brunosmmm/anem16pipe",
+    "session_id": null,
+    "session_type": "Software Development",
+    "title": "Peripheral implementation complete - GPIO Timer UART"
+  },
+  "entity_id": "20260211_2023_peripheral-implementation-complete-gpio-timer-uart",
+  "lamport_clock": 156,
+  "operation_id": "op_20260211_202330_f2805a70",
+  "operation_type": "checkpoint_save",
+  "parent_operation": null,
+  "timestamp": "2026-02-11T20:23:30.050885+00:00"
+}
