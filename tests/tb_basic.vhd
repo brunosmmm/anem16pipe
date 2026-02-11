@@ -38,6 +38,10 @@ architecture sim of tb_basic is
   signal cycle_count : integer := 0;
   signal sim_done : boolean := false;
 
+  -- Peripheral signals
+  signal porta_pins : std_logic_vector(15 downto 0) := (others => 'Z');
+  signal portb_pins : std_logic_vector(15 downto 0) := (others => 'Z');
+
 begin
 
   -- CPU
@@ -86,6 +90,28 @@ begin
       W    => mem_w,
       EN   => mem_en,
       INT  => open
+    );
+
+  -- GPIO peripheral
+  gpio_inst: entity work.gpio(behavioral)
+    port map(
+      DATA => data, ADDR => mem_addr, W => mem_w, EN => mem_en,
+      CK => ck, RST => rst, PORTA_PINS => porta_pins,
+      PORTB_PINS => portb_pins, INT => open
+    );
+
+  -- Timer peripheral
+  timer_inst: entity work.timer(behavioral)
+    port map(
+      DATA => data, ADDR => mem_addr, W => mem_w, EN => mem_en,
+      CK => ck, RST => rst, INT => open
+    );
+
+  -- UART peripheral
+  uart_inst: entity work.uart(behavioral)
+    port map(
+      DATA => data, ADDR => mem_addr, W => mem_w, EN => mem_en,
+      CK => ck, RST => rst, TX => open, RX => '1', INT => open
     );
 
   -- Clock and reset

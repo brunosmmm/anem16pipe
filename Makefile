@@ -43,7 +43,10 @@ SRCS_L1 = \
 	control/idecode.vhd \
 	control/hazunit.vhd \
 	control/fwunit.vhd \
-	mac/mac.vhd
+	mac/mac.vhd \
+	gpio/gpio.vhd \
+	timer/timer.vhd \
+	uart/uart.vhd
 
 # Level 2: Depends on Level 1 (top-level)
 SRCS_L2 = \
@@ -56,12 +59,15 @@ TB_SRCS = \
 	tests/tb_hazard.vhd \
 	tests/tb_stack.vhd \
 	tests/tb_interrupt.vhd \
-	tests/tb_trace.vhd
+	tests/tb_trace.vhd \
+	tests/tb_gpio.vhd \
+	tests/tb_timer.vhd \
+	tests/tb_uart.vhd
 
 ALL_SRCS = $(SRCS_L0) $(SRCS_L1) $(SRCS_L2) $(TB_SRCS)
 
 # Test programs
-TEST_PROGS = tests/test_basic tests/test_branch tests/test_hazard tests/test_stack tests/test_interrupt
+TEST_PROGS = tests/test_basic tests/test_branch tests/test_hazard tests/test_stack tests/test_interrupt tests/test_gpio tests/test_timer tests/test_uart
 
 .PHONY: all analyze sim wave clean assemble test trace compare
 
@@ -100,6 +106,15 @@ assemble:
 	done
 	@echo "=== Assembly complete ==="
 
+# UART test needs longer simulation time
+test_uart: analyze assemble
+	@echo "=== Running test: tb_uart ==="
+	cp tests/test_uart.contents.txt $(WORK_DIR)/contents.txt
+	cd $(WORK_DIR) && $(GHDL) -e $(GHDL_FLAGS) --workdir=. tb_uart
+	cd $(WORK_DIR) && $(GHDL) -r $(GHDL_FLAGS) --workdir=. tb_uart \
+		--stop-time=200us 2>&1 | tee sim_uart_output.txt
+	@echo "=== Test tb_uart complete ==="
+
 # Pattern rule: run a single test
 test_%: analyze assemble
 	@echo "=== Running test: tb_$* ==="
@@ -110,7 +125,7 @@ test_%: analyze assemble
 	@echo "=== Test tb_$* complete ==="
 
 # Run all tests
-test: test_basic test_branch test_hazard test_stack test_interrupt
+test: test_basic test_branch test_hazard test_stack test_interrupt test_gpio test_timer test_uart
 	@echo "=== ALL TEST SUITES COMPLETE ==="
 
 # Backward compatibility: make sim = make test_basic

@@ -40,8 +40,11 @@ architecture sim of tb_trace is
   signal cycle_count : integer := 0;
   signal sim_done    : boolean := false;
 
-  -- MAC peripheral boundary (writes above this are MAC, not data memory)
+  -- Peripheral boundary (writes above this are peripherals, not data memory)
   constant MAC_ADDR_START : unsigned(15 downto 0) := x"FFD0";
+
+  signal porta_pins : std_logic_vector(15 downto 0) := (others => 'Z');
+  signal portb_pins : std_logic_vector(15 downto 0) := (others => 'Z');
 
   -- Helper: convert slv16 to 4-char lowercase hex string
   function to_hex4(v : std_logic_vector(15 downto 0)) return string is
@@ -104,6 +107,25 @@ begin
       W    => mem_w,
       EN   => mem_en,
       INT  => open
+    );
+
+  gpio_inst: entity work.gpio(behavioral)
+    port map(
+      DATA => data, ADDR => mem_addr, W => mem_w, EN => mem_en,
+      CK => ck, RST => rst, PORTA_PINS => porta_pins,
+      PORTB_PINS => portb_pins, INT => open
+    );
+
+  timer_inst: entity work.timer(behavioral)
+    port map(
+      DATA => data, ADDR => mem_addr, W => mem_w, EN => mem_en,
+      CK => ck, RST => rst, INT => open
+    );
+
+  uart_inst: entity work.uart(behavioral)
+    port map(
+      DATA => data, ADDR => mem_addr, W => mem_w, EN => mem_en,
+      CK => ck, RST => rst, TX => open, RX => '1', INT => open
     );
 
   -- Clock, reset, and halt detection
