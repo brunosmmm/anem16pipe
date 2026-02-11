@@ -1,0 +1,23 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "commit_refs": [
+      {
+        "hash": "93f1456810611fc8328d7459a8ab94d6e3839f78",
+        "hash_short": "93f1456",
+        "linked_at": "2026-02-11T20:25:29.793688+00:00",
+        "message": "feat(ANEM): Add GPIO, Timer, and UART peripherals with tests\n\nImplement three memory-mapped I/O peri"
+      }
+    ],
+    "last_activity": "2026-02-11T20:25:29.793688+00:00"
+  },
+  "entity_id": "ann_031013_3e7cky2d8e07",
+  "lamport_clock": 158,
+  "operation_id": "op_20260211_202529_dc0be721",
+  "operation_type": "annotation_update",
+  "parent_operation": null,
+  "timestamp": "2026-02-11T20:25:29.798471+00:00"
+}
