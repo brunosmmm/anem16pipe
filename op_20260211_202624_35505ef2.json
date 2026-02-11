@@ -1,0 +1,31 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "annotations_linked": [
+      "ann_031013_3e7cky2d8e07"
+    ],
+    "code_commit": "50199908df34568b9984b4e47644b477c98507a8",
+    "code_commit_message": "feat(ANEM): Add GPIO, Timer, and UART peripheral source files\n\nNew peripheral implementations and their test infrastructure:\n- gpio/gpio.vhd: 2-port GPIO with per-bit tristate and direction registers\n- timer/timer.vhd: 16-bit timer with prescaler, compare match, auto-reload\n- uart/uart.vhd: UART with TX/RX FSMs and 16x oversampling baud generator\n- Test benches (tb_gpio, tb_timer, tb_uart) and assembly test programs",
+    "files": [
+      "gpio/gpio.vhd",
+      "tests/tb_gpio.vhd",
+      "tests/tb_timer.vhd",
+      "tests/tb_uart.vhd",
+      "tests/test_gpio.asm",
+      "tests/test_timer.asm",
+      "tests/test_uart.asm",
+      "timer/timer.vhd",
+      "uart/uart.vhd"
+    ],
+    "tasks_linked": []
+  },
+  "entity_id": null,
+  "lamport_clock": 159,
+  "operation_id": "op_20260211_202624_35505ef2",
+  "operation_type": "commit_linked",
+  "parent_operation": null,
+  "timestamp": "2026-02-11T20:26:24.698922+00:00"
+}
