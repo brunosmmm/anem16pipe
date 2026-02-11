@@ -12,8 +12,6 @@ entity anem16_hazunit is
 
   port(mrst      : in std_logic;
        mclk      : in std_logic;
-       bztrue    : in std_logic;
-       bhleqtrue : in std_logic;
 
        p_stall_if_n   : out std_logic;
        p_stall_id_n   : out std_logic;
@@ -61,8 +59,6 @@ signal jr_data_hazard   : std_logic;
 signal epc_stall_if_n   : std_logic;
 signal epc_read_hazard  : std_logic;
 
-signal bz_stall_if_n    : std_logic;
-signal bz_stall_counter : std_logic_vector(1 downto 0);
 begin
 
   p_stall_id_n <= '1';
@@ -157,39 +153,6 @@ begin
 
   epc_stall_if_n <= not epc_read_hazard;
 
-  p_stall_if_n <= lw_stall_if_n and sw_stall_if_n and bz_stall_if_n and nfw_stall_if_n and jr_stall_if_n and epc_stall_if_n;
-
---clocked process for BZ/BHLEQ stall only
-process(mclk,mrst)
-begin
-
-  if mrst = '1' then
-
-    bz_stall_if_n <= '1';
-    bz_stall_counter <= "00";
-
-  elsif rising_edge(mclk) then
-
-    --bz/bhleq stalls
-    if bz_stall_counter /= "00"then
-
-      bz_stall_counter <= std_logic_vector(unsigned(bz_stall_counter) - 1);
-
-    elsif bztrue = '1' or bhleqtrue = '1' then
-
-      --hold until resolution
-      bz_stall_if_n <= '0';
-      bz_stall_counter <= "01";
-
-    else
-
-      --release
-      bz_stall_if_n <= '1';
-
-    end if;
-
-  end if;
-
-end process;
+  p_stall_if_n <= lw_stall_if_n and sw_stall_if_n and nfw_stall_if_n and jr_stall_if_n and epc_stall_if_n;
 
 end architecture;

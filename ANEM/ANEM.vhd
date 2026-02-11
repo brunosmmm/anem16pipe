@@ -277,6 +277,8 @@ signal ext_int_take        : std_logic;
 signal p_exc_flag          : std_logic;
 signal p_flush_no_int      : std_logic;
 signal syscall_flag_gated  : std_logic;
+signal p_flush_if          : std_logic;  -- IF/ID flush (ALU-stage branches + interrupts only)
+signal p_in_delay_slot     : std_logic;  -- registered: delay slot is currently in ID
 
 BEGIN
 
@@ -298,9 +300,9 @@ BEGIN
     pfetch : entity work.anem16_ifetch(pipe)
       port map(mclk=>ck,
                mrst=>rst,
-               jflag=>p_id_x_jflag,
+               jflag=>p_id_x_jflag and not p_in_delay_slot,
                jdest=>p_id_x_jdest,
-               jrflag=>p_id_x_jrflag or p_id_x_reti_flag,
+               jrflag=>(p_id_x_jrflag or p_id_x_reti_flag) and not p_in_delay_slot,
                nexti=>next_inst_addr,
                stall_n=>p_stall_if_n,
                bzflag=>p_bztrue,
@@ -472,7 +474,7 @@ BEGIN
 
 
     --! stall/flush multiplexer
-    p_s_alu_aluctl_mux <= p_id_alu_aluctl_0 when p_stall_if_n = '1' and p_bztrue = '0' and p_bhleqtrue = '0' else
+    p_s_alu_aluctl_mux <= p_id_alu_aluctl_0 when p_stall_if_n = '1' else
                           "000";
     PALU_OP: entity WORK.RegANEM(Load)
       generic MAP(ALUOP_SIZE)
@@ -498,7 +500,7 @@ BEGIN
                parallel_in=>p_id_alu_alufunc_0,
                data_out=>p_id_alu_alufunc_1);
 
-    p_s_wb_regctl_mux <= p_id_wb_regctl_0 when p_stall_if_n = '1' and p_bztrue = '0' and p_bhleqtrue = '0' else
+    p_s_wb_regctl_mux <= p_id_wb_regctl_0 when p_stall_if_n = '1' else
                          "000";
     PREG_cnt_0  : entity WORK.RegANEM(Load)
       generic MAP(3)
@@ -551,7 +553,7 @@ BEGIN
                parallel_in=>p_id_alu_bhleqflag_0,
                data_out=>p_id_alu_bhleqflag_1);
 
-    p_s_alu_memenw_mux <= p_id_mem_memen_0 & p_id_mem_memw_0 when p_stall_if_n = '1' and p_bztrue = '0' and p_bhleqtrue = '0' else
+    p_s_alu_memenw_mux <= p_id_mem_memen_0 & p_id_mem_memw_0 when p_stall_if_n = '1' else
                           "00";
     p_id_mem_memw_1 <= p_alu_x_memop(0);
     p_id_mem_memen_1 <= p_alu_x_memop(1);
@@ -688,7 +690,7 @@ BEGIN
                    (others => '0');
 
     --sp_ctl flush mux (zero on flush/stall, same condition as regctl)
-    p_s_wb_spctl_mux <= p_id_wb_spctl_0 when p_stall_if_n = '1' and p_bztrue = '0' and p_bhleqtrue = '0' else
+    p_s_wb_spctl_mux <= p_id_wb_spctl_0 when p_stall_if_n = '1' else
                         "000";
 
     --Pipeline ID/ALU: sp_ctl
@@ -713,7 +715,7 @@ BEGIN
                data_out=>p_id_alu_immsel_1);
 
     --Pipeline ID/ALU: exc_ctl (with flush mux)
-    p_s_wb_excctl_mux <= p_id_wb_excctl_0 when p_stall_if_n = '1' and p_bztrue = '0' and p_bhleqtrue = '0' else
+    p_s_wb_excctl_mux <= p_id_wb_excctl_0 when p_stall_if_n = '1' else
                          "000";
     preg_excctl_0: entity work.RegANEM(Load)
       generic map(3)
@@ -723,7 +725,7 @@ BEGIN
 
     --Pipeline ID/ALU: epcwr (MTEPC marker, with flush mux)
     p_id_wb_epcwr_0(0) <= '1' when p_id_wb_excctl_0 = "011" else '0';
-    p_s_wb_epcwr_mux(0) <= p_id_wb_epcwr_0(0) when p_stall_if_n = '1' and p_bztrue = '0' and p_bhleqtrue = '0' else
+    p_s_wb_epcwr_mux(0) <= p_id_wb_epcwr_0(0) when p_stall_if_n = '1' else
                             '0';
     preg_epcwr_0: entity work.RegANEM(Load)
       generic map(1)
@@ -775,15 +777,28 @@ BEGIN
         if syscall_flag_gated = '1' or ext_int_take = '1' then
           --Exception entry: disable interrupts
           ien_reg <= '0';
-        elsif p_id_x_ei_flag = '1' and p_stall_if_n = '1' then
+        elsif p_id_x_ei_flag = '1' and p_stall_if_n = '1' and p_in_delay_slot = '0' then
           --EI: enable interrupts
           ien_reg <= '1';
-        elsif p_id_x_di_flag = '1' and p_stall_if_n = '1' then
+        elsif p_id_x_di_flag = '1' and p_stall_if_n = '1' and p_in_delay_slot = '0' then
           --DI: disable interrupts
           ien_reg <= '0';
-        elsif p_id_x_reti_flag = '1' and p_stall_if_n = '1' then
+        elsif p_id_x_reti_flag = '1' and p_stall_if_n = '1' and p_in_delay_slot = '0' then
           --RETI: re-enable interrupts
           ien_reg <= '1';
+        end if;
+      end if;
+    end process;
+
+    --Delay slot tracking: set when any branch/jump/exception fires, cleared next unstalled cycle
+    delay_slot_track: process(ck, rst)
+    begin
+      if rst = '1' then
+        p_in_delay_slot <= '0';
+      elsif rising_edge(ck) then
+        if p_stall_if_n = '1' then
+          p_in_delay_slot <= p_id_x_jflag or p_id_x_jrflag or p_id_x_reti_flag
+                             or syscall_flag_gated or p_bztrue or p_bhleqtrue;
         end if;
       end if;
     end process;
@@ -1122,8 +1137,9 @@ BEGIN
                PARALLEL_IN=>p_id_mem_alua_2,
                DATA_OUT=>p_id_wb_alua_3);
     
-    --! flush mux
-    p_if_x_aneminst_mux <= inst when p_flush = '0' else
+    --! flush mux (only flush for ALU-stage branches and interrupts; ID-stage delay slots pass through)
+    p_flush_if <= p_bztrue or p_bhleqtrue or ext_int_take;
+    p_if_x_aneminst_mux <= inst when p_flush_if = '0' else
                            (others=>'0');
     
     RINST: ENTITY WORK.RegANEM(Load)
@@ -1179,15 +1195,18 @@ BEGIN
 
                );
 
-    --SYSCALL gating: suppress during flush/stall (same condition as regctl/aluctl flush mux)
-    syscall_flag_gated <= p_id_x_syscall_flag when p_stall_if_n = '1' and p_bztrue = '0' and p_bhleqtrue = '0' else
-                          '0';
+    --SYSCALL gating: suppress during flush/stall/delay slot
+    syscall_flag_gated <= p_id_x_syscall_flag when p_stall_if_n = '1'
+        and p_bztrue = '0' and p_bhleqtrue = '0' and p_in_delay_slot = '0' else '0';
 
-    --flush pipeline on taken branches/jumps/exceptions
-    p_flush_no_int <= p_id_x_jflag or p_id_x_jrflag or p_id_x_reti_flag or p_bztrue or p_bhleqtrue or syscall_flag_gated;
+    --flush pipeline on taken branches/jumps/exceptions (gate ID-stage flags during delay slot)
+    p_flush_no_int <= (p_id_x_jflag and not p_in_delay_slot)
+                  or (p_id_x_jrflag and not p_in_delay_slot)
+                  or (p_id_x_reti_flag and not p_in_delay_slot)
+                  or p_bztrue or p_bhleqtrue or syscall_flag_gated;
 
-    --External interrupt detection (combinational, "quiet cycle")
-    ext_int_take <= INT and ien_reg and (not p_flush_no_int) and p_stall_if_n;
+    --External interrupt detection (combinational, "quiet cycle", blocked during delay slot)
+    ext_int_take <= INT and ien_reg and (not p_flush_no_int) and (not p_in_delay_slot) and p_stall_if_n;
 
     --Exception flag: drives ifetch to exception vector
     p_exc_flag <= syscall_flag_gated or ext_int_take;
@@ -1199,8 +1218,6 @@ BEGIN
     phaz: entity work.anem16_hazunit(pipe)
       port map(mrst=>rst,
                mclk=>ck,
-               bztrue=>p_bztrue,
-               bhleqtrue=>p_bhleqtrue,
 
                p_stall_if_n=>p_stall_if_n,
                p_stall_id_n=>p_stall_id_n,
