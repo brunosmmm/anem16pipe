@@ -1,0 +1,23 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "commit_refs": [
+      {
+        "hash": "50199908df34568b9984b4e47644b477c98507a8",
+        "hash_short": "5019990",
+        "linked_at": "2026-02-11T20:26:24.735459+00:00",
+        "message": "feat(ANEM): Add GPIO, Timer, and UART peripheral source files\n\nNew peripheral implementations and th"
+      }
+    ],
+    "last_activity": "2026-02-11T20:26:24.735459+00:00"
+  },
+  "entity_id": "ann_031013_3e7cky2d8e07",
+  "lamport_clock": 160,
+  "operation_id": "op_20260211_202624_3f087924",
+  "operation_type": "annotation_update",
+  "parent_operation": null,
+  "timestamp": "2026-02-11T20:26:24.740682+00:00"
+}
