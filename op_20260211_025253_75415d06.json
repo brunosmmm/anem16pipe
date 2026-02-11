@@ -1,0 +1,25 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "annotations_linked": [
+      "ann_031013_3e7cky2d8e07"
+    ],
+    "code_commit": "feaf9ed40f437f8139a4e25dde7bdfcedfbbe68c",
+    "code_commit_message": "feat(ANEM): MUL\u2192HI:LO write path and BZ_N negate polarity fix\n\nRoute the ALU's full 32-bit multiply product to HI:LO registers so\nMFHI/MFLO can read MUL results (MIPS convention for LLVM backend).\nMUL also keeps writing the low 16 bits to the destination register\nfor backward compatibility.\n\nFix BZ_N (branch-if-not-zero) which was completely broken \u2014 p_bztrue\nonly checked Z=1, never inverting for the negate variant. Add\nbz_negate signal through pipeline; XOR with Z flag. This fixes every\nLLVM-compiled loop using SGT + BZ_N.",
+    "files": [
+      "ANEM/ANEM.vhd",
+      "alu/alu.vhd",
+      "control/idecode.vhd"
+    ],
+    "tasks_linked": []
+  },
+  "entity_id": null,
+  "lamport_clock": 154,
+  "operation_id": "op_20260211_025253_75415d06",
+  "operation_type": "commit_linked",
+  "parent_operation": null,
+  "timestamp": "2026-02-11T02:52:53.199884+00:00"
+}
