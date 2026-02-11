@@ -1,0 +1,23 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "commit_refs": [
+      {
+        "hash": "feaf9ed40f437f8139a4e25dde7bdfcedfbbe68c",
+        "hash_short": "feaf9ed",
+        "linked_at": "2026-02-11T02:52:53.208363+00:00",
+        "message": "feat(ANEM): MUL\u2192HI:LO write path and BZ_N negate polarity fix\n\nRoute the ALU's full 32-bit multiply "
+      }
+    ],
+    "last_activity": "2026-02-11T02:52:53.208363+00:00"
+  },
+  "entity_id": "ann_031013_3e7cky2d8e07",
+  "lamport_clock": 155,
+  "operation_id": "op_20260211_025253_ee5abed9",
+  "operation_type": "annotation_update",
+  "parent_operation": null,
+  "timestamp": "2026-02-11T02:52:53.212091+00:00"
+}
