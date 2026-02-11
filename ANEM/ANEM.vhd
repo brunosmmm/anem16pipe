@@ -57,6 +57,7 @@ signal p_id_x_jrflag              : std_logic;
 signal p_id_x_jdest               : std_logic_vector(15 downto 0);
 signal p_id_wb_limm_0            : std_logic_vector(7 downto 0);
 signal p_id_alu_bzflag_0        : std_logic;
+signal p_id_alu_bznegate_0      : std_logic;
 signal p_id_alu_bzoff_0         : std_logic_vector(11 downto 0);
 signal p_id_mem_memen_0           : std_logic;
 signal p_id_mem_memw_0            : std_logic;
@@ -84,8 +85,9 @@ signal p_id_alu_aluctl_1   : std_logic_vector(aluop_size-1 downto 0);
 signal p_id_alu_alushamt_1 : std_logic_vector(alushamt_size-1 downto 0);
 signal p_id_alu_alufunc_1  : std_logic_vector(alufunc_size-1 downto 0);
 signal p_id_wb_limm_1      : std_logic_vector(7 downto 0);
-signal p_id_alu_bzflag_1  : std_logic;
-signal p_id_alu_bzoff_1   : std_logic_vector(11 downto 0);
+signal p_id_alu_bzflag_1   : std_logic;
+signal p_id_alu_bznegate_1 : std_logic;
+signal p_id_alu_bzoff_1    : std_logic_vector(11 downto 0);
 signal p_id_mem_memen_1     : std_logic;
 signal p_id_mem_memw_1      : std_logic;
 signal p_id_mem_alua_1       : std_logic_vector(15 downto 0);
@@ -177,8 +179,8 @@ signal p_z_en : std_logic;
 
 --misc pipeline signals
 signal p_bztrue     : std_logic;
-signal p_alu_x_bzout : std_logic_vector(12 downto 0);
-signal p_id_alu_bz_0 : std_logic_vector(12 downto 0);
+signal p_alu_x_bzout : std_logic_vector(13 downto 0);
+signal p_id_alu_bz_0 : std_logic_vector(13 downto 0);
 signal p_alu_x_memop   : std_logic_vector(1 downto 0);
 signal p_mem_x_memop   : std_logic_vector(1 downto 0);
 signal p_id_wb1_regsela_4 : std_logic_vector(3 downto 0);
@@ -199,6 +201,11 @@ signal lo_mux_data : std_logic_vector(15 downto 0);
 signal ais_calculate_wb : std_logic_vector(31 downto 0);
 signal ail_calculate_wb : std_logic_vector(15 downto 0);
 signal aih_calculate_wb: std_logic_vector(15 downto 0);
+
+--MUL high word pipeline (ALU→MEM→WB)
+signal p_mul_hi_1 : std_logic_vector(15 downto 0);
+signal p_mul_hi_2 : std_logic_vector(15 downto 0);
+signal p_mul_hi_3 : std_logic_vector(15 downto 0);
 
 --detect HI = LO asynchronously -- to decide BHLEQ on id phase
 signal hi_equals_lo : std_logic;
@@ -292,7 +299,8 @@ BEGIN
     p_id_wb_iaddr_0 <= std_logic_vector(unsigned(next_inst_addr) + 1);
 
     --generate BZ flag from decoded instruction and old Z flag
-    p_bztrue <= p_id_alu_bzflag_1 and p_alu_mem_z_2;
+    --BZ_N (negate): branch when Z=0; BZ_X/BZ_T: branch when Z=1
+    p_bztrue <= p_id_alu_bzflag_1 and (p_alu_mem_z_2 xor p_id_alu_bznegate_1);
     --generate BHLEQ flag from instruction and HI = LO flag
     p_bhleqtrue <= '1' when p_id_alu_bhleqflag_1(0) = '1' and p_alu_mem_hieqlo_2(0) = '1' else
                    '0';
@@ -330,6 +338,7 @@ BEGIN
                j_dest=>p_id_x_jdest,
                jr_flag=>p_id_x_jrflag,
                bz_flag=>p_id_alu_bzflag_0,
+               bz_negate=>p_id_alu_bznegate_0,
                bz_off=>p_id_alu_bzoff_0,
                mem_en=>p_id_mem_memen_0,
                mem_w=>p_id_mem_memw_0,
@@ -387,12 +396,12 @@ BEGIN
     hi_mux_data <= p_id_wb_alua_3 when p_id_wb_himux_3 = "10" else
                    aih_calculate_wb when p_id_wb_himux_3 = "01" else
                    ais_calculate_wb(31 downto 16) when p_id_wb_himux_3 = "00" else
-                   (others=>'0');
+                   p_mul_hi_3;  --"11": MUL high word
 
     lo_mux_data <= p_id_wb_alua_3 when p_id_wb_lomux_3 = "10" else
                    ail_calculate_wb when p_id_wb_lomux_3 = "01" else
                    ais_calculate_wb(15 downto 0) when p_id_wb_lomux_3 = "00" else
-                   (others=>'0');
+                   p_alu_wb_aluout_3;  --"11": MUL low word (ALU output)
 
     --detect HI = LO at ALU stage
     p_alu_mem_hieqlo_1(0) <= '1' when p_id_wb_hiout_1 = p_id_wb_loout_1 else
@@ -453,7 +462,8 @@ BEGIN
                ALU_OP=>p_id_alu_aluctl_1,
                FUNC=>p_id_alu_alufunc_1,
                Z=>p_alu_mem_z_1,
-               ALU_OUT=>p_alu_wb_aluout_1);
+               ALU_OUT=>p_alu_wb_aluout_1,
+               MUL_HI=>p_mul_hi_1);
     
     --PIPELINE ID/ALU
     PALU_A: entity WORK.RegANEM(Load)
@@ -534,11 +544,12 @@ BEGIN
                parallel_in=>p_id_wb_limm_0,
                data_out=>p_id_wb_limm_1);
 
-    p_id_alu_bzflag_1 <= p_alu_x_bzout(12);
-    p_id_alu_bzoff_1  <= p_alu_x_bzout(11 downto 0);
-    p_id_alu_bz_0 <= p_id_alu_bzflag_0 & p_id_alu_bzoff_0;
+    p_id_alu_bzflag_1   <= p_alu_x_bzout(13);
+    p_id_alu_bznegate_1 <= p_alu_x_bzout(12);
+    p_id_alu_bzoff_1    <= p_alu_x_bzout(11 downto 0);
+    p_id_alu_bz_0 <= p_id_alu_bzflag_0 & p_id_alu_bznegate_0 & p_id_alu_bzoff_0;
     preg_bz_0 : entity work.RegANEM(Load)
-      generic map(13)
+      generic map(14)
       port map(ck=>ck,
                rst=>rst,
                en=>p_stall_id_n,
@@ -935,6 +946,13 @@ BEGIN
                parallel_in=>p_sp_addr_1,
                data_out=>p_sp_addr_2);
 
+    --Pipeline ALU/MEM: MUL high word
+    preg_mulhi_1: entity work.RegANEM(Load)
+      generic map(16)
+      port map(ck=>ck, rst=>rst, en=>p_stall_alu_n,
+               parallel_in=>p_mul_hi_1,
+               data_out=>p_mul_hi_2);
+
     --Pipeline ALU/MEM: exc_ctl
     preg_excctl_1: entity work.RegANEM(Load)
       generic map(3)
@@ -1114,6 +1132,13 @@ BEGIN
       port map(ck=>ck, rst=>rst, en=>p_stall_mem_n,
                parallel_in=>p_sp_new_2,
                data_out=>p_sp_new_3);
+
+    --Pipeline MEM/WB: MUL high word
+    preg_mulhi_2: entity work.RegANEM(Load)
+      generic map(16)
+      port map(ck=>ck, rst=>rst, en=>p_stall_mem_n,
+               parallel_in=>p_mul_hi_2,
+               data_out=>p_mul_hi_3);
 
     --Pipeline MEM/WB: exc_ctl
     preg_excctl_2: entity work.RegANEM(Load)

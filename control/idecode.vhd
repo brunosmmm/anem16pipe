@@ -35,6 +35,7 @@ entity anem16_idecode is
        jr_flag    : out std_logic;
 
        bz_flag   : out std_logic;
+       bz_negate : out std_logic;
        bz_off    : out std_logic_vector(11 downto 0);
 
        mem_en     : out std_logic;
@@ -114,7 +115,7 @@ begin
                              (m4sub = ANEM_M4SUB_MFEPC or m4sub = ANEM_M4SUB_MFECA) else --MFEPC/MFECA
                   "010" when opcode = ANEM_OPCODE_LIU else --LIU INSTRUCTION
                   "011" when opcode = ANEM_OPCODE_LIL else --LIL INSTRUCTION
-                  "001" when opcode = ANEM_OPCODE_R else --R TYPE INSTRUCTION
+                  "001" when opcode = ANEM_OPCODE_R else --R TYPE INSTRUCTION (MUL also writes HI:LO via hi_en/lo_en)
                   "001" when opcode = ANEM_OPCODE_S else --S TYPE INSTRUCTION
                   "001" when opcode = ANEM_OPCODE_ADDI else --ADDI INSTRUCTION
                   "001" when opcode = ANEM_OPCODE_STK and stkfunc = ANEM_STKFUNC_SPRD else --SPRD
@@ -156,6 +157,9 @@ begin
   bz_flag <= '1' when (opcode = ANEM_OPCODE_BZ_X or opcode = ANEM_OPCODE_BZ_T or opcode = ANEM_OPCODE_BZ_N)
                       and reset_detected = '0' else
               '0';
+
+  bz_negate <= '1' when opcode = ANEM_OPCODE_BZ_N else
+               '0';
   
   bz_off  <= instruction(11 downto 0) when opcode = ANEM_OPCODE_BZ_X
                                         or opcode = ANEM_OPCODE_BZ_T
@@ -231,32 +235,38 @@ begin
 
   --hi/lo enable outputs
   hi_en <= '1' when opcode = ANEM_OPCODE_M1 and write_hi = '1' else
+           '1' when opcode = ANEM_OPCODE_R and instruction(3 downto 0) = ANEM_RFUNC_MUL(3 downto 0) else --MUL
            '0';
-  
+
   lo_en <= '1' when opcode = ANEM_OPCODE_M1 and write_lo = '1' else
+           '1' when opcode = ANEM_OPCODE_R and instruction(3 downto 0) = ANEM_RFUNC_MUL(3 downto 0) else --MUL
            '0';
 
   --hi/lo control outputs
-  hi_ctl <= "010" when m1op = ANEM_M1FUNC_LHH else
+  hi_ctl <= "100" when opcode = ANEM_OPCODE_R and instruction(3 downto 0) = ANEM_RFUNC_MUL(3 downto 0) else --MUL
+            "010" when m1op = ANEM_M1FUNC_LHH else
             "011" when m1op = ANEM_M1FUNC_LHL else
             "100" when m1op = ANEM_M1FUNC_AIH
                     or m1op = ANEM_M1FUNC_MTHI
                     or m1op = ANEM_M1FUNC_AIS else
             "000";
 
-  lo_ctl <= "010" when m1op = ANEM_M1FUNC_LLH else
+  lo_ctl <= "100" when opcode = ANEM_OPCODE_R and instruction(3 downto 0) = ANEM_RFUNC_MUL(3 downto 0) else --MUL
+            "010" when m1op = ANEM_M1FUNC_LLH else
             "011" when m1op = ANEM_M1FUNC_LLL else
             "100" when m1op = ANEM_M1FUNC_AIL
                     or m1op = ANEM_M1FUNC_MTLO
                     or m1op = ANEM_M1FUNC_AIS else
             "000";
 
-  hi_mux <= "00" when m1op = ANEM_M1FUNC_AIS else
+  hi_mux <= "11" when opcode = ANEM_OPCODE_R and instruction(3 downto 0) = ANEM_RFUNC_MUL(3 downto 0) else --MUL high
+            "00" when m1op = ANEM_M1FUNC_AIS else
             "01" when m1op = ANEM_M1FUNC_AIH else
             "10" when m1op = ANEM_M1FUNC_MTHI else
             "11";
 
-  lo_mux <= "00" when m1op = ANEM_M1FUNC_AIS else
+  lo_mux <= "11" when opcode = ANEM_OPCODE_R and instruction(3 downto 0) = ANEM_RFUNC_MUL(3 downto 0) else --MUL low
+            "00" when m1op = ANEM_M1FUNC_AIS else
             "01" when m1op = ANEM_M1FUNC_AIL else
             "10" when m1op = ANEM_M1FUNC_MTLO else
             "11";

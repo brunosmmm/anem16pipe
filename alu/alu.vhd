@@ -29,7 +29,8 @@ Entity ALU is
         ALU_OP         : in     std_logic_vector(3 downto 1);  --! ALU function
         FUNC           : in     std_logic_vector(4 downto 1);  --! Operation
         Z              : out    std_logic;                     --! Zero flag output
-        ALU_OUT        : buffer std_logic_vector(n downto 1)); --! Data output
+        ALU_OUT        : buffer std_logic_vector(n downto 1);  --! Data output
+        MUL_HI         : out    std_logic_vector(n downto 1)); --! MUL high word
 End ALU;
 
 Architecture behavior of ALU is 
@@ -82,9 +83,10 @@ with ALU_OP select
 
   shift: entity work.move(behavior) Generic Map ( n ) Port Map (ALU_A, SHAMT, ALU_CONT, aux_move);
 
--- MUL: low 16 bits of product (same result for signed and unsigned)
+-- MUL: full 32-bit product (low 16 to ALU_OUT, high 16 to MUL_HI)
   aux_mul_full <= std_logic_vector(unsigned(ALU_A(n downto 1)) * unsigned(ALU_B(n downto 1)));
   aux_mul <= aux_mul_full(n downto 1);
+  MUL_HI <= aux_mul_full(2*n downto n+1);
 
 
   with ALU_CONT select 
