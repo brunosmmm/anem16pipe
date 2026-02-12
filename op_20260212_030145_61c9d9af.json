@@ -1,0 +1,21 @@
+{
+  "author": {
+    "email": "brunosmmm@gmail.com",
+    "name": "Bruno Morais"
+  },
+  "data": {
+    "branch": "master",
+    "content": "# Peripherals Committed \u2014 GPIO, Timer, UART\n\n## Commits\n1. **93f1456** \u2014 Modified existing files: Makefile, 6 test benches, test_bench.vhd (added peripheral instances)\n2. **5019990** \u2014 New files: gpio/gpio.vhd, timer/timer.vhd, uart/uart.vhd, 3 test benches, 3 test assembly programs\n\n## Verification\nAll 72 tests pass: 23 basic + 4 branch + 5 hazard + 15 stack + 10 interrupt + 8 GPIO + 5 timer + 6 UART\n\n## Key Debugging Insights\n- **NOP corrupts Z flag**: `ADD $0,$0` (common NOP) is R-type, computes 0+0=0, sets Z=1. Z-flag-setting instruction MUST be immediately before BZ \u2014 no intervening instructions.\n- **GPIO metavalues**: Undriven input pins produce 'Z'/'U' in simulation. Readback must resolve non-logic values to '0' (weak pull-down).\n\n## Peripheral Address Map\n| Range | Peripheral |\n|-------|-----------|\n| 0xFFD0-D3 | GPIO (Port A/B Data + Dir) |\n| 0xFFD4-D6 | MAC (existing) |\n| 0xFFD7-DA | Timer (Count, Ctrl, Status, Compare) |\n| 0xFFDB-DE | UART (Data, Ctrl, Status, Baud) |\n\n## Pending\n- anem16sim annotation (ann_202302_3e7cky5ec44f): Implement matching peripheral emulation in C simulator\n",
+    "context": "Both commits for GPIO/Timer/UART peripheral implementation finalized and pushed.",
+    "repository_id": "github.com/brunosmmm/anem16pipe",
+    "session_id": null,
+    "session_type": "Software Development",
+    "title": "GPIO Timer UART peripherals committed"
+  },
+  "entity_id": "20260212_0301_gpio-timer-uart-peripherals-committed",
+  "lamport_clock": 161,
+  "operation_id": "op_20260212_030145_61c9d9af",
+  "operation_type": "checkpoint_save",
+  "parent_operation": null,
+  "timestamp": "2026-02-12T03:01:45.487523+00:00"
+}
